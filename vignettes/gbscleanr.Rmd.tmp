@@ -1,0 +1,222 @@
+--- 
+title: "Introduction to GBScleanR"
+author: "Tomoyuki Furuta"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{GBScleanR}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+<style>
+body {
+text-align: justify}
+</style>
+
+# Introduction
+
+Next generation sequencing (NGS) technology opened the door to the next generation of genetics and genomics (Goodwin et al., 2016). NGS provides genotyping platforms with dramatically improved flexibility and throughput which are now routinely applied to genetic and genomic studies with diverse populations (Unamba et al., 2015; Davey et al., 2011; Torkamaneh et al., 2018). The cost of NGS has been decreasing remarkably in a past decade. Nevertheless, genotyping via whole genome resequencing (WGR) is still an expensive option for researchers particularly those working on breeding projects which usually handle thousands of individuals (Bhat et al., 2016). Many kinds of RRS-based genotyping methods have been introduced to meet the demands of cost-effective genotyping systems with dense markers (Scheben et al., 2017). Since restriction-site associated DNA markers sequencing (RADseq) has been published, a number of derivative methods were introduced e.g. ddRADseq, 2b-RAD, and RAD Capture (Miller et al., 2007; Baird et al., 2008; Peterson et al., 2012; Wang et al., 2012;Ali et al., 2016). GBS and its derivative two-enzyme GBS are also outstanding RRS methods (Elshire et al., 2011; Poland et al., 2012). GBS has already been widely applied on many crops and animals, for example rice, sorghum, chickpea, cattle, and mice (De Donato et al., 2013; Morris et al., 2013; Kujur et al., 2015; Spindel et al., 2015; Parker et al., 2016). However, RRS has well-known drawbacks derived from its nature. Although multiplexibility of RRS is the biggest advantage, it reduces the number of reads per sample. Which sequence read can be obtained from a sample is a highly stochastic event. Therefore, uneven read acquisition stochastically occurs at some markers of samples. Unevenly obtained limited number of reads at a heterozygous site can result in obtaining reads only for one of possbile alleles and wrongly calling it as homozygote. This typical error form is known as undercalling of heterozygote. The uneven read acquisition also generates a lot of missing genotype calls, due to a lack of reads.
+
+To overcome these disadvantages, several error correction tools have been developed. There are roughly two categories, one is to impute missing genotype calls, another is designed to impute missing genotype calls and also correct undercallings of heterozygotes. Beagle is the most popular example of the former case, which is originaly a tool for haplotype-phasing frequently used in GWAS and able to infer missing genotypes based on phased haplotype information (Browning and Browning, 2007). The method to correct undercallings of heterozygotes was first published in 2009, which determines genotypes based on allelic read ratio within a sliding window (Huang et al., 2009). Recent publications introduced more statistically sophisticated methods using a HMM, for example, FSFHap, TIGER, and LB-Impute (Swarts et al., 2014; Rowan et al., 2015; Fragoso et al., 2016). A HMM is a statistical model which assumes that a series of observed data are outputs from a sequence of hidden states which follows a Markov process (Eddy, 2004). In the case of genotyping data, a series of observed data and a sequence of hidden states correspond to observed genotype calls (or allelic reads) and true genotypes at markers along a chromosome, respectively. Those existing error correction methods provide a robust estimation of true genotypes on genotype data including undercallings of heterozygotes and missing calls caused by stochastic error.
+
+The existing error correction methods assume a 50/50 probability to obtain a read for one allele or another at a heterozygous site, like a coin toss. This assumption works finely in many cases. However, in practice, some genotype data contain an unignorable number of error prone markers which show skewed probabilities of allelic read acquisition due to actual biological unevenness (W. et al., 2013; DaCosta and Sorenson, 2014; Wijnker et al., 2013). Polymorphisms between genome sequences of samples change the fragmentation patterns of genomes and the resulted fragments have variations in GC content and length. Even if the obtained reads via RRS-based genotyping from two distinct samples were mapped at the same  locus, the sequences of genomic fragments which are the origin for the obtained reads can be variable between the samples in terms of the GC content and the length, sometime with a large insertion or deletion. GC content and length of restricted fragments are known to affect amplification efficiency. These biases caused by actual variations in samples can be more pronounced in a polymorphism-rich population, for example, a cross between distant relatives.
+
+Therefore, here we introduce an error correction method, GBScleanR which incorporates allelic read ratio in the HMM to capture skewed probability of read acquisitions. Our method uses a flexible model in which emission and transition probabilities can be tweaked based on the allelic read ratio and marker distances. The read count data is converted to categorical genotype data in order to reduce the negative impact of error prone markers with plenty reads. In this paper, we first show the situation where the models implemented in the existing error correction tools does not work well. In our recent study, low-coverage sequence data was obtained via two-enzyme GBS for an F~2~ population derived from a cross between distant relatives (Asian cultivated rice _Oryza sativa japonica_ and African wild rice _O. longistaminata_) (Furuta et al., 2017). The existing methods did not work on our data set and resulted in apparent erroneous genotypes in several genomic regions which might contain clusters of error prone markers. On the other hand, GBScleanR could produce more reliable genotypes even at the erroneous regions. Our simulation studies also exhibited the accuracy and robustness of GBScleanR for noisy GBS data. In addition to the improved correction accuracy, GBScleanR does not require filtering of markers based on allele frequency and missing rate, which is usually recommended in pre-processing to apply the existing tools. This feature enable us to keep the reads which would be discarded in filtering and consequently improve cost efficiency.
+
+# Tutorial
+
+This tutorial demonstrates a standard usage of the functions in the package "GBScleanR".
+We are going to use a genotype dataset of a F2 population derived from a cross between distant relatives; Asian culativated rice _Oryza sativa_ ssp. _japonica_ cv. Nipponbare and African wild rice _O. longistaminata_ acc. IRGC110404 (ref.).
+We can laod the sample data as following
+
+```{r}
+library(GBScleanR)
+data(nbolf2)
+```
+
+To load your vcf file, type
+```r
+vcf <- read.vcf(file.path = "/path/to/vcf_file.vcf")
+```
+`read.vcf` loads genotype information from a input variant call format (vcf) file. This function internaly use `read.vcfR` from vcfR package. The resulting object is a list containing three slots: sample_id, snp_info, and geno_info. sample_id slot contains a vector of sample names. `sort.sample = TRUE` makes genotype data sorted in alphanumeric order. If you would like to keep ordering as it is in the input vcf file, set FALSE for this argument.
+```{r}
+nbolf2$sample_id[1:5]
+# show sample names of the first 5 samples.
+```
+
+snp_info slot contains chromosome name, physical position, reference allele, altanative allele and identical marker index. If a pair of adjacent markers has the same integer value in the "Identical" column, the marker pair has identical numbers of reference allele and altanative allele indicating SNPs found on a same tag (sequence read). The function automatically filter out multi-allelic (three or more alleles) SNPs and indels.
+```{r}
+nbolf2$snp_info[1:5, ]
+# show information of the first 5 SNP markers.
+```
+
+The core function to estimate ture genotypes of markers via a hidden markov model is `hmm.genotyper`. This function requires genotypes of both parents of a given population at each marker. To specify parental samples, use `set.parents` as shown below.
+```{r}
+nbolf2 <- set.parents(vcf = nbolf2, parent1 = "01_NB", parent2 = "02_OL")
+```
+In the example dataset, one parent is _O. sativa_ cv. Nipponbare labeled as "01_NB", while another is _O. longistaminta_ acc. IRGC110404 labeled as "02_OL". `set.parents` filter out markers which are not homozygous in each parent and not biallelic between parents. If you does not specify parent names (`parent1 = NULL, parent2 = NULL`), `set.parents` estimate parental genotypes from the given genotype data. See the help page for `set.parents` for the details of parental genotype estimation. Nonetheless, it is highly recommended to specify parents. Parental genotype estimation is a challenging task and will mess up your genotype data with wrong estimation particularly for low-coverage genotype data.
+
+GBScleanR provides a function `stats.vcf` to give statistical summary of the given genotype information.
+```{r}
+vcfstats <- stats.vcf(vcf = nbolf2, true_geno = FALSE, omit_samples = c("01_NB", "02_OL", "03_F1"))
+# you can see the number of samples and markers in the console
+```
+
+`stats.vcf` returns a data.farame with 5 columns: name, missing_rate, raf, hetero, and type.
+The type column has either of marker and sample as entry to indicate which row contains statistics per marker or per sample. The name colmun shows sample names or marker names (a chromosome name and a phyiscal position of each marker are delimited with underscore, e.g. 1_190453 that is a SNP marker at 190,453 bp on chromosome 1). In the second, third, and fourth column contain values of missing rate, reference allele frequency, and heterozygosity per marker or per sample.
+```{r}
+head(vcfstats[vcfstats$type == "sample", ])
+head(vcfstats[vcfstats$type == "marker", ])
+```
+
+The obtained statistical summary can be visualized using `plot.vcfstats`.
+```{r fig.height= 4, fig.width=6}
+plot(vcfstats = vcfstats)
+```
+
+You can also draw each plot separately using functions shown below.
+```{r fig.height= 4, fig.width=6}
+plot.hist.dp(vcfstats = vcfstats, plot = TRUE)
+plot.hist.missing(vcfstats = vcfstats, plot = TRUE)
+plot.hist.raf(vcfstats = vcfstats, plot = TRUE)
+plot.hist.het(vcfstats = vcfstats, plot = TRUE)
+plot.marker.density(vcfstats = vcfstats, plot = TRUE, binwidth = 0.3)
+plot.missing(vcfstats = vcfstats, plot = TRUE)
+plot.genoratio(vcfstats = vcfstats, plot = TRUE)
+```
+
+If you specify `plot = FALSE`, those plot function return a ggplot object created using the funtions in the `ggplot2` package. You can further modify the plot as you wish using the ggplot functions.
+
+The main function of this package, `hmm.genotyper` can be executed with the following code.
+```{r}
+corrected <- hmm.genotyper(vcf = nbolf2, recomb_rate = 0.04, 
+                           error_rate = 0.05, ad_ratio = T, n_core = 30, type = 2)
+```
+`hmm.genotype` estimates the true sequence of genotypes for each chromosome of each sample using a HMM. This is not just imputation of missing genotype in a dataset, but also correction of miss-calls including under-calls of heterozygotes. The HMM implemented in the function modifies the emission probability and the transition probability according to the status of each marker. 
+
+In the case of a sequence of genotypes, a transition probability can be defined as a recombination probability between two adjacent markers. Thus, the model uses an expected recombination frequency to calculate the transition probabilities between each pair of two adjacent markers. You need specify `rf` which means "Morgan per mega bases" indicating the expected recombination frequency between two adjcent markers at one mega bases away from each other. The default value is `rf = 0.03` that is 3 cM per Mb, which is an empirically expected recombination frequency in rice. If you going to estimate genotype for a population having more or less frequent recombinations, please tune the value. A F3 population theoretically has roughly twice frequent recombinations compared with a F2 population.
+
+The emission probabilty is also variable in the model based on allelic read ratio at each marker. Usually, in HMMs incorporating the number of reads for reference and alternative allele, the emission probability of a heterozygous cite is defined as
+
+\[P(Observed\ genotype \mid True\ genotype = HET) = (0.5)^{REFreads}(0.5)^{ALTreads},\]
+
+where REFreads and ALTreads are the number of reads for reference and alternative alleles, repectively. However, the probability to obtain a read for either of alleles is not alway 50:50 due to PCR bias and mismapping of reads. To take into account this skewed probability of read acquisition at each marker, `hmm.genotype` calculates allelic read ratio at each marker and modify emission probabilities based on it. For example, if the allelic read ratio at a maker is 0.8 vs 0.2 which means 80% of reads obtained at the marker was a reference allele while only 20% was an alternative allele, the emission probabilities are defined as follows.
+
+\[P(Observed\ genotype = REF \mid True\ genotype = HET) = 0.8\times(1-0.2)\]
+\[P(Observed\ genotype = ALT \mid True\ genotype = HET) = (1-0.8)\times0.2\]
+\[P(Observed\ genotype = HET \mid True\ genotype = HET) = 0.8\times0.2\]
+
+Here we assume the allelic read ratio is the probability to obtain one or more reads for reference or alternative allele. Thus, for example, the probabiliity to observe a reference call (Observed genotype = REF) when the true genotype is heterozygote (true genotype = HET) can be a product of the probability to obtain reference reads (0.8) and the probabiilty to obtain no alternative reads (1 - 0.2). The allelic read ratios at each marker are calculated based on the number of allelic reads for parents specified in `set.parents` which returns the allelic read ratios as an attribute of the output object. You can check it using following command.
+```{r}
+attributes(nbolf2)$ad_ratio[1:10] # show allelic read ratios for the first ten markers 
+```
+
+To write out the corrected genotype data, you can use the `write.vcf` function.
+```r
+write.geno(vcf = nbolf2, file_path = "/path/to/output.vcf", format = "vcf")
+```
+If you specified `format = "vcf"`, the function create a vcf file with data in the given vcf object. The output vcf file contains GT, AD, and DP fields for each genotype call. Another choise for format is "qtl" with which the function create a csv formated genotype file for r/qtl.
+
+The function `plot.gg` let us graphically visualize genotype data.
+```{r}
+plot.gg(vcf = corrected, sample_id = 4:10) 
+# show graphical genotype for chromosome 1, 3, 5, 7, and 9 of sample No. 10-15
+```
+
+```{r}
+plot(stats.vcf(corrected))
+```
+
+```{r}
+cleaned <- island.rm(corrected, threshold = 0.05, n_core = 30, type = 2)
+```
+
+```{r}
+plot.gg(vcf = cleaned, sample_id = 4:10) 
+# show graphical genotype for chromosome 1, 3, 5, 7, and 9 of sample No. 10-15
+```
+
+```{r}
+plot(stats.vcf(cleaned))
+```
+
+```{r}
+plot.xo(cleaned)
+```
+
+```{r}
+library(ggplot2)
+p <- plot.hist.missing(stats.vcf(cleaned), plot = F)
+p <- p + scale_y_continuous(limits = c(0, 50))
+p
+```
+
+```{r}
+filtered <- stats.filter(vcf = cleaned, vcfstats = stats.vcf(cleaned), snp.miss.threshold = 0.1)
+plot(stats.vcf(filtered))
+```
+
+```{r}
+sim_geno_info <- sim.geno_info(n_ind = 100)
+sim_vcf <- sim.read(vcf = sim_geno_info, 
+                   dist_taxa = 1500,
+                   dist_raf = c("truncnorm", 0, 1, 0.7, 0.4))
+sim_vcf <- set.parents(sim_vcf, "p1", "p2")
+plot(stats.vcf(sim_vcf, true_geno = F))
+```
+
+
+```{r}
+sim_corrected <- hmm.genotyper(vcf = sim_vcf, recomb_rate = 0.04, 
+                           error_rate = 0.05, ad_ratio = T, n_core = 30, type = 2)
+plot(stats.vcf(sim_corrected))
+```
+
+```{r}
+plot(stats.vcf(sim_vcf, true_geno = T))
+```
+
+```{r}
+lb <- lbimpute(sim_vcf, 
+               parent1 = "p1", 
+               parent2 = "p2",
+               arguments = cbind("-jar",
+                                 "/home/ftom/gbsanalyzer/GBScleaneR/AltTools/LB-Impute/LB-Impute.jar"))
+plot(stats.vcf(set.parents(lb, "p1", "p2")))
+```
+
+```{r}
+sim_geno_info <- sim.geno_info(n_ind = 1000)
+sim_geno_info <- subset.vcf(sim_geno_info, ind = sim_geno_info$true_geno[300, ] != 1)
+sim_vcf <- sim.read(vcf = sim_geno_info, 
+                   dist_taxa = 250,
+                   dist_raf = c("truncnorm", 0, 1, 0.7, 0.4))
+sim_vcf <- set.parents(sim_vcf, "p1", "p2")
+plot(stats.vcf(sim_vcf, true_geno = F))
+```
+
+```{r}
+plot(stats.vcf(sim_vcf, true_geno = T))
+```
+
+```{r}
+sim_corrected <- hmm.genotyper(vcf = sim_vcf, recomb_rate = 0.04, 
+                           error_rate = 0.05, ad_ratio = T, n_core = 30, type = 2)
+plot(stats.vcf(sim_corrected))
+```
+
+```{r}
+sim_cleaned <- island.rm(vcf = sim_corrected, recomb_rate = 0.04, 
+                           error_rate = 0.05, ad_ratio = T, n_core = 30, type = 2)
+plot(stats.vcf(sim_cleaned))
+```
+
+```{r}
+lb <- lbimpute(sim_vcf, 
+               parent1 = "p1", 
+               parent2 = "p2",
+               arguments = cbind("-jar",
+                                 "/home/ftom/gbsanalyzer/GBScleaneR/AltTools/LB-Impute/LB-Impute.jar"))
+plot(stats.vcf(set.parents(lb, "p1", "p2")))
+```
+

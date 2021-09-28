@@ -1,0 +1,53 @@
+---
+title: "Data handling with GBScleanR"
+author: "Tomoyuki Furuta"
+date: "February 1, 2021"
+output: 
+  pdf_document:
+    toc: true
+    number_sections: true
+  includes:
+    in_header: latex/header.tex
+    before_body: latex/before_body.tex
+    after_body: latex/after_body.tex
+---
+\newpage
+
+\section{Introdction}
+
+\section{Methods}
+
+\section{Prerequisite}
+
+\section{Usage of GBScleanR}
+
+#### Convert a VCF file to a GDS file.
+
+```{r}
+gds_fn <- GBScleanR::gbsrVCF2GDS(vcf_fn = "./data/sample_filt.vcf.gz",
+                                out_fn = "./data/sample.gds", 
+                                noinfo = FALSE)
+```
+
+
+#### Load a GDS file and build GbsrGenotypeData class object.
+```{r}
+gdata <- GBScleanR::loadGDS(gds_fn = gds_fn)
+```
+
+#### Set parental samples
+```{r}
+gdata <- GBScleanR::setParents(gdata, p1 = "01_NB", p2 = "02_OL")
+```
+
+#### Calculate summary statistics of data
+```{r}
+gdata <- GBScleanR::countGenotype(gdata)
+gdata <- GBScleanR::countRead(gdata)
+gdata <- GBScleanR::getReadDist(gdata)
+```
+
+#### Plot statistical summaries
+```{r}
+plot(gdata, type = "hist.dp")
+```

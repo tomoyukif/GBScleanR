@@ -1,0 +1,288 @@
+---
+title: "Error correction with GBScleanR"
+author: "Tomoyuki Furuta"
+date: "February 10, 2021"
+output: 
+  pdf_document:
+    toc: yes
+urlcolor: blue
+---
+
+\section{Overview}
+
+\section{Data QC and filtering.}
+
+Load the package.
+```{r warning=FALSE, message=FALSE}
+library("GBScleanR")
+```
+
+
+Convert a VCF file into a GDS file.
+```{r}
+vcf_fn <- "./data/gbs_nbolf2.vcf.gz"
+gds_fn <- "./data/gbs_nbolf2.gds"
+```
+```{r}
+gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn)
+```
+
+
+Load the GDS file.
+```{r}
+gdata <- loadGDS(gds_fn = gds_fn)
+gdata
+```
+
+
+```{r}
+# Check the total number of marekrs.
+nSnp(gdata)
+
+# Check the total number of samples.
+nScan(gdata)
+
+# Check sample names of the first five samples.
+getScanID(gdata)[1:5]
+```
+
+The data format in the GDS file generated via `GBScleanR` is basically same with that by `SNPRelate`, but with an annotation folder including information obtained from INFO field and FORMAT field of a VCF file. Therefore, the GDS file made by `GBScleanR` can be manipurated by the functions in `SNPRelate` and `GWASTools` packages. Although `SeqArray` package also provide the function to create and handle GDS files, you need to convert the GDS file format using `gbsrSNP2GDS` to change the format for handling with `SeqArray` and other packages accepts only the `SeqArray` version of GDS file format.
+
+
+The sample dataset contains the data of an F1 individual. Now we would like to omit it from the downstream analysis.
+```{r}
+gdata <- setScanFilter(gdata, id = "03_F1")
+nScan(gdata)
+```
+
+
+Set the parental lines to remove markers which not biallelic in the parents and not monomorphic in each parents.
+```{r}
+# Check the total number of marekrs.
+gdata <- setParents(gdata, parents = c("01_NB", "02_OL"))
+
+# Check the number of markers retained.
+nSnp(gdata)
+```
+
+
+Thinout markers with selecting a least missing marker from the marekrs within 150 bp (read length) away each other. Our reads were obtained via NGS with 75 bp paired-end sequencing. Therefore, this filtering also removes SNPs derived from the reads originated from the same cut site.
+```{r}
+gdata <- countGenotype(gdata)
+gdata <- thinMarker(gdata, range = 150)
+nSnp(gdata)
+```
+
+
+Calculate summary statistics for read counts.
+```{r}
+gdata <- calcReadStats(gdata)
+```
+
+
+Plot summary statistics.
+```{r message=FALSE, warning=FALSE}
+library("ggplot2")
+library("tidyr")
+```
+```{r}
+chr <- getChromosome(gdata)
+df <- rbind(data.frame(chr = factor(chr), val = getMeanReadRef(gdata, "snp"), allele = "Ref"),
+            data.frame(chr = factor(chr), val = getMeanReadAlt(gdata, "snp"), allele = "Alt"))
+p <- ggplot(df, aes(y = chr, x = val, color = allele)) + geom_boxplot()
+print(p)
+```
+
+```{r}
+p + xlim(0, 200)
+```
+
+
+```{r}
+gdata <- setSnpFilter(gdata, mean_ref=c(0, 200), mean_alt=c(0, 150))
+gdata <- calcReadStats(gdata)
+```
+```{r}
+chr <- getChromosome(gdata)
+df <- rbind(data.frame(chr = factor(chr), val = getMeanReadRef(gdata, "snp"), allele = "Ref"),
+            data.frame(chr = factor(chr), val = getMeanReadAlt(gdata, "snp"), allele = "Alt"))
+
+ggplot(df, aes(y = chr, x = val, colour = allele)) + geom_boxplot()
+```
+
+
+```{r}
+ad <- gdsfmt::index.gdsn(node=gdata@data@handler, path="annotation/format/AD/data")
+ad <- gdsfmt::read.gdsn(ad)
+ad <- ad / apply(ad, 1, sum) * 10^6
+ad <- subset(ad, subset = getValidScan(gdata), select = rep(getValidSnp(gdata), each=2))
+ref <- ad[, c(TRUE, FALSE)]
+alt <- ad[, c(FALSE, TRUE)]
+ref <- data.frame(id = factor(1:nScan(gdata)), ref)
+alt <- data.frame(id = factor(1:nScan(gdata)), alt)
+ref <- pivot_longer(ref, cols=-id, names_to="snp", values_to="val")
+alt <- pivot_longer(alt, cols=-id, names_to="snp", values_to="val")
+ref$val[ref$val == 0] <- NA
+alt$val[alt$val == 0] <- NA
+```
+```{r}
+ggplot(ref) +
+  geom_boxplot(mapping = aes(y = id, group = id, x = val)) +
+  theme(axis.text.y=element_blank())
+```
+
+
+```{r}
+ggplot(alt) +
+  geom_boxplot(mapping = aes(y = id, group = id, x = val)) +
+  theme(axis.text.y=element_blank())
+```
+
+
+```{r}
+gdata <- setCallFilter(gdata, norm_ref_count = c(0, 1000), norm_alt_count = c(0, 750))
+```
+
+
+```{r}
+gdata <- countGenotype(gdata)
+```
+
+
+```{r}
+gdata <- setSnpFilter(gdata, missing = 0.8)
+```
+
+```{r}
+gdata <- countGenotype(gdata)
+gdata <- countRead(gdata)
+```
+
+Plot the summary statistics.
+```{r}
+histGData(gdata, target = "missing")
+```
+```{r}
+histGData(gdata, target = "het")
+```
+```{r}
+histGData(gdata, target = "raf")
+```
+```{r}
+histGData(gdata, target = "dp")
+```
+```{r}
+histGData(gdata, target = "ad")
+```
+```{r}
+histGData(gdata, target = "rrf")
+```
+```{r}
+histGData(gdata, target = "mean")
+```
+```{r}
+histGData(gdata, target = "sd")
+```
+```{r}
+plotGData(gdata, target="marker", coord = c(6, 2))
+```
+```{r}
+pairsGData(gdata, var1="mean_ref", var2="sd_ref")
+```
+```{r}
+pairsGData(gdata, var1="mean_alt", var2="sd_alt")
+```
+
+```{r}
+pairsGData(gdata, var1="dp", var2="het")
+```
+
+```{r}
+ref <- getSDReadRef(gdata, "snp") / getMeanReadRef(gdata, "snp")
+alt <- getSDReadAlt(gdata, "snp") / getMeanReadAlt(gdata, "snp")
+df <- rbind(data.frame(allele = "Ref", val = ref), data.frame(allele = "Alt", val = alt))
+ggplot(df, aes(x = val, color = allele)) + geom_boxplot()
+```
+
+
+```{r}
+snpfilt <- ref < 1 & alt < 1
+gdata <- setValidSnp(gdata, update = snpfilt)
+nSnp(gdata)
+```
+
+
+```{r}
+gdata <- countGenotype(gdata)
+gdata <- countRead(gdata)
+gdata <- calcReadDist(gdata)
+```
+
+Plot the summary statistics.
+```{r}
+histGData(gdata, target = "missing")
+```
+```{r}
+histGData(gdata, target = "het")
+```
+```{r}
+histGData(gdata, target = "raf")
+```
+```{r}
+histGData(gdata, target = "dp")
+```
+```{r}
+histGData(gdata, target = "ad")
+```
+```{r}
+histGData(gdata, target = "rrf")
+```
+```{r}
+histGData(gdata, target = "mean")
+```
+```{r}
+histGData(gdata, target = "sd")
+```
+```{r}
+plotGData(gdata, target="marker", coord = c(6, 2))
+```
+
+```{r}
+gdata <- setSnpFilter(gdata, mean_ref=c(0, 15), mean_alt=c(0, 15))
+```
+```{r}
+gdata <- countGenotype(gdata)
+gdata <- countRead(gdata)
+gdata <- calcReadDist(gdata)
+```
+
+Plot the summary statistics.
+```{r}
+histGData(gdata, target = "missing")
+```
+```{r}
+histGData(gdata, target = "het")
+```
+```{r}
+histGData(gdata, target = "raf")
+```
+```{r}
+histGData(gdata, target = "dp")
+```
+```{r}
+histGData(gdata, target = "ad")
+```
+```{r}
+histGData(gdata, target = "rrf")
+```
+```{r}
+histGData(gdata, target = "mean")
+```
+```{r}
+histGData(gdata, target = "sd")
+```
+```{r}
+plotGData(gdata, target="marker", coord = c(6, 2))
+```
+
+
