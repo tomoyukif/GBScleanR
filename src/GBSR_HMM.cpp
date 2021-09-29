@@ -2,6 +2,7 @@
 // [[Rcpp::plugins("cpp11")]]
 #include <RcppParallel.h>
 #include <Rcpp.h>
+#include <random>
 #include <vector>
 #include <algorithm>
 using namespace Rcpp;
@@ -9,7 +10,6 @@ using namespace RcppParallel;
 using std::vector;
 
 // Calculate the log10 value
-
 void log10_safe(double & d){
   if(d == 0){
     d = -pow(10, 100);
@@ -54,7 +54,8 @@ NumericVector lognorm(NumericVector v){
   std::vector<double>::size_type count;
   double v_max = *std::max_element(v.begin(), v.end());
   if(std::isinf(v_max)){
-    double even = 1 / v.size();
+    double even = 1 / (double)v.size();
+    log10_safe(even);
     v.fill(even);
     return v;
   };
@@ -84,7 +85,8 @@ void lognorm_vec(vector<double> & v){
   double v_max = *std::max_element(v.begin(), v.end());
 
   if(std::isinf(v_max)){
-    double even = 1 / v.size();
+    double even = 1 / (double)v.size();
+    log10_safe(even);
     for(std::vector<double>::size_type i=0; i<v.size(); ++i){
       v[i] = even;
     }
@@ -116,7 +118,7 @@ double pow10(double & d){
   return pow(10, d);
 }
 
-// Get one index pointing the maximum value in a vector even if multiple elements with the maximum value in the vector.
+
 std::size_t get_max_int(std::vector<double> & v){
   std::size_t out_index;
   std::vector<std::size_t> max_indices;
@@ -130,15 +132,29 @@ std::size_t get_max_int(std::vector<double> & v){
       max_indices.push_back(l);
     }
   }
+  
   if(max_indices.size() == 0){
-    return rand() % v.size();;
+    std::random_device rnd;
+    std::mt19937 mt(rnd());
+    int tmp_len = v.size();
+    std::uniform_int_distribution<> rand1(0, tmp_len - 1);
+    out_index = rand1(mt);
+    return out_index;
   }
+  
   if(max_indices.size() == 1){
     return max_indices[0];
   }
-  out_index = max_indices[rand() % max_indices.size()];
+  
+  std::random_device rnd;
+  std::mt19937 mt(rnd());
+  int tmp_len = max_indices.size();
+  std::uniform_int_distribution<> rand1(0, tmp_len - 1);
+  int tmp = rand1(mt);
+  out_index = max_indices[tmp];
   return out_index;
 }
+
 
 NumericVector calcPemit(NumericMatrix p_ref,
                         NumericMatrix p_alt,
@@ -192,7 +208,7 @@ NumericVector calcPemit(NumericMatrix p_ref,
     prob_i[2] = sum_v3 / sum_v;
 
     for(int j=0; j<n_p; ++j){
-      col_i = i * n_f + j;
+      col_i = j * n_f + i;
       p_prob = prob_i[possiblegeno[col_i]];
       if(p_prob < 0.01){
         p_prob = 0;
@@ -203,7 +219,7 @@ NumericVector calcPemit(NumericMatrix p_ref,
 
   for(int j=0; j<n_p; ++j){
     if(p_emit[j] == 0){
-      p_emit[j] = neg_inf;
+    p_emit[j] = neg_inf;
     } else {
       log10_safe(p_emit[j]);
     }
@@ -521,9 +537,8 @@ struct ParCalcFpath : public Worker {
             }
           }
         }
-        sum_j = logsum(score_j);
         for(std::size_t j1=0; j1<n_p; ++j1){
-          score_j[j1] = p_emit1[j1] + score_j[j1] - sum_j;
+          score_j[j1] = p_emit1[j1] + score_j[j1];
         }
         max_j = get_max_int(score_j);
         f_path_m[j2] = max_j;
@@ -571,7 +586,7 @@ struct ParCalcFpath : public Worker {
             hap_prob = prob_i[possiblehap[col_i]];
             log10_safe(hap_prob);
             o_path_m[sample_i * per_sample_size + col_i] = tmp_i[max_j * n_h + k];
-            vit_i[col_i] = in_i[max_j * n_h + k] + hap_prob + score_j[max_j];
+            vit_i[col_i] = in_i[max_j * n_h + k] + hap_prob;
           }
         }
       }
@@ -607,13 +622,12 @@ void last_vit(IntegerVector f_seq,
         vit_i = j * n_h + k;
         score_ijk[k] = vit_score(i, vit_i);
       }
-      score_j[j] =  score_j[j] + logsum(score_ijk);
+      score_j[j] += logsum(score_ijk);
       tmp_argmax( i , j ) = get_max_int(score_ijk);
     }
   }
-  double sum_j = logsum(score_j);
   for(std::size_t j=0; j<n_p; ++j){
-    score_j[j] = p_emit[j] + score_j[j] - sum_j;
+    score_j[j] = p_emit[j] + score_j[j];
   }
   std::size_t f_max = get_max_int(score_j);
   f_seq[m] = f_max;
@@ -639,7 +653,7 @@ void backtrack(IntegerMatrix f_path,
 
   for(std::size_t m=n_m-1; m>0; --m){
     if(m % 10 == 9){
-      std::cout << "\r" << "Backtracking best genotype sequences at marker#: " << m+1 << std::string(70, ' ');
+      Rcpp::Rcout << "\r" << "Backtracking best genotype sequences at marker#: " << m+1 << std::string(70, ' ');
     }
     f_prev = f_seq[m];
     f_seq[m-1] = f_path(m , f_prev);
@@ -648,7 +662,7 @@ void backtrack(IntegerMatrix f_path,
       o_seq( m-1 , i ) = o_path(m, i * per_sample_size + f_prev * n_h + o_prev);
     }
   }
-  std::cout << "\r" << "Backtracking best genotype sequences: Dene!" << std::string(70, ' ');
+  Rcpp::Rcout << "\r" << "Backtracking best genotype sequences: Dene!" << std::string(70, ' ');
 }
 
 
@@ -711,7 +725,7 @@ List run_viterbi(NumericMatrix p_ref,
 
   for(int m=0; m<n_m; ++m){
     if(m % 10 == 9){
-      std::cout << "\r" << "Forward founder genotype probability calculation at marker#: " << m+1 << std::string(70, ' ');
+      Rcpp::Rcout << "\r" << "Forward founder genotype probability calculation at marker#: " << m+1 << std::string(70, ' ');
     }
 
     if(m == 0){
@@ -810,7 +824,7 @@ List run_viterbi(NumericMatrix p_ref,
            vit_score,
            p_emit1,
            dim);
-  std::cout << "\r" << "Forward founder genotype probability calculation: Dene!" << std::string(70, ' ');
+  Rcpp::Rcout << "\r" << "Forward founder genotype probability calculation: Dene!" << std::string(70, ' ');
 
   backtrack(f_path,
             o_path,
@@ -818,7 +832,7 @@ List run_viterbi(NumericMatrix p_ref,
             o_seq,
             dim);
 
-  std::cout << "\r" << std::string(70, ' ');
+  Rcpp::Rcout << "\r" << std::string(70, ' ');
   List out_list = List::create(_["p_geno"] = f_seq, _["best_seq"] = o_seq);
   return out_list;
 }

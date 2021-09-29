@@ -1,0 +1,468 @@
+---
+title: "Basic usage of utility functions in GBScleanR"
+author: "Tomoyuki Furuta"
+date: "March 25, 2021"
+output: 
+  pdf_document:
+    toc: yes
+urlcolor: blue
+header-includes:
+  \usepackage{float}
+vignette: >
+  %\VignetteIndexEntry{Basic usage of utility functions in GBScleanR}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.pos = 'H', fig.align = "center", warning = FALSE, message = FALSE)
+```
+
+\newpage
+
+\section{Introduction}
+The `GBScleanR` package has been mainly developed to conduct error correction on genotype data obtained via NGS-base genotyping methods such as RAD-seq and GBS. Nevertheless, several quality check procedure and data filtering are highly encouraged to improve correction acculacy. Therefore, this package also provide the functions for data quality check and filtering with some data visualization functions to help filtering procedure. In this document, we walk through the utility functions implemented in `GBScleanR` to introduce a basic usage. An error correction procedure for GBS data of a biparental population is described in [another vignette]("./02_errorCorrection.pdf"). 
+
+
+\section{Prerequisites}
+This package internally uses the following packages.  
+- `ggplot2`  
+- `dplyr`  
+- `tidyr`  
+- [`GWASTools`](https://bioconductor.org/packages/release/bioc/html/GWASTools.html)  
+- [`SNPRelate`](https://bioconductor.org/packages/release/bioc/html/SNPRelate.html)  
+- [`SeqArray`](https://bioconductor.org/packages/release/bioc/html/SeqArray.html)  
+\  
+
+To install them all, run the codes below.
+```{r eval=FALSE}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("GWASTools")
+BiocManager::install("SNPRelate")
+BiocManager::install("SeqArray")
+install.packages("ggplot2")
+install.packages("dplyr")
+install.packages("tidyr")
+```
+\  
+
+You can install `GBScleanR` from the local source file with the following code.
+```{r eval=FALSE}
+install.packages("path/to/source/GBScleanR.tar.gz", repos = NULL, type = "source")
+```
+\  
+
+The code below let you install the package from the github repository.
+```{r eval=FALSE}
+if (!requireNamespace("devtools", quietly = TRUE))
+    install.packages("devtools")
+devtools::install_github("")
+```
+
+
+To load the package.
+```{r warning=FALSE, message=FALSE}
+library("GBScleanR")
+```
+
+\newpage
+\section{Data format conversion and object instantiation}
+The main class of the `GBScleanR` package is `gbsrGenotypData` which inherits the `GenotypeData` class in the `GWASTools` package. The `gbsrGenotypeData` class object has three slots: `data`, `snpAnnot`, and `scanAnnot`. The `data` slot holds genotype data as a `gds.class` object which is defined in the `gdsfmt` package while `snpAnnot` and `scanAnnot` contain objects storing annotation information of SNPs and samples, which are the `SnpAnnotationDataFrame` and `ScanAnnotationDataFrame` objects defined in the `GWASTools` package. See the [vignette](https://bioconductor.org/packages/release/bioc/vignettes/GWASTools/inst/doc/Formats.pdf) of `GWASTools` for more detail. `GBScleanR` follows the way of `GWASTools` in which a unique genotyping instance (genotyped sample) is called "scan".  
+\  
+
+As mentioned above, the `gbsrGenotypeData` class requires genotype data in the `gds.class` object which enable us quick access to the genotype data without loading the whole data on RAM. At the beginning of the processing, we need to convert data format of our genotype data from VCF to GDS. This conversion can be achi eved using `gbsrVCF2GDS` as shown below.
+```{r warning=FALSE, message=FALSE, eval=FALSE}
+gbsrVCF2GDS(vcf_fn = "./data/gbs_nbolf2.vcf.gz", # Path to the input VCF file.
+            out_fn = "./data/gbs_nbolf2.gds") # Path to the output GDS file.
+```
+\  
+
+
+Our sample dataset contains genotype information of 816 samples with 20224 markeres.  
+This size of data takes a few seconds for conversion.  
+The larger the data size, the longer the running time.
+```{r eval=FALSE}
+exec_time <- system.time({
+  gbsrVCF2GDS(vcf_fn = "./data/gbs_nbolf2.vcf.gz", # Path to the input VCF file.
+              out_fn = "./data/gbs_nbolf2.gds") # Path to the output GDS file.
+})
+exec_time
+```
+`##    user  system elapsed`  
+`##  15.312   0.189  15.514`  
+\  
+
+
+Once we converted the VCF to the GDS, we can create the `gbsrGenotypeData` instance for our data.
+```{r}
+gdata <- loadGDS("../inst/extdata/sim_pop.gds")
+```
+\  
+
+If your samples have non autosomal chromosomes such as X and Y chromosomes or mitochondrial one, please pass the named list to define which chromosome is which type of non autosomal chromosome.
+* This argument can be specified but no effect in the current implementation. This will work in a future release.
+```{r eval=FALSE}
+# Not run.
+gdata <- loadGDS("./data/gbs_nbolf2.gds", 
+                 non_autosomes =  list(X = 13, 
+                                       Y = 14, 
+                                       M = 15)) # M indicates mitochondrial chromosome.
+```
+
+
+Some getter functions allow you to retrieve basic information of genotype data, e.g. number of SNPs and samples, chromosome names, physical position of SNPs and alleles.
+```{r}
+nscan(gdata) # Number of samples
+```
+```{r}
+nsnp(gdata) # Number of SNPs
+```
+```{r}
+head(getChromosome(gdata)) # Indices of chromosome ID of all markers
+```
+```{r}
+head(getChromosome(gdata, name = TRUE)) # Chromosome names of all markers
+```
+```{r}
+getChromosome(gdata, levels = TRUE) # Unique set of chromosome names
+```
+```{r}
+head(getPosition(gdata)) # Position (bp) of all markers
+```
+```{r}
+head(getAlleleA(gdata)) # Reference allele of all markers
+```
+```{r}
+head(getAlleleB(gdata)) # Alternative allele of all markers
+```
+```{r}
+head(getSnpID(gdata)) # SNP IDs
+```
+```{r}
+head(getScanID(gdata)) # sample IDs
+```
+\  
+
+`getGenotype` is a function in `GWASTools` but works for `gbsrGenotypeData` too.
+```{r}
+g <- getGenotype(gdata) # Genotype calls in which 0, 1, and 2 indicate the number of reference allele.
+```
+
+
+\newpage
+\section{Calculate summary statitics}
+`countGenotype` and `countRead` are class methods of `gbsrGenotypeData` and they summarize genotype counts and read counts both per SNP and per sample. 
+```{r}
+gdata <- countGenotype(gdata)
+gdata <- countRead(gdata)
+```
+\  
+
+The returned values from the methods are stored in `snpAnnot` and `scanAnnot` slots. We cannot extract the data with directly specifing the slots but via the `pData` method.
+```{r}
+gdata@snpAnnot
+```
+```{r}
+gdata@scanAnnot
+```
+```{r}
+head(pData(gdata@snpAnnot), n = 3)
+```
+```{r}
+head(pData(gdata@scanAnnot), n = 3)
+```
+\  
+
+These summary statistics can be visualized via ploting functions.
+With the values obtained via `countGenotype`, we can plot histgrams of missing rate (Figure 1), heterozygosity (Figure 2), reference allele frequency (Figure 3) as shown below.
+```{r fig.cap="Missing rate per marker and per sample.", out.height="35%"}
+histGBSR(gdata, stats = "missing") # Histgrams of missing rate
+```
+```{r fig.cap="Heterozygosity per marker and per sample.", out.height="35%"}
+histGBSR(gdata, stats = "het") # Histgrams of heterozygosity
+```
+```{r fig.cap="Reference allele frequency per marker and per sample.", out.height="35%"}
+histGBSR(gdata, stats = "raf") # Histgrams of reference allele frequency
+```
+\  
+
+With the values obtained via `countRead`, we can plot histgrams of total read depth (Figure 4), allelic read depth (Figure 5), reference read frequency (Figure 6) as shown below.
+```{r fig.cap="Total read depth per marker and per sample.", out.height="35%"}
+histGBSR(gdata, stats = "dp") # Histgrams of total read depth
+```
+```{r fig.cap="Reference read depth per marker and per sample.", out.height="35%"}
+histGBSR(gdata, stats = "ad_ref") # Histgrams of allelic read depth
+```
+```{r fig.cap="Alternative read depth per marker and per sample.", out.height="35%"}
+histGBSR(gdata, stats = "ad_ref") # Histgrams of allelic read depth
+```
+```{r fig.cap="Reference read per marker and per sample.", out.height="35%"}
+histGBSR(gdata, stats = "rrf") # Histgrams of reference allele frequency
+```
+\  
+
+
+In addition to `countGenotype` and `countRead`, we can get mean, sd, and quantile of read counts per marker and per sample. Unlike `countRead`, this function first normalize read counts by dividing each read count of both alleles at a marker in a sample by the total read count of the sample followed by multiplying it by 10^6 to be read counts per million. This normalization allow us to compare read data distributions obtained for the samples without concern for absolute differences in total read counts between samples. 
+This calculation takes a longer time than those by `countGenotype` and `countRead`.
+```{r}
+gdata <- calcReadStats(gdata, q = 0.5)
+```
+\  
+The values specified for the "q" argument are passed to the "quantile" function internally to get quantiles. The "q" argument accepts a numeric vector and has `NULL` as default which let the function return no quantile.  
+\  
+
+To plot those statistics, we can also use `hist`.
+```{r fig.cap="Mean of reference read depth per marker and per sample.", out.height="35%"}
+histGBSR(gdata, stats = "mean_ref") # Histgrams of mean allelic read depth
+```
+```{r fig.cap="Mean of alternative read depth per marker and per sample.", out.height="35%"}
+histGBSR(gdata, stats = "mean_ref") # Histgrams of mean allelic read depth
+```
+```{r fig.cap="SD of reference read depth per marker and per sample.", out.height="35%"}
+histGBSR(gdata, stats = "sd_ref") # Histgrams of standard deviation of read depth
+```
+```{r fig.cap="SD of alternative read depth per marker and per sample.", out.height="35%"}
+histGBSR(gdata, stats = "sd_ref") # Histgrams of standard deviation of read depth
+```
+```{r fig.cap="Quantile of reference read depth per marker and per sample.", out.height="35%"}
+histGBSR(gdata, stats = "qtile_ref", q = 0.5) # Histgrams of quantile of read depth
+```
+```{r fig.cap="Quantile of alternative read depth per marker and per sample.", out.height="35%"}
+histGBSR(gdata, stats = "qtile_ref", q = 0.5) # Histgrams of quantile of read depth
+```
+\  
+
+`plot()` and `pairs()` provide other ways to visualize statistics. `plot()` draws a line plot of a specified statistics per marker along each chromosome. `pairs()` give us a two-dimensional scatter plot to visualize relationship between statistics.
+```{r}
+plotGBSR(gdata, stats = "missing", coord = c(6, 2)) # coord controls the number of rows and columns of facets.
+```
+```{r}
+plotGBSR(gdata, stats = "geno", coord = c(6, 2)) # coord controls the number of rows and columns of facets.
+```
+```{r}
+pairsGBSR(gdata, stats1 = "missing", stats2 = "dp")
+```
+
+\  
+The statistics obtained via `countGenotype`, `countReat`, and `calcReadStats` are sotred in the `snpAnnot` and `scanAnnot` slots. They can be retrieved using getter functions as follows.
+```{r}
+head(getCountGenoRef(gdata, target = "snp")) # Reference genotype count per marker
+head(getCountGenoRef(gdata, target = "scan")) # Reference genotype count per sample
+```
+```{r}
+head(getCountGenoHet(gdata, target = "snp")) # Heterozygote count per marker
+head(getCountGenoHet(gdata, target = "scan")) # Heterozygote count per sample
+```
+```{r}
+head(getCountGenoAlt(gdata, target = "snp")) # Alternative genotype count per marker
+head(getCountGenoAlt(gdata, target = "scan")) # Alternative genotype count per sample
+```
+```{r}
+head(getCountGenoMissing(gdata, target = "snp")) # Missing count per marker
+head(getCountGenoMissing(gdata, target = "scan")) # Missing count per sample
+```
+```{r}
+head(getCountAlleleRef(gdata, target = "snp")) # Reference allele count per marker
+head(getCountAlleleRef(gdata, target = "scan")) # Reference allele count per sample
+```
+```{r}
+head(getCountAlleleAlt(gdata, target = "snp")) # Alternative allele count per marker
+head(getCountAlleleAlt(gdata, target = "scan")) # Alternative allele count per sample
+```
+```{r}
+head(getCountAlleleMissing(gdata, target = "snp")) # Missing allele count per marker
+head(getCountAlleleMissing(gdata, target = "scan")) # Missing allele count per sample
+```
+```{r}
+head(getCountReadRef(gdata, target = "snp")) # Reference read count per marker
+head(getCountReadRef(gdata, target = "scan")) # Reference read count per sample
+```
+```{r}
+head(getCountReadAlt(gdata, target = "snp")) # Alternative read count per marker
+head(getCountReadAlt(gdata, target = "scan")) # Alternative read count per sample
+```
+```{r}
+head(getCountRead(gdata, target = "snp")) # Sum of reference and alternative read counts per marker
+head(getCountRead(gdata, target = "scan")) # Sum of reference and alternative read counts per sample
+```
+```{r}
+head(getMeanReadRef(gdata, target = "snp")) # Mean of reference allele read count per marker
+head(getMeanReadRef(gdata, target = "scan")) # Mean of reference allele read count per sample
+```
+```{r}
+head(getMeanReadAlt(gdata, target = "snp")) # Mean of Alternative allele read count per marker
+head(getMeanReadAlt(gdata, target = "scan")) # Mean of Alternative allele read count per sample
+```
+```{r}
+head(getSDReadRef(gdata, target = "snp")) # SD of reference allele read count per marker
+head(getSDReadRef(gdata, target = "scan")) # SD of reference allele read count per sample
+```
+```{r}
+head(getSDReadAlt(gdata, target = "snp")) # SD of Alternative allele read count per marker
+head(getSDReadAlt(gdata, target = "scan")) # SD of Alternative allele read count per sample
+```
+```{r}
+head(getQtileReadRef(gdata, target = "snp", q = 0.5)) # Quantile of reference allele read count per marker
+head(getQtileReadRef(gdata, target = "scan", q = 0.5)) # Quantile of reference allele read count per sample
+```
+```{r}
+head(getQtileReadAlt(gdata, target = "snp", q = 0.5)) # Quantile of Alternative allele read count per marker
+head(getQtileReadAlt(gdata, target = "scan", q = 0.5)) # Quantile of Alternative allele read count per sample
+```
+```{r}
+head(getMAF(gdata, target = "snp")) # Minor allele frequency per marker
+head(getMAF(gdata, target = "scan")) # Minor allele frequency per sample
+```
+```{r}
+head(getMAC(gdata, target = "snp")) # Minor allele count per marker
+head(getMAC(gdata, target = "scan")) # Minor allele count per sample
+```
+\  
+
+You can get the proportion of each genotype call with `prop = TRUE`.
+```{r}
+head(getCountGenoRef(gdata, target = "snp", prop = TRUE))
+head(getCountGenoHet(gdata, target = "snp", prop = TRUE))
+head(getCountGenoAlt(gdata, target = "snp", prop = TRUE))
+head(getCountGenoMissing(gdata, target = "snp", prop = TRUE))
+```
+\  
+
+The proportion of each allele counts.
+```{r}
+head(getCountAlleleRef(gdata, target = "snp", prop = TRUE))
+head(getCountAlleleAlt(gdata, target = "snp", prop = TRUE))
+head(getCountAlleleMissing(gdata, target = "snp", prop = TRUE))
+```
+\  
+
+The proportion of each allele read counts.
+```{r}
+head(getCountReadRef(gdata, target = "snp", prop = TRUE))
+head(getCountReadAlt(gdata, target = "snp", prop = TRUE))
+```
+
+
+
+\newpage
+\section{Filtering and subsetting data}
+Based on the statistics we obtained, we can filter out less reliable markers and samples using `setSnpFilter` and `setScanFilter`.
+```{r eval=FALSE}
+# Not run
+gdata <- setSnpFilter(
+  id,   # Specify a character vector of snpID to be removed.
+  missing = 1,   # Specify an upper limit of missing rate.
+  het = c(0, 1),   # Specify a lower and an upper limit of heterozygosity rate.
+  mac = 0,   # Specify a lower limit of minor allele count.
+  maf = 0.05,   # Specify a lower limit of minor allele frequency.
+  ad_ref = c(0, Inf),   # Specify a lower and an upper limit of reference allele count.
+  ad_alt = c(0, Inf),   # Specify a lower and an upper limit of alternative allele count.
+  dp = c(0, Inf),   # Specify a lower and an upper limit of total read count.
+  mean_ref = c(0, Inf),   # Specify a lower and an upper limit of mean reference allele count.
+  mean_alt = c(0, Inf),   # Specify a lower and an upper limit of mean alternative allele count.
+  sd_ref = Inf,   # Specify a lower and an upper limit of SD of reference allele count.
+  sd_alt = Inf    # Specify a lower and an upper limit of SD of alternative allele count.
+)
+
+gdata <- setScanFilter(
+  id,   # Specify a character vector of snpID to be removed.
+  missing = 1,   # Specify an upper limit of missing rate.
+  het = c(0, 1),   # Specify a lower and an upper limit of heterozygosity rate.
+  mac = 0,   # Specify a lower limit of minor allele count.
+  maf = 0,   # Specify a lower limit of minor allele frequency.
+  ad_ref = c(0, Inf),   # Specify a lower and an upper limit of reference allele count.
+  ad_alt = c(0, Inf),   # Specify a lower and an upper limit of alternative allele count.
+  dp = c(0, Inf),   # Specify a lower and an upper limit of total read count.
+  mean_ref = c(0, Inf),   # Specify a lower and an upper limit of mean reference allele count.
+  mean_alt = c(0, Inf),   # Specify a lower and an upper limit of mean alternative allele count.
+  sd_ref = Inf,   # Specify a lower and an upper limit of SD of reference allele count.
+  sd_alt = Inf   # Specify a lower and an upper limit of SD of alternative allele count.
+)
+```
+\  
+
+
+`setCallFilter()` is another type of filtering which works on each genotype call. We can replace some genotype calls with missing. If you would like to filter out less reliable genotype calls supported by less than 5 reads, set the arguments as below.
+```{r eval=FALSE}
+gdata <- setCallFilter(gdata, dp_count = c(5, Inf))
+```
+\  
+
+If need to remove genotype calls supported by too many reads, which might be the results of mismapping from repetitive sequences, set as follows.
+```{r eval=FALSE}
+gdata <- setCallFilter(gdata, norm_dp_count = c(0, 1000))
+gdata <- setCallFilter(gdata, norm_ref_count = c(0, 1000), 
+                       norm_alt_count = c(0, 800))
+```
+Usually reference reads and alternative reads show different data distributions. Thus, we can set the different thresholds for them via `norm_ref_count` and `norm_alt_count`. `setCallFilter()` also has arguments `scan_ref_qtile`, `scan_alt_qtile`, `snp_ref_qtile`, and `snp_alt_qtile` to filter out genotype calls based on quantiles of read counts per marker and per sample.
+\  
+
+
+Here, let's filter out calls supported by less than 5 reads and then filter out markers having more than 10% of missing rate.
+```{r}
+gdata <- setCallFilter(gdata, dp_count = c(5, Inf))
+gdata <- setSnpFilter(gdata, missing = 0.1)
+```
+\  
+
+
+In addition to those statistics based filtering functions, `GBScleanR` provides filtering function based on relative marker positions. Markers locating too close each other usually have redundant information, especially if those markers are closer each other than the read length, in which case the markers are supported by completely (or almost) the same set of reads. To select only one marker from those markers, we can sue `thinMarker`. This function selects one marker having the least missing rate from each stretch with the specified length. If some markers have the least missing rate, select the first marker in the stretch.
+
+```{r}
+thinMarker(gdata, range = 150) # Here we select only one marker from each 150 bp stretch.
+```
+\  
+
+
+We can obtain the summary statistics using `countGenotype()`, `countRead()`, and `calcReadStats()` for only the SNPs and samples retained after filtering with the same codes we used before.
+```{r eval= FALSE}
+gdata <- countGenotype(gdata)
+gdata <- countRead(gdata)
+gdata <- calcReadStats(gdata)
+```
+`calcReadStats()` never calculate the normalized read counts again for the filtered data but gets mean, sd, and quantiles from the normalized values of the retained markers of samples.  
+\  
+
+We can check which markers and samples are retained after the filtering using `getValidSnp()` and `getValidScan()`.
+```{r}
+head(getValidSnp(gdata))
+head(getValidScan(gdata))
+```
+\  
+The class methods of `gbsrGenotypeData` basically work with only the markers and samples having `TRUE` in the returned values of `getValidSnp()` and `getValidScan()`, if you don't explicitly specify `valid = FALSE` as an argument of the class methods.
+```{r}
+nsnp(gdata)
+```
+```{r}
+nsnp(gdata, valid = FALSE)
+```
+\  
+
+We can reset filtering as following.
+```{r eval=FALSE}
+gdata <- resetSnpFilters(gdata) # Reset the filter on markers
+gdata <- resetScanFilters(gdata) # Reset the filter on samples
+gdata <- resetCallFilters(gdata) # Reset the filter on calls
+gdata <- resetFilters(gdata) # Reset all filters
+```
+\  
+
+To save the filtered data, we can create the subset GDS file containing only the retained data.
+```{r eval=FALSE}
+subset_gdata <- subsetGDS(gdata,
+                          out_fn = "./data/gbs_nbolf2_subset.gds", 
+                          snp_incl = getValidSnp(gdata),
+                          scan_incl = getValidScan(gdata))
+```
+`out_fn` is the file path of the output GDS file storing the subset data. Users need to specify, for `snp_incl` and `scan_incl`, a logical vector indicating which markers and samples should be included in the subset. The functions `getValidSnp()` and `getValidScan` return a logical vector indicating which markers and samples are retained by `setSnpFilter()` and `setScanFilter()`. `subsetGDS` returns a new `gbsrGenotypeData` object for the subset.  
+
+```{r}
+closeGDS(gdata)
+```
+
+\section{Session information}
+```{r}
+sessionInfo()
+```
+

@@ -1,4 +1,4 @@
-print.GbsrGenotypeData <- function(x, ...){
+print.GbsrGenotypeData <- function(x){
   message('Data in GDS file...')
   message('GDS file name')
   message(x@data@handler$filename)
@@ -225,18 +225,19 @@ gbsrVCF2GDS <- function(vcf_fn,
 #'
 #' @export
 #'
-#' @importClassesFrom GWASTools GenotypeData ScanAnnotationDataFrame SnpAnnotationDataFrame GdsGenotypeReader
-#' @importMethodsFrom GWASTools getSnpVariable
-#'
+#' @importClassesFrom GWASTools GenotypeData ScanAnnotationDataFrame SnpAnnotationDataFrame GdsGenotypeReader 
+#' @importMethodsFrom GWASTools getSnpVariable getSnpAnnotation getScanAnnotation
+#' @importFrom methods new
 #'
 #' @examples
+#' \dontrun{
 #' gds_fn <- gbsrVCF2GDS(vcf_fn = "/path/to/vcf.vcf", out_fn = "/path/to/gds.gds/", force = TRUE)
 #' gdata <- loadGDS(gds_fn = gds_fn, non_autosomes = NULL)
 #'
 #' # If you would like to reload a GDS file.
 #' gdata <- loadGDS(genotypeData = gdata)
+#' }
 #'
-
 loadGDS <- function(gds_fn, non_autosomes=NULL, genotypeData){
   if(missing(genotypeData)){
     message('Loading GDS file.')

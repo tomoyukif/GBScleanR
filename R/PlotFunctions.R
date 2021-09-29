@@ -49,25 +49,27 @@
 #' @import ggplot2
 #'
 #' @examples
-#' # Draw histograms of missing rate, heterozygosity, and reference allele frequency per SNP and per sample.
+#' # Draw histograms of missing rate, heterozygosity, and reference 
+#' # allele frequency per SNP and per sample.
+#' \dontrun{
 #' gdata <- loadGDS("/path/to/GDS.gds")
 #' gdata <- countGenotype(gdata)
 #' hist(gdata, stats = c("missing", "het", "raf"))
 #'
-#' # Draw histograms of 90 percentile values of reference read counts and alternative read counts per SNP and per sample.
+#' # Draw histograms of 90 percentile values of reference read counts 
+#' # and alternative read counts per SNP and per sample.
 #' gdata <- calcReadStats(gdata, q = 0.9)
 #' hist(gdata, stats = c("qtile_ref", "qtile_alt"), q = 0.9)
+#' }
 #'
-#'
-hist.GbsrGenotypeData  <- function(x,
-                                   stats = c("dp", "missing", "het"),
-                                   target = c("snp", "scan"),
-                                   q = 0.5,
-                                   binwidth = NULL,
-                                   color = c(Marker = "darkblue", Sample = "darkblue"),
-                                   fill = c(Marker = "skyblue", Sample = "skyblue"),
-                                   ggargs = NULL,
-                                   ...){
+histGBSR  <- function(x,
+                      stats = c("dp", "missing", "het"),
+                      target = c("snp", "scan"),
+                      q = 0.5,
+                      binwidth = NULL,
+                      color = c(Marker = "darkblue", Sample = "darkblue"),
+                      fill = c(Marker = "skyblue", Sample = "skyblue"),
+                      ggargs = NULL){
   stats_list = c("dp", "ad_ref", "ad_alt", "missing", "het", "raf", "rrf", "mean_ref", "sd_ref", "qtile_ref",
                  "mean_alt", "sd_alt", "qtile_alt",
                  "mq", "fs", "qd", "sor", "mqranksum", "readposranksum", "baseqranksum")
@@ -91,14 +93,14 @@ hist.GbsrGenotypeData  <- function(x,
   } else {
     stats <- match.arg(arg=stats, choices=stats_list, several.ok=TRUE)
   }
-
+  
   for(i in stats){
     if(is.null(binwidth)){
       if(i %in% c("missing", "het", "raf", "rrf")){
         binwidth <- 0.025
       }
     }
-
+    
     df <- .df.maker(x, i, q, target)
     p <- ggplot(df)
     p <- .hist.maker(p, i, binwidth)
@@ -132,6 +134,7 @@ hist.GbsrGenotypeData  <- function(x,
 #' You can draw boxplots of several summary statistics of genotype counts
 #' and read counts per sample and per marker. The "stats" argument can take
 #' the following values:
+#' 
 #' \itemize{
 #' \item{"missing"}{"Proportion of missing genotype calls."},
 #' \item{"het"}{"Proportion of heterozygote calls."},
@@ -164,27 +167,31 @@ hist.GbsrGenotypeData  <- function(x,
 #' values supplied via SNP calling tools like [GATK](https://gatk.broadinstitute.org/hc/en-us).
 #'
 #' @export
+#' 
 #' @import ggplot2
+#' 
 #' @examples
-#' # Draw boxplots of missing rate, heterozygosity, and reference allele frequency per SNP and per sample.
+#' \dontrun{
+#' # Draw boxplots of missing rate, heterozygosity, and reference 
+#' # allele frequency per SNP and per sample.
 #' gdata <- loadGDS("/path/to/GDS.gds")
 #' gdata <- countGenotype(gdata)
 #' boxplot(gdata, stats = c("missing", "het", "raf"))
 #'
-#' # Draw boxplots of 90 percentile values of reference read counts and alternative read counts per SNP and per sample.
+#' # Draw boxplots of 90 percentile values of reference read counts and
+#' # alternative read counts per SNP and per sample.
 #' gdata <- calcReadStats(gdata, q = 0.9)
 #' boxplot(gdata, stats = c("qtile_ref", "qtile_alt"), q = 0.9)
+#' }
 #'
-#'
-boxplot.GbsrGenotypeData   <- function(x,
-                                       stats = "missing",
-                                       target = c("snp", "scan"),
-                                       q = 0.5,
-                                       color = c(Marker = "darkblue", Sample = "darkblue"),
-                                       fill = c(Marker = "skyblue", Sample = "skyblue"),
-                                       ggargs = NULL,
-                                       ...){
-
+boxplotGBSR <- function(x,
+                        stats = "missing",
+                        target = c("snp", "scan"),
+                        q = 0.5,
+                        color = c(Marker = "darkblue", Sample = "darkblue"),
+                        fill = c(Marker = "skyblue", Sample = "skyblue"),
+                        ggargs = NULL){
+  
   stats_list = c("dp", "ad_ref", "ad_alt", "missing", "het", "raf", "rrf", "mean_ref", "sd_ref", "qtile_ref",
                  "mean_alt", "sd_alt", "qtile_alt",
                  "mq", "fs", "qd", "sor", "mqranksum", "readposranksum", "baseqranksum")
@@ -208,7 +215,7 @@ boxplot.GbsrGenotypeData   <- function(x,
   } else {
     stats <- match.arg(arg=stats, choices=stats_list, several.ok=TRUE)
   }
-
+  
   for(i in stats){
     df <- .df.maker(x, i, q, target)
     p <- ggplot(df)
@@ -226,7 +233,8 @@ boxplot.GbsrGenotypeData   <- function(x,
       p <- eval(parse(text = paste0("p + ", ggargs)))
     }
     print(p)
-  }}
+  }
+}
 
 
 #' Draw line plots of specified statistics
@@ -281,27 +289,27 @@ boxplot.GbsrGenotypeData   <- function(x,
 #' @import ggplot2
 #'
 #' @examples
+#' \dontrun{
 #' # Draw line plots of missing rate, heterozygosity, proportion of genotype calls per SNP.
 #' gdata <- loadGDS("/path/to/GDS.gds")
 #' gdata <- countGenotype(gdata)
 #' plot(gdata, stats = c("missing", "het", "raf", "geno"))
 #'
-#' # Draw line plots of 90 percentile values of reference read counts and alternative read counts per SNP and per sample.
+#' # Draw line plots of 90 percentile values of reference read counts and
+#' # alternative read counts per SNP and per sample.
 #' gdata <- calcReadStats(gdata, q = 0.9)
 #' plot(gdata, stats = c("qtile_ref", "qtile_alt"), q = 0.9)
+#' }
 #'
-#'
-plot.GbsrGenotypeData  <- function(x,
-                                   stats = c("dp", "missing", "het"),
-                                   coord = NULL,
-                                   q = 0.5,
-                                   lwd = 0.5,
-                                   binwidth = NULL,
-                                   color = c(Marker = "darkblue", Ref = "darkgreen", Het = "magenta", Alt = "blue"),
-                                   ggargs = NULL,
-                                   plot.missing = FALSE,
-                                   ...){
-
+plotGBSR  <- function(x,
+                      stats = c("dp", "missing", "het"),
+                      coord = NULL,
+                      q = 0.5,
+                      lwd = 0.5,
+                      binwidth = NULL,
+                      color = c(Marker = "darkblue", Ref = "darkgreen", Het = "magenta", Alt = "blue"),
+                      ggargs = NULL){
+  
   stats_list = c("marker","geno", "dp", "ad_ref", "ad_alt", "missing", "het", "raf", "rrf",
                  "mean_ref", "sd_ref", "qtile_ref",
                  "mean_alt", "sd_alt", "qtile_alt",
@@ -327,7 +335,7 @@ plot.GbsrGenotypeData  <- function(x,
   } else {
     stats <- match.arg(arg=stats, choices=stats_list, several.ok=TRUE)
   }
-
+  
   for(i in stats){
     df <- .df.maker(x, i, q, target = "snp", TRUE)
     p <- ggplot(df)
@@ -364,6 +372,7 @@ plot.GbsrGenotypeData  <- function(x,
 #' @param alpha A numeric value \[0-1\] to specify the transparency of dots in a scatter plot.
 #' @param color A named vector "Marker" and "Sample" to specify border color of bins in the histograms.
 #' @param fill A named vector "Marker" and "Sample" to specify fill color of bins in the histograms.`stats = "geno` only requires "Ref", "Het" and "Alt", while others uses the value named "Marker".
+#' @param smooth A logical value to indicate whether draw a smooth line for data points. See also [ggplot2::stat_smooth()].
 #' @param ggargs An expression to be internally passed to a ggplot object to be drawn.
 #'
 #' @details
@@ -405,24 +414,24 @@ plot.GbsrGenotypeData  <- function(x,
 #' @import ggplot2
 #'
 #' @examples
+#' \dontrun{
 #' # Draw scatter plots of missing rate vs heterozygosity.
 #' gdata <- loadGDS("/path/to/GDS.gds")
 #' gdata <- countGenotype(gdata)
 #' plot(gdata, stats1 = "missing", stats2 = "het")
+#' }
 #'
-#'
-pairs.GbsrGenotypeData  <- function(x,
-                                    stats1 = "dp",
-                                    stats2 = "missing",
-                                    target = "snp",
-                                    q = 0.5,
-                                    size = 0.5,
-                                    alpha = 0.8,
-                                    color = c(Marker = "darkblue", Sample = "darkblue"),
-                                    fill = c(Marker = "skyblue", Sample = "skyblue"),
-                                    smooth = FALSE,
-                                    ggargs = NULL,
-                                    ...){
+pairsGBSR  <- function(x,
+                       stats1 = "dp",
+                       stats2 = "missing",
+                       target = "snp",
+                       q = 0.5,
+                       size = 0.5,
+                       alpha = 0.8,
+                       color = c(Marker = "darkblue", Sample = "darkblue"),
+                       fill = c(Marker = "skyblue", Sample = "skyblue"),
+                       smooth = FALSE,
+                       ggargs = NULL){
   stats_list = c("dp", "ad_ref", "ad_alt", "missing", "het", "raf", "rrf", "mean_ref", "sd_ref", "qtile_ref",
                  "mean_alt", "sd_alt", "qtile_alt",
                  "mq", "fs", "qd", "sor", "mqranksum", "readposranksum", "baseqranksum")
@@ -444,11 +453,12 @@ pairs.GbsrGenotypeData  <- function(x,
   }
   stats1 <- match.arg(arg=stats1, choices=stats_list, several.ok=TRUE)
   stats2 <- match.arg(arg=stats2, choices=stats_list, several.ok=TRUE)
-
+  
   df1 <- .df.maker(x, stats1, q, target)
   df2 <- .df.maker(x, stats2, q, target)
   df <- data.frame(val1 = df1$val, val2 = df2$val, target = df1$target)
-
+  
+  val1 <- val2 <- NULL
   p <- ggplot(df)
   p <- .pairs.maker(p, size, alpha)
   p <- p + xlab(.lab.maker(stats1, q)) +
@@ -474,25 +484,27 @@ pairs.GbsrGenotypeData  <- function(x,
 
 # Internal function to build a data.frame passed to ggplot().
 .df.maker <- function(x, stats, q, target, pos = FALSE){
+  Ref <- NULL
+  Missing <- NULL
   if(stats == "geno"){
     snp <- data.frame(Ref = getCountGenoRef(x, target = "snp", prop=TRUE),
-                     Het = getCountGenoHet(x, target = "snp", prop=TRUE),
-                     Alt = getCountGenoAlt(x, target = "snp", prop=TRUE),
-                     Missing = getCountGenoMissing(x, target = "snp", prop=TRUE),
-                     chr = getChromosome(x),
-                     pos = getPosition(x) * 10^-6,
-                     stringsAsFactors=FALSE)
+                      Het = getCountGenoHet(x, target = "snp", prop=TRUE),
+                      Alt = getCountGenoAlt(x, target = "snp", prop=TRUE),
+                      Missing = getCountGenoMissing(x, target = "snp", prop=TRUE),
+                      chr = getChromosome(x),
+                      pos = getPosition(x) * 10^-6,
+                      stringsAsFactors=FALSE)
     if(is.null(snp)){stop(paste0('No data for the statistic: ', stats))}
     snp <- tidyr::pivot_longer(snp, cols = Ref:Missing, names_to="genotype", values_to="val")
     scan <- NULL
-
+    
   } else if(stats == "marker"){
     snp <- data.frame(chr = getChromosome(x),
-                     pos = getPosition(x) * 10^-6,
-                     target = "Marker",
-                     stringsAsFactors=FALSE)
+                      pos = getPosition(x) * 10^-6,
+                      target = "Marker",
+                      stringsAsFactors=FALSE)
     scan <- NULL
-
+    
   } else {
     if("snp" %in% target){
       snp <- switch(stats,
@@ -618,6 +630,7 @@ pairs.GbsrGenotypeData  <- function(x,
 
 # Internal function to draw a histogram.
 .hist.maker <- function(p, stats, binwidth, color, fill){
+  val <- target <- NULL
   p <- p + geom_histogram(mapping = aes(x = val, color = target, fill = target),
                           binwidth = binwidth,
                           boundary = 0) +
@@ -627,6 +640,8 @@ pairs.GbsrGenotypeData  <- function(x,
 
 # Internal function to draw a boxplot.
 .boxplot.maker <- function(p, stats){
+  val <- NULL
+  target <- NULL
   p <- p + geom_histogram(mapping = aes(x = val, color = target)) +
     facet_wrap(~ target, scales = "free")
   return(p)
@@ -634,6 +649,7 @@ pairs.GbsrGenotypeData  <- function(x,
 
 # Internal function to draw a line plot.
 .plot.maker <- function(p, stats, binwidth, lwd, coord){
+  val <- genotype <- target <- pos <- NULL
   if("geno" %in% stats ){
     p <- p + geom_line(mapping = aes(x = pos, y = val, color = genotype, group = genotype), size = lwd) +
       facet_wrap(facets = ~ chr,
@@ -660,6 +676,7 @@ pairs.GbsrGenotypeData  <- function(x,
 
 # Internal function to draw a scatter plot.
 .pairs.maker <- function(p, size, alpha){
+  val1 <- val2 <- target <- NULL
   p <- p + geom_point(mapping = aes(x = val1, y = val2, color = target, fill = target), size = size, alpha = alpha) +
     facet_wrap(~ target, scales = "free")
   return(p)
@@ -684,42 +701,41 @@ plotDosage <- function(x,
                        chr = NULL,
                        ind = NULL,
                        valid_only = TRUE,
-                       dot_fill = "blue",
-                       ...){
-
+                       dot_fill = "blue"){
+  pos <- na <- NULL
   validscan <- getValidScan(x)
   validmarker <- getValidSnp(x)
   if(is.null(ind)){
     ind <- 1:length(validscan)
   }
-
+  
   if(is.null(chr)){
     chr <- rep(TRUE, sum(validmarker))
   }else {
     chr <- getChromosome(x) %in% chr
   }
   sel_marker <- validmarker & chr
-
+  
   parents <- x@scanAnnot$parents[x@scanAnnot$parents != 0]
   if(!is.null(parents)){
     ind <- c(ind[ind %in% parents], ind[!ind %in% parents])
   }
-
+  
   genotype_node <- gdsfmt::index.gdsn(node=x@data@handler, path=x@data@genotypeVar)
-
+  
   for(i in ind){
     if(valid_only & !validscan[i]){
       next()
     }
     id <- getScanID(x, FALSE)[i]
-    sel <- list(1:nScan(x) %in% i, sel_marker)
+    sel <- list(1:nscan(x) %in% i, sel_marker)
     geno <- gdsfmt::readex.gdsn(genotype_node, sel=sel)
-
+    
     df <- data.frame(chr = getChromosome(x)[sel_marker],
                      pos = getPosition(x)[sel_marker],
                      geno = geno)
     df$na <- is.na(geno)
-
+    
     p <- ggplot(data = df, mapping = aes(x = pos * 10^-6,
                                          y = geno,
                                          group = chr,
@@ -733,7 +749,7 @@ plotDosage <- function(x,
       ylab("Reference allele dosage") +
       scale_alpha_manual(values = c(0.3, 0.5), breaks = c(TRUE, FALSE)) +
       scale_fill_manual(values = c("darkgray", dot_fill), breaks = c(TRUE, FALSE))
-
+    
     p <- p +
       facet_wrap(facets = ~ chr,
                  nrow = coord[1],
@@ -764,15 +780,14 @@ plotReadRatio <- function(x,
                           chr = NULL,
                           ind = NULL,
                           valid_only = TRUE,
-                          dot_fill = "blue",
-                          ...){
-
+                          dot_fill = "blue"){
+  pos <- NULL
   validscan <- getValidScan(x)
   validmarker <- getValidSnp(x)
   if(is.null(ind)){
     ind <- 1:length(validscan)
   }
-
+  
   if(is.null(chr)){
     chr <- rep(TRUE, sum(validmarker))
   }else {
@@ -780,38 +795,38 @@ plotReadRatio <- function(x,
   }
   validmarker <- validmarker & chr
   sel_marker <- rep(validmarker, each=2)
-
+  
   parents <- x@scanAnnot$parents[x@scanAnnot$parents != 0]
   if(!is.null(parents)){
     ind <- c(ind[ind %in% parents], ind[!ind %in% parents])
   }
-
+  
   if(x@data@genotypeVar == "genotype.filt"){
     ad_data_node <- gdsfmt::index.gdsn(node=x@data@handler, path="/annotation/format/AD/filt.data")
   } else {
     ad_data_node <- gdsfmt::index.gdsn(node=x@data@handler, path="/annotation/format/AD/data")
   }
-
+  
   for(i in ind){
     if(valid_only & !validscan[i]){
       next()
     }
     id <- getScanID(x, FALSE)[i]
-    sel <- list(1:nScan(x) %in% i, sel_marker)
+    sel <- list(1:nscan(x) %in% i, sel_marker)
     ad <- gdsfmt::readex.gdsn(ad_data_node, sel=sel)
     ref <- ad[c(TRUE, FALSE)]
     alt <- ad[c(FALSE, TRUE)]
-
+    
     if(!is.null(x@snpAnnot$flipped)){
       flipped <- ref[x@snpAnnot$flipped]
       ref[x@snpAnnot$flipped] <- alt[x@snpAnnot$flipped]
       alt[x@snpAnnot$flipped] <- flipped
     }
-
+    
     df <- data.frame(chr = getChromosome(x)[validmarker],
                      pos = getPosition(x)[validmarker],
                      ad = ref / (ref + alt))
-
+    
     p <- ggplot(data = df, mapping = aes(x = pos * 10^-6,
                                          y = ad,
                                          group = chr,
@@ -822,7 +837,7 @@ plotReadRatio <- function(x,
       ylim(0, 1) +
       xlab("Position (Mb)") +
       ylab("Reference allele read ratio")
-
+    
     p <- p +
       facet_wrap(facets = ~ chr,
                  nrow = coord[1],

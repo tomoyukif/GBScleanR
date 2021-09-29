@@ -142,31 +142,10 @@ setMethod("show",
                                            "annotation/format/DP/data"))
 }
 
-#' Write a VCF file based on data in a GDS file
-#'
-#' Write out a VCF file with raw, filtered, or corrected genotype data
-#' stored in a GDS file. The output VCF file contains only the GT filed,
-#' while other annotations, AD, DP and other information will be omitted.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param out_fn A string to specify the path to an output VCF file.
-#' @param node Either one of "raw", "filt", and "cor" to output raw genotype data, filtered genotype data, or corrected genotype data, respectively.
-#' @param valid A logical value to specify whether to output valid markers and samples only or all.
-#' @param out_fmt A character vector to specify which variables in the annotation/format node should be output.
-#' @param out_info A character vector to specify which variables in the annotation/info node should be output.
-#'
-#' @export
-#'
-#' @importFrom SeqArray seqSNP2GDS seqGDS2VCF
-#'
-#' @examples
-#' gdata <- loadGDS("/path/to/GDS.gds")
-#' gdata <- clean(gdata)
-#' gbsrGDS2VCF(gdata, "/path/to/output.vcf", node = "cor")
-#'
+#' @rdname gbsrGDS2VCF
 setMethod("gbsrGDS2VCF",
           "GbsrGenotypeData",
-          function(object, out_fn, node, valid, out_fmt, out_info, ...){
+          function(object, out_fn, node, valid, out_fmt, out_info){
             have_hap <- "estimated.haplotype" %in% gdsfmt::ls.gdsn(object@data@handler)
             suppressMessages(closeGDS(object))
             gds_file <- object@data@filename
@@ -243,18 +222,10 @@ setMethod("gbsrGDS2VCF",
             return(object)
           })
 
-#' Check if a GDS file has been opened or not.
-#'
-#' @param object A GbsrGenotypeData object.
-#'
-#' @return
-#' `TRUE` if the GDS file linked to the input GbsrGenotypeData object has been opened, while `FALSE` if closed.
-#'
-#'@export
-#'
+#' @rdname isOpenGDS
 setMethod("isOpenGDS",
           "GbsrGenotypeData",
-          function(object, ...){
+          function(object){
             tryout <- try(gdsfmt::openfn.gds(filename = object@data@filename), silent=TRUE)
             if(inherits(tryout, "gds.class")){
               gdsfmt::closefn.gds(tryout)
@@ -269,34 +240,19 @@ setMethod("isOpenGDS",
             }
           })
 
-#' Close the connection to the GDS file
-#'
-#' Close the connection to the GDS file linked to the given GbsrGenotypeData object.
-#'
-#' @param object A GbsrGenotypeData object.
-#'
-#'@export
-#'
+#' @rdname closeGDS
 setMethod("closeGDS",
           "GbsrGenotypeData",
-          function(object, ...){
+          function(object){
             gdsfmt::closefn.gds(object@data@handler)
             message('The connection to the GDS file was closed.')
           })
 
-#' Write out the information stored in the SnpAnnotationDataSet slot
-#'
-#' All the data stored in the SnpAnnotatoinDataSet slot of the GbsrGenotypeData
-#' object can be saved in the GDS file linked to the given GbsrGenotypeData object.
-#' You can load the saved data using [loadSnpAnnot()].
-#'
-#' @param object A GbsrGenotypeData object
-#'
-#' @export
-#'
+#' @rdname saveSnpAnnot
+#' @importFrom Biobase pData
 setMethod("saveSnpAnnot",
           "GbsrGenotypeData",
-          function(object, ...){
+          function(object){
             new_node <- gdsfmt::add.gdsn(node=object@data@handler,
                                          name="snpAnnot",
                                          val=pData(object@snpAnnot),
@@ -305,19 +261,11 @@ setMethod("saveSnpAnnot",
             gdsfmt::readmode.gdsn(node=new_node)
           })
 
-#' Write out the information stored in the ScanAnnotationDataSet slot
-#'
-#' All the data stored in the ScanAnnotationDataSet slot of the GbsrGenotypeData
-#' object can be saved in the GDS file linked to the given GbsrGenotypeData object.
-#' You can load the saved data using [loadSnpAnnot()].
-#'
-#' @param object A GbsrGenotypeData object
-#'
-#'@export
-#'
+#' @rdname saveScanAnnot
+#' @importFrom Biobase pData
 setMethod("saveScanAnnot",
           "GbsrGenotypeData",
-          function(object, ...){
+          function(object){
             new_node <- gdsfmt::add.gdsn(node=object@data@handler,
                                          name="scanAnnot",
                                          val=pData(object@scanAnnot),
@@ -326,19 +274,11 @@ setMethod("saveScanAnnot",
             gdsfmt::readmode.gdsn(node=new_node)
           })
 
-#' Load the stored SnpAnnotationDataSet information
-#'
-#' All the data stored in the SnpAnnotatoinDataSet slot of the GbsrGenotypeData
-#' object can be saved in the GDS file linked to the given GbsrGenotypeData object via [saveSnpAnnot()].
-#' You can load the saved data using this function.
-#'
-#' @param object A GbsrGenotypeData object
-#'
-#' @export
-#'
+#' @rdname loadSnpAnnot
+#' @importFrom Biobase pData<-
 setMethod("loadSnpAnnot",
           "GbsrGenotypeData",
-          function(object, ...){
+          function(object){
             ls_gdsn <- snpAnnot_node <- gdsfmt::ls.gdsn(node=object@data@handler)
             if("snpAnnot" %in% ls_gdsn){
               snpAnnot_node <- gdsfmt::index.gdsn(node=object@data@handler,
@@ -355,19 +295,11 @@ setMethod("loadSnpAnnot",
             return(object)
           })
 
-#' Load the stored ScanAnnotationDataSet information
-#'
-#' All the data stored in the ScanAnnotationDataSet slot of the GbsrGenotypeData
-#' object can be saved in the GDS file linked to the given GbsrGenotypeData object via [saveScanAnnot()].
-#' You can load the saved data using this function.
-#'
-#' @param object A GbsrGenotypeData object
-#'
-#' @export
-#'
+#' @rdname loadScanAnnot
+#' @importFrom Biobase pData<-
 setMethod("loadScanAnnot",
           "GbsrGenotypeData",
-          function(object, ...){
+          function(object){
             ls_gdsn <- snpAnnot_node <- gdsfmt::ls.gdsn(node=object@data@handler)
             if("scanAnnot" %in% ls_gdsn){
               scanAnnot_node <- gdsfmt::index.gdsn(node=object@data@handler,
@@ -384,27 +316,10 @@ setMethod("loadScanAnnot",
             return(object)
           })
 
-#' Return the number of SNPs.
-#'
-#' This function returns the number of SNPs recorded in the GDS file
-#' connected to the given GbsrGenotypeData object.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param valid A logical value. See details.
-#'
-#' @details
-#' If `valid = TRUE`, the number of SNPs which are labeled `TRUE` in
-#' the SnpAnnotationDataSet slot will be returned. You need the number
-#' of over all SNPs, set `valid = FALSE`. [getValidSnp()] tells you
-#' which markers are valid.
-#'
-#' @seealso [getValidSnp()]
-#'
-#' @export
-#'
+#' @rdname nsnp
 setMethod("nsnp",
           "GbsrGenotypeData",
-          function(object, valid=TRUE, ...){
+          function(object, valid=TRUE){
             if(valid){
               out <- sum(getValidSnp(object))
             } else {
@@ -413,27 +328,10 @@ setMethod("nsnp",
             return(out)
           })
 
-#' Return the number of scans (samples).
-#'
-#' This function returns the number of samples recorded in the GDS file
-#' connected to the given GbsrGenotypeData object.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param valid A logical value. See details.
-#'
-#' @details
-#' If `valid = TRUE`, the number of samples which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. You need
-#' the number of over all samples, set `valid = FALSE`.
-#' [getValidSnp()] tells you which samples are valid.
-#'
-#' @seealso [getValidSnp()]
-#'
-#'@export
-#'
+#' @rdname nscan
 setMethod("nscan",
           "GbsrGenotypeData",
-          function(object, valid=TRUE, ...){
+          function(object, valid=TRUE){
             if(valid){
               out <- sum(getValidScan(object))
             } else {
@@ -442,43 +340,17 @@ setMethod("nscan",
             return(out)
           })
 
-#' Return a logical vector indicating which are valid SNP markers.
-#'
-#' @param object A GbsrGenotypeData object.
-#'
-#' @seealso [setValidSnp()]
-#'
-#' @export
-#'
+#' @rdname getValidSnp
 setMethod("getValidSnp",
           "GbsrGenotypeData",
-          function(object, ...){
+          function(object){
             return(object@snpAnnot$validMarker)
           })
 
-#' Manually set valid SNP markers.
-#'
-#' If you need manually set valid and invalid SNP markers, you can do it via this function,
-#' e.g in the case you conducted a filtering on SNP markers manually by your self.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param new A logical vector of the same length with the over all number of the SNP markers.
-#' @param update A logical vector of the same length with the currently valid SNP markers.
-#'
-#' @details
-#' To over write the current validity information, give a logical vector to `new`.
-#' On the other hand, a logical vector specified to `update` will be used to
-#' update validity information of the currently valid SNP markers. If you gave
-#' a vector for both argument, only the vector passed to `new` will be used to
-#' over write the validity information.
-#'
-#' @seealso [setSnpFilter()] to filter out SNP markers based on some summary statistics.
-#'
-#' @export
-#'
+#' @rdname setValidSnp
 setMethod("setValidSnp",
           "GbsrGenotypeData",
-          function(object, new, update, ...){
+          function(object, new, update){
             if(!missing(new)){
               if(any(is.na(new))){
                 stop('NA is not allowed for a logical vector "new".')
@@ -494,17 +366,10 @@ setMethod("setValidSnp",
             return(object)
           })
 
-#' Return a logical vector indicating which are valid scans (samples).
-#'
-#' @param object A GbsrGenotypeData object.
-#'
-#' @seealso [setValidScan()]
-#'
-#' @export
-#'
+#' @rdname getValidScan
 setMethod("getValidScan",
           "GbsrGenotypeData",
-          function(object, parents = FALSE, ...){
+          function(object, parents = FALSE){
             if(parents == "only"){
               return(object@scanAnnot$parents != 0)
             }
@@ -517,29 +382,10 @@ setMethod("getValidScan",
             }
           })
 
-#' Manually set valid scans (samples).
-#'
-#' If you need manually set valid and invalid samples, you can do it via this function,
-#' e.g in the case you conducted a filtering on samples manually by your self.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param new A logical vector of the same length with the over all number of the samples.
-#' @param update A logical vector of the same length with the currently valid samples.
-#'
-#' @details
-#' To over write the current validity information, give a logical vector to `new`.
-#' On the other hand, a logical vector specified to `update` will be used to
-#' update validity information of the currently valid samples. If you gave
-#' a vector for both argument, only the vector passed to `new` will be used to
-#' over write the validity information.
-#'
-#' @seealso [setScanFilter()] to filter out samples based on some summary statistics
-#'
-#' @export
-#'
+#' @rdname setValidScan
 setMethod("setValidScan",
           "GbsrGenotypeData",
-          function(object, new, update, ...){
+          function(object, new, update){
             if(!missing(update)){
               if(any(is.na(update))){
                 stop('NA is not allowed for a logical vector "update".')
@@ -556,26 +402,24 @@ setMethod("setValidScan",
           })
 
 # This method is internally used.
-setMethod("setFlipped",
-          "GbsrGenotypeData",
-          function(object, flipped, ...){
-            if(any(is.na(flipped))){
-              stop('NA is not allowed for a logical vector "flipped".')
-            }
-            valid_snp <- getValidSnp(object)
-            if(length(valid_snp) == length(flipped)){
-              object@snpAnnot$flipped <- flipped
-            } else {
-              if(nsnp(object) == length(flipped)){
-                tmp_flipped <- rep(FALSE, nsnp(object, valid=FALSE))
-                tmp_flipped[valid_snp] <- flipped
-                object@snpAnnot$flipped <- tmp_flipped
-              } else {
-                stop('The length of "flipped" does not match with the number of SNPs.')
-              }
-            }
-            return(object)
-          })
+.setFlipped <- function(object, flipped){
+  if(any(is.na(flipped))){
+    stop('NA is not allowed for a logical vector "flipped".')
+  }
+  valid_snp <- getValidSnp(object)
+  if(length(valid_snp) == length(flipped)){
+    object@snpAnnot$flipped <- flipped
+  } else {
+    if(nsnp(object) == length(flipped)){
+      tmp_flipped <- rep(FALSE, nsnp(object, valid=FALSE))
+      tmp_flipped[valid_snp] <- flipped
+      object@snpAnnot$flipped <- tmp_flipped
+    } else {
+      stop('The length of "flipped" does not match with the number of SNPs.')
+    }
+  }
+  return(object)
+}
 
 # Internally used function to flip genotype data based on the flipped marker information.
 # Flipped markers are markers where the alleles expected as reference allele are called as
@@ -626,33 +470,10 @@ setMethod("setFlipped",
   gdsfmt::readmode.gdsn(gdsfmt::index.gdsn(ad, var))
 }
 
-#' Flip genotype, allele information, and allele read counts of the flipped SNP markers.
-#'
-#' Genotype data, allele information, and allele read counts to be the expected reference
-#' allele as actually reference allele.
-#'
-#' @param object A GbsrGenotypeData object.
-#'
-#' @details
-#' Flipped markers are markers where the alleles expected as reference allele are called as
-#' alternative allele. If you specify two parents in the `parents` argument of
-#' [setParents()] with `flip = TRUE`, `bi = TRUE`, and `homo = TRUE`, the alleles found
-#' in the parent specified as the first element to the `parents` argument are supposed as
-#' reference alleles of the markers. If the "expected" reference alleles are not actually
-#' called as reference alleles but alternative alleles in the given data. [setParents()] will
-#' automatically labels those markers "flipped". The SnpAnnotatoinDataSet slot sores this
-#' information and accessible via [getFlipped()] which gives you a logical vector
-#' indicating which markers are labeled as flipped `TRUE` or not flipped `FALSE`.
-#' [haveFlipped()] just tells you whether the SnpAnnotatoinDataSet slot has
-#' the information of flipped markers or not.
-#'
-#' @seealso [setParents()], [getFlipped()], and [haveFlipped()].
-#'
-#' @export
-#'
+#' @rdname flipData
 setMethod("flipData",
           "GbsrGenotypeData",
-          function(object, ...){
+          function(object){
             if(!haveFlipped(object)){
               stop('Nothing to flip.')
             }
@@ -690,30 +511,10 @@ setMethod("flipData",
           })
 
 
-#' Get a logical vector indicating flipped SNP markers.
-#'
-#' @param object A GbsrGenotypeData object.
-#'
-#' @details
-#' Flipped markers are markers where the alleles expected as reference allele are called as
-#' alternative allele. If you specify two parents in the `parents` argument of
-#' [setParents()] with `flip = TRUE`, `bi = TRUE`, and `homo = TRUE`, the alleles found
-#' in the parent specified as the first element to the `parents` argument are supposed as
-#' reference alleles of the markers. If the "expected" reference alleles are not actually
-#' called as reference alleles but alternative alleles in the given data. [setParents()] will
-#' automatically labels those markers "flipped". The SnpAnnotatoinDataSet slot sores this
-#' information and accessible via [getFlipped()] which gives you a logical vector
-#' indicating which markers are labeled as flipped `TRUE` or not flipped `FALSE`.
-#' [haveFlipped()] just tells you whether the SnpAnnotatoinDataSet slot has
-#' the information of flipped markers or not.
-#'
-#' @seealso [setParents()] and [haveFlipped()].
-#'
-#' @export
-#'
+#' @rdname getFlipped
 setMethod("getFlipped",
           "GbsrGenotypeData",
-          function(object, valid=TRUE, ...){
+          function(object, valid=TRUE){
             out <- object@snpAnnot$flipped
             if(is.null(out)){
               message('No data of flipped genotype markers.')
@@ -726,57 +527,17 @@ setMethod("getFlipped",
           })
 
 
-#' Get a logical value indicating flipped SNP markers whether information exists.
-#'
-#' @param object A GbsrGenotypeData object.
-#'
-#' @details
-#' Flipped markers are markers where the alleles expected as reference allele are called as
-#' alternative allele. If you specify two parents in the `parents` argument of
-#' [setParents()] with `flip = TRUE`, `bi = TRUE`, and `homo = TRUE`, the alleles found
-#' in the parent specified as the first element to the `parents` argument are supposed as
-#' reference alleles of the markers. If the "expected" reference alleles are not actually
-#' called as reference alleles but alternative alleles in the given data. [setParents()] will
-#' automatically labels those markers "flipped". The SnpAnnotatoinDataSet slot sores this
-#' information and accessible via [getFlipped()] which gives you a logical vector
-#' indicating which markers are labeled as flipped `TRUE` or not flipped `FALSE`.
-#' [haveFlipped()] just tells you whether the SnpAnnotatoinDataSet slot has
-#' the information of flipped markers or not.
-#'
-#' @seealso [setParents()] and [getFlipped()].
-#'
-#' @export
-#'
+#' @rdname haveFlipped
 setMethod("haveFlipped",
           "GbsrGenotypeData",
-          function(object, ...){
+          function(object){
             return(!is.null(object@snpAnnot$flipped))
           })
 
-#' Get read count data.
-#'
-#' Read counts for reference allele and alternative allele are retrieved
-#' from the GDS file linked to the given GbsrGenotypeData object.
-#'
-#' @param object A gbsrGenotypeData object.
-#' @param chr A integer vector of indexes indicating chromosomes to get read count data.
-#' @param node Either of "raw" and "filt". See details.
-#' @param parents A logical value or "only" to include data for parents or to get data only for parents.
-#'
-#' @details
-#' Read count data can be obtained from the "annotation/format/AD/data" node or the
-#' "annotation/format/AD/filt.data" node of the GDS file with `node = "raw"` or
-#' `node = "filt"`, respectively. The [setCallFilter()] function generate filtered
-#' read count data in the "annotation/format/AD/filt.data" node which can be accessed as
-#' mentioned above.
-#'
-#' @seealso [setCallFilter()]
-#'
-#' @export
-#'
+#' @rdname getRead
 setMethod("getRead",
           "GbsrGenotypeData",
-          function(object, chr, node, parents, ...){
+          function(object, chr, node, parents){
             ad_gdsn <- gdsfmt::index.gdsn(object@data@handler, "annotation/format/AD")
             ls_gdsn <- gdsfmt::ls.gdsn(ad_gdsn)
             if(node == "filt" & "filt.data" %in% ls_gdsn){
@@ -814,32 +575,11 @@ setMethod("getRead",
             return(list(ref = ref, alt = alt))
           })
 
-
-#' Get genotype call data.
-#'
-#' Genotype calls are retrieved from the GDS file linked to the given
-#' GbsrGenotypeData object.
-#'
-#' @param object A gbsrGenotypeData object.
-#' @param chr A integer vector of indexes indicating chromosomes to get read count data.
-#' @param node Either of "raw", "filt", and "cor. See details.
-#' @param parents A logical value or "only" to include data for parents or to get data only for parents.
-#'
-#' @details
-#' Genotype call data can be obtained from the "genotype" node, the "filt.genotype"
-#' node, or the "corrected.genotype" node of the GDS file with `node = "raw"`,
-#' `node = "filt"`, or `node = "raw"`, respectively. If `node = "parents`, the data in the "parents.genotype" node will be returned. The "parents.genotype" node stores phased parental genotypes estimated by the [clean()] function.
-#' The [setCallFilter()] function generate filtered genotype call data in the
-#' "filt.genotype" node which can be accessed as mentioned above. On the other hand, the
-#' "corrected.genotype" node can be generated via the [clean()] function.
-#'
-#' @seealso [setCallFilter()] and [clean()]
-#'
-#' @export
-#'
+ 
+#' @rdname getGenotype
 setMethod("getGenotype",
           "GbsrGenotypeData",
-          function(object, chr, node, parents, ...){
+          function(object, chr, node, parents){
             ls_gdsn <- gdsfmt::ls.gdsn(object@data@handler)
             path <- NULL
             if(node == "parents"){
@@ -900,27 +640,10 @@ setMethod("getGenotype",
           })
 
 
-#' Get haplotype call data.
-#'
-#' Haplotype calls are retrieved from the GDS file linked to the given
-#' GbsrGenotypeData object.
-#'
-#' @param object A gbsrGenotypeData object.
-#' @param chr A integer vector of indexes indicating chromosomes to get read count data.
-#' @param parents A logical value or "only" to include data for parents or to get data only for parents.
-#'
-#' @details
-#' Haplotype call data can be obtained from the "estimated.haplotype" node of
-#' the GDS file which can be generated via the [clean()] function. Thus, this function
-#' is valid only after having executed [clean()].
-#'
-#' @seealso [clean()]
-#'
-#' @export
-#'
+#' @rdname getHaplotype
 setMethod("getHaplotype",
           "GbsrGenotypeData",
-          function(object, chr, parents, ...){
+          function(object, chr, parents){
             ls_gdsn <- gdsfmt::ls.gdsn(object@data@handler)
             if("estimated.haplotype" %in% ls_gdsn){
               path <- "estimated.haplotype"
@@ -947,31 +670,10 @@ setMethod("getHaplotype",
             return(haplotype)
           })
 
-#' Obtain chromosome information of each SNP marker
-#'
-#' This function returns indexes or names of chromsomes of each SNP or just a
-#' set of unique chromosome names.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param valid A logical value. See details.
-#' @param levels A logical value. See details.
-#' @param name A logical value. See details.
-#'
-#' @details
-#' A GDS file created via GBScleanR stores chromosome names as sequential integers
-#' from 1 to N, where N is the number of chromosomes. This function returns those
-#' indexes as default. If you need actual names of the chromosomes, set `name = TRUE`.
-#' `levels = TRUE` gives you only unique chromosome names with length N.
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
-#'
+#' @rdname getChromosome
 setMethod("getChromosome",
           "GbsrGenotypeData",
-          function(object, valid=TRUE, levels=FALSE, name=FALSE, ...){
+          function(object, valid=TRUE, levels=FALSE, name=FALSE){
             if(name){
               out <- object@snpAnnot$chromosome.name
             } else {
@@ -987,23 +689,10 @@ setMethod("getChromosome",
           })
 
 
-#' Obtain physical position information of each SNP marker
-#'
-#' This function returns physical positions of SNP markers.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param valid A logical value. See details.
-#'
-#' @details
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
+#' @rdname getPosition
 setMethod("getPosition",
           "GbsrGenotypeData",
-          function(object, valid=TRUE, ...){
+          function(object, valid=TRUE){
             out <- object@snpAnnot$position
             if(valid){
               out <- out[getValidSnp(object)]
@@ -1011,23 +700,10 @@ setMethod("getPosition",
             return(out)
           })
 
-#' Obtain reference allele information of each SNP marker
-#'
-#' This function returns reference alleles, either of A, T, G, and C, of SNP markers.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param valid A logical value. See details.
-#'
-#' @details
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
+#' @rdname getAlleleA
 setMethod("getAlleleA",
           "GbsrGenotypeData",
-          function(object, valid=TRUE, ...){
+          function(object, valid=TRUE){
             out <- object@snpAnnot$alleleA
             if(haveFlipped(object)){
               flipped <- getFlipped(object, valid = FALSE)
@@ -1040,23 +716,10 @@ setMethod("getAlleleA",
             return(out)
           })
 
-#' Obtain alternative allele information of each SNP marker
-#'
-#' This function returns alternative alleles, either of A, T, G, and C, of SNP markers.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param valid A logical value. See details.
-#'
-#' @details
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
+#' @rdname getAlleleB
 setMethod("getAlleleB",
           "GbsrGenotypeData",
-          function(object, valid=TRUE, ...){
+          function(object, valid=TRUE){
             out <- object@snpAnnot$alleleB
             if(haveFlipped(object)){
               flipped <- getFlipped(object, valid = FALSE)
@@ -1069,23 +732,10 @@ setMethod("getAlleleB",
             return(out)
           })
 
-#' Obtain SNP ID
-#'
-#' This function returns SNP ID of SNP markers.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param valid A logical value. See details.
-#'
-#' @details
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
+#' @rdname getSnpID
 setMethod("getSnpID",
           "GbsrGenotypeData",
-          function(object, valid=TRUE, ...){
+          function(object, valid=TRUE){
             out <- object@snpAnnot$snpID
             if(valid){
               out <- out[getValidSnp(object)]
@@ -1093,23 +743,10 @@ setMethod("getSnpID",
             return(out)
           })
 
-#' Obtain scan (sample) ID
-#'
-#' This function returns scan (sample) ID.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param valid A logical value. See details.
-#'
-#' @details
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
+#' @rdname getScanID
 setMethod("getScanID",
           "GbsrGenotypeData",
-          function(object, valid=TRUE, ...){
+          function(object, valid=TRUE){
             out <- object@scanAnnot$scanID
             if(valid){
               out <- out[getValidScan(object)]
@@ -1117,25 +754,10 @@ setMethod("getScanID",
             return(out)
           })
 
-#' Obtain ploidy information of each SNP marker
-#'
-#' This function returns ploidy of each SNP marker. The ploidy of all the markers in
-#' a dataset is a same value and the current implementation of GBScleanR only works
-#' with data having ploidy = 2 for all markers.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param valid A logical value. See details.
-#'
-#' @details
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
+#' @rdname getPloidy
 setMethod("getPloidy",
           "GbsrGenotypeData",
-          function(object, valid=TRUE, ...){
+          function(object, valid=TRUE){
             out <- object@snpAnnot$ploidy
             if(valid){
               out <- out[getValidSnp(object)]
@@ -1143,25 +765,10 @@ setMethod("getPloidy",
             return(out)
           })
 
-#' Obtain information stored in the "annotation/info" node
-#'
-#' The "annotation/info" node stores annotation infromation of markers obtained
-#' via SNP calling tools like bcftools and GATK.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param var A string to indicate which annotation info should be retrieved.
-#' @param valid A logical value. See details.
-#'
-#' @details
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
+#' @rdname getInfo
 setMethod("getInfo",
           "GbsrGenotypeData",
-          function(object, var, valid=TRUE, ...){
+          function(object, var, valid=TRUE){
             path <- paste0("annotation/info/", var)
             ls_gdsn <- snpAnnot_node <- gdsfmt::ls.gdsn(node=object@data@handler,
                                                         recursive=TRUE,
@@ -1182,25 +789,10 @@ setMethod("getInfo",
             return(out)
           })
 
-#' Obtain total reference read counts per SNP or per scan (sample)
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param target Either of "snp" and "scan".
-#' @param valid A logical value. See details.
-#' @param prop A logical value whether to return values as proportions of total reference read counts in total read counts per SNP or not.
-#'
-#' @details
-#' You need to execute [countRead()] to calculate sumaary statisticsto be
-#' obtained via this function.
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
+#' @rdname getCountReadRef
 setMethod("getCountReadRef",
           "GbsrGenotypeData",
-          function(object, target="snp", valid=TRUE, prop=FALSE, ...){
+          function(object, target="snp", valid=TRUE, prop=FALSE){
             if(target == "snp"){
               out <- object@snpAnnot$countReadRef
               if(is.null(out)) {return(NULL)}
@@ -1223,25 +815,10 @@ setMethod("getCountReadRef",
             return(out)
           })
 
-#' Obtain total alternative read counts per SNP or per scan (sample)
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param target Either of "snp" and "scan".
-#' @param valid A logical value. See details.
-#' @param prop A logical value whether to return values as proportions of total alternative read counts in total read counts per SNP or not.
-#'
-#' @details
-#' You need to execute [countRead()] to calculate sumaary statisticsto be
-#' obtained via this function.
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
+#' @rdname getCountReadAlt
 setMethod("getCountReadAlt",
           "GbsrGenotypeData",
-          function(object, target="snp", valid=TRUE, prop=FALSE, ...){
+          function(object, target="snp", valid=TRUE, prop=FALSE){
             if(target == "snp"){
               out <- object@snpAnnot$countReadAlt
               if(is.null(out)) {return(NULL)}
@@ -1264,24 +841,10 @@ setMethod("getCountReadAlt",
             return(out)
           })
 
-#' Obtain total read counts per SNP or per scan (sample)
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param target Either of "snp" and "scan".
-#' @param valid A logical value. See details.
-#'
-#' @details
-#' You need to execute [countRead()] to calculate sumaary statisticsto be
-#' obtained via this function.
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
+#' @rdname getCountRead
 setMethod("getCountRead",
           "GbsrGenotypeData",
-          function(object, target="snp", valid=TRUE, ...){
+          function(object, target="snp", valid=TRUE){
             if(target == "snp"){
               out1 <- getCountReadRef(object, "snp", prop=FALSE, valid=valid)
               out2 <- getCountReadAlt(object, "snp", prop=FALSE, valid=valid)
@@ -1296,25 +859,10 @@ setMethod("getCountRead",
             return(out)
           })
 
-#' Obtain total reference genotype counts per SNP or per scan (sample)
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param target Either of "snp" and "scan".
-#' @param prop A logical value whether to return values as proportions of total reference genotype counts to total non missing genotype counts or not.
-#' @param valid A logical value. See details.
-#'
-#' @details
-#' You need to execute [countGenotype()] to calculate sumaary statisticsto be
-#' obtained via this function.
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
+#' @rdname getCountGenoRef
 setMethod("getCountGenoRef",
           "GbsrGenotypeData",
-          function(object, target="snp", valid=TRUE, prop=FALSE, ...){
+          function(object, target="snp", valid=TRUE, prop=FALSE){
             if(target == "snp"){
               out <- object@snpAnnot$countGenoRef
               if(is.null(out)) {return(NULL)}
@@ -1339,25 +887,10 @@ setMethod("getCountGenoRef",
             return(out)
           })
 
-#' Obtain total heterozygote counts per SNP or per scan (sample)
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param target Either of "snp" and "scan".
-#' @param prop A logical value whether to return values as proportions of total heterozygote counts to total non missing genotype counts or not.
-#' @param valid A logical value. See details.
-#'
-#' @details
-#' You need to execute [countGenotype()] to calculate sumaary statisticsto be
-#' obtained via this function.
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
+#' @rdname getCountGenoHet
 setMethod("getCountGenoHet",
           "GbsrGenotypeData",
-          function(object, target="snp", valid=TRUE, prop=FALSE, ...){
+          function(object, target="snp", valid=TRUE, prop=FALSE){
             if(target == "snp"){
               out <- object@snpAnnot$countGenoHet
               if(is.null(out)) {return(NULL)}
@@ -1382,25 +915,10 @@ setMethod("getCountGenoHet",
             return(out)
           })
 
-#' Obtain total alternative genotype counts per SNP or per scan (sample)
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param target Either of "snp" and "scan".
-#' @param prop A logical value whether to return values as proportions of total alternative genotype counts to total non missing genotype counts or not.
-#' @param valid A logical value. See details.
-#'
-#' @details
-#' You need to execute [countGenotype()] to calculate sumaary statisticsto be
-#' obtained via this function.
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
+#' @rdname getCountGenoAlt
 setMethod("getCountGenoAlt",
           "GbsrGenotypeData",
-          function(object, target="snp", valid=TRUE, prop=FALSE, ...){
+          function(object, target="snp", valid=TRUE, prop=FALSE){
             if(target == "snp"){
               out <- object@snpAnnot$countGenoAlt
               if(is.null(out)) {return(NULL)}
@@ -1425,25 +943,10 @@ setMethod("getCountGenoAlt",
             return(out)
           })
 
-#' Obtain total missing genotype counts per SNP or per scan (sample)
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param target Either of "snp" and "scan".
-#' @param prop A logical value whether to return values as proportions of total missing genotype counts to the total genotype calls or not.
-#' @param valid A logical value. See details.
-#'
-#' @details
-#' You need to execute [countGenotype()] to calculate sumaary statisticsto be
-#' obtained via this function.
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
+#' @rdname getCountGenoMissing
 setMethod("getCountGenoMissing",
           "GbsrGenotypeData",
-          function(object, target="snp", valid=TRUE, prop=FALSE, ...){
+          function(object, target="snp", valid=TRUE, prop=FALSE){
             if(target == "snp"){
               out <- object@snpAnnot$countGenoMissing
               if(is.null(out)) {return(NULL)}
@@ -1466,25 +969,10 @@ setMethod("getCountGenoMissing",
             return(out)
           })
 
-#' Obtain total reference allele counts per SNP or per scan (sample)
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param target Either of "snp" and "scan".
-#' @param prop A logical value whether to return values as proportions of total reference allele counts to total non missing allele counts or not.
-#' @param valid A logical value. See details.
-#'
-#' @details
-#' You need to execute [countGenotype()] to calculate sumaary statisticsto be
-#' obtained via this function.
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
+#' @rdname getCountAlleleRef
 setMethod("getCountAlleleRef",
           "GbsrGenotypeData",
-          function(object, target="snp", valid=TRUE, prop=FALSE, ...){
+          function(object, target="snp", valid=TRUE, prop=FALSE){
             if(target == "snp"){
               out <- object@snpAnnot$countAlleleRef
               if(is.null(out)) {return(NULL)}
@@ -1509,25 +997,10 @@ setMethod("getCountAlleleRef",
             return(out)
           })
 
-#' Obtain total alternative allele counts per SNP or per scan (sample)
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param target Either of "snp" and "scan".
-#' @param prop A logical value whether to return values as proportions of total alternative allele counts to total non missing allele counts or not.
-#' @param valid A logical value. See details.
-#'
-#' @details
-#' You need to execute [countGenotype()] to calculate sumaary statisticsto be
-#' obtained via this function.
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
+#' @rdname getCountAlleleAlt
 setMethod("getCountAlleleAlt",
           "GbsrGenotypeData",
-          function(object, target="snp", valid=TRUE, prop=FALSE, ...){
+          function(object, target="snp", valid=TRUE, prop=FALSE){
             if(target == "snp"){
               out <- object@snpAnnot$countAlleleAlt
               if(is.null(out)) {return(NULL)}
@@ -1552,25 +1025,10 @@ setMethod("getCountAlleleAlt",
             return(out)
           })
 
-#' Obtain total missing allele counts per SNP or per scan (sample)
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param target Either of "snp" and "scan".
-#' @param prop A logical value whether to return values as proportions of total missing allele counts to the total allele number or not.
-#' @param valid A logical value. See details.
-#'
-#' @details
-#' You need to execute [countGenotype()] to calculate sumaary statisticsto be
-#' obtained via this function.
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
+#' @rdname getCountAlleleMissing
 setMethod("getCountAlleleMissing",
           "GbsrGenotypeData",
-          function(object, target="snp", valid=TRUE, prop=FALSE, ...){
+          function(object, target="snp", valid=TRUE, prop=FALSE){
             if(target == "snp"){
               out <- object@snpAnnot$countAlleleMissing
               if(is.null(out)) {return(NULL)}
@@ -1593,24 +1051,10 @@ setMethod("getCountAlleleMissing",
             return(out)
           })
 
-#' Obtain mean values of total reference read counts per SNP or per scan (sample)
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param target Either of "snp" and "scan".
-#' @param valid A logical value. See details.
-#'
-#' @details
-#' You need to execute [calcReadStats()] to calculate sumaary statisticsto be
-#' obtained via this function.
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
+#' @rdname getMeanReadRef
 setMethod("getMeanReadRef",
           "GbsrGenotypeData",
-          function(object, target="snp", valid=TRUE, ...){
+          function(object, target="snp", valid=TRUE){
             if(target == "snp"){
               out <- object@snpAnnot$meanReadRef
               if(is.null(out)) {return(NULL)}
@@ -1627,24 +1071,10 @@ setMethod("getMeanReadRef",
             return(out)
           })
 
-#' Obtain mean values of total alternative read counts per SNP or per scan (sample)
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param target Either of "snp" and "scan".
-#' @param valid A logical value. See details.
-#'
-#' @details
-#' You need to execute [calcReadStats()] to calculate sumaary statisticsto be
-#' obtained via this function.
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
+#' @rdname getMeanReadAlt
 setMethod("getMeanReadAlt",
           "GbsrGenotypeData",
-          function(object, target="snp", valid=TRUE, ...){
+          function(object, target="snp", valid=TRUE){
             if(target == "snp"){
               out <- object@snpAnnot$meanReadAlt
               if(is.null(out)) {return(NULL)}
@@ -1661,24 +1091,10 @@ setMethod("getMeanReadAlt",
             return(out)
           })
 
-#' Obtain standard deviations of total reference read counts per SNP or per scan (sample)
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param target Either of "snp" and "scan".
-#' @param valid A logical value. See details.
-#'
-#' @details
-#' You need to execute [calcReadStats()] to calculate sumaary statisticsto be
-#' obtained via this function.
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
+#' @rdname getSDReadRef
 setMethod("getSDReadRef",
           "GbsrGenotypeData",
-          function(object, target="snp", valid=TRUE, ...){
+          function(object, target="snp", valid=TRUE){
             if(target == "snp"){
               out <- object@snpAnnot$sdReadRef
               if(is.null(out)) {return(NULL)}
@@ -1695,24 +1111,10 @@ setMethod("getSDReadRef",
             return(out)
           })
 
-#' Obtain standard deviations of total alternative read counts per SNP or per scan (sample)
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param target Either of "snp" and "scan".
-#' @param valid A logical value. See details.
-#'
-#' @details
-#' You need to execute [calcReadStats()] to calculate sumaary statisticsto be
-#' obtained via this function.
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
+#' @rdname getSDReadAlt
 setMethod("getSDReadAlt",
           "GbsrGenotypeData",
-          function(object, target="snp", valid=TRUE, ...){
+          function(object, target="snp", valid=TRUE){
             if(target == "snp"){
               out <- object@snpAnnot$sdReadAlt
               if(is.null(out)) {return(NULL)}
@@ -1729,25 +1131,11 @@ setMethod("getSDReadAlt",
             return(out)
           })
 
-#' Obtain quantile values of total reference read counts per SNP or per scan (sample)
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param target Either of "snp" and "scan".
-#' @param q A numeric value [0-1] to indicate quantile to obtain.
-#' @param valid A logical value. See details.
-#'
-#' @details
-#' You need to execute [calcReadStats()] to calculate sumaary statisticsto be
-#' obtained via this function.
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
+#' @rdname getQtileReadRef
+#' @importFrom Biobase pData
 setMethod("getQtileReadRef",
           "GbsrGenotypeData",
-          function(object, target="snp", q=0.5, valid=TRUE, ...){
+          function(object, target="snp", q=0.5, valid=TRUE){
             if(target == "snp"){
               pdata <- pData(object@snpAnnot)
               if(q == "all"){
@@ -1779,25 +1167,11 @@ setMethod("getQtileReadRef",
             return(out)
           })
 
-#' Obtain quantile values of total alternative read counts per SNP or per scan (sample)
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param target Either of "snp" and "scan".
-#' @param q A numeric value [0-1] to indicate quantile to obtain.
-#' @param valid A logical value. See details.
-#'
-#' @details
-#' You need to execute [calcReadStats()] to calculate sumaary statisticsto be
-#' obtained via this function.
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
+#' @rdname getQtileReadAlt
+#' @importFrom Biobase pData
 setMethod("getQtileReadAlt",
           "GbsrGenotypeData",
-          function(object, target="snp", q=0.5, valid=TRUE, ...){
+          function(object, target="snp", q=0.5, valid=TRUE){
             if(target == "snp"){
               pdata <- pData(object@snpAnnot)
               if(q == "all"){
@@ -1829,24 +1203,10 @@ setMethod("getQtileReadAlt",
             return(out)
           })
 
-#' Obtain minor allele frequencies per SNP or per scan (sample)
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param target Either of "snp" and "scan".
-#' @param valid A logical value. See details.
-#'
-#' @details
-#' You need to execute [countGenotype()] to calculate sumaary statisticsto be
-#' obtained via this function.
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
+#' @rdname getMAF
 setMethod("getMAF",
           "GbsrGenotypeData",
-          function(object, target="snp", valid=TRUE, ...){
+          function(object, target="snp", valid=TRUE){
             if(target == "snp"){
               out <- getCountAlleleRef(object, "snp", prop=TRUE, valid=valid)
               if(is.null(out)) {return(NULL)}
@@ -1859,24 +1219,10 @@ setMethod("getMAF",
             return(out)
           })
 
-#' Obtain minor allele counts per SNP or per scan (sample)
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param target Either of "snp" and "scan".
-#' @param valid A logical value. See details.
-#'
-#' @details
-#' You need to execute [countGenotype()] to calculate sumaary statisticsto be
-#' obtained via this function.
-#' If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-#' in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
-#' which samples are valid.
-#'
-#' @export
-#'
+#' @rdname getMAC
 setMethod("getMAC",
           "GbsrGenotypeData",
-          function(object, target="snp", valid=TRUE, ...){
+          function(object, target="snp", valid=TRUE){
             if(target == "snp"){
               ac_ref <- getCountAlleleRef(object, "snp", prop=FALSE, valid=valid)
               ac_alt <- getCountAlleleAlt(object, "snp", prop=FALSE, valid=valid)
@@ -1895,37 +1241,10 @@ setMethod("getMAC",
             return(out)
           })
 
-#' Count genotype calls and alleles per sample and per marker.
-#'
-#' This function calculates several summary statistics of genotype calls and alleles
-#' per marker and per sample. Those values will be stored in the SnpAnnotaionDataSet slot
-#' and the ScanAnnotationDataSet slot and obtained via getter functions, e.g.
-#' [getCountGenoRef()], [getCountAlleleRef()], and [getMAF()].
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param target Either of "snp" and "scan".
-#' @param node Either of "raw", "filt", and "cor". See details.
-#'
-#' @details
-#' #' Genotype call data can be obtained from the "genotype" node, the "filt.genotype"
-#' node, or the "corrected.genotype" node of the GDS file with `node = "raw"`,
-#' `node = "filt"`, or `node = "raw"`, respectively.
-#' The [setCallFilter()] function generate filtered genotype call data in the
-#' "filt.genotype" node which can be accessed as mentioned above. On the other hand, the
-#' "corrected.genotype" node can be generated via the [clean()] function.
-#'
-#' @examples
-#' gdata <- loadGDS("/path/to/GDS.gds")
-#' gdata <- countGenotype(gdata)
-#' sample_missing_rate <- getCountGenoMissing(gdata, target = "scan", prop = TRUE)
-#' marker_minor_allele_freq <- getMAF(gdata, target = "snp")
-#' hist(gdata, stats = "missing")
-#'
-#' @export
-#'
+#' @rdname countGenotype
 setMethod("countGenotype",
           "GbsrGenotypeData",
-          function(object, target="both", node = "",...){
+          function(object, target="both", node = ""){
             ls_gdsn <- gdsfmt::ls.gdsn(object@data@handler)
             if(node == "cor" & "corrected.genotype" %in% ls_gdsn){
               genotype_node <- gdsfmt::index.gdsn(node=object@data@handler,
@@ -2030,36 +1349,10 @@ setMethod("countGenotype",
           }
 )
 
-#' Count reads per sample and per marker.
-#'
-#' This function calculates several summary statistics of read counts
-#' per marker and per sample. Those values will be stored in the SnpAnnotaionDataSet slot
-#' and the ScanAnnotationDataSet slot and obtained via getter functions, e.g.
-#' [getCountReadRef()] and [getCountReadAlt()].
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param target Either of "snp" and "scan".
-#' @param node Either of "raw" and "filt". See details.
-#'
-#' @details
-#' Read count data can be obtained from the "annotation/format/AD/data" node or the
-#' "annotation/format/AD/filt.data" node of the GDS file with `node = "raw"` or
-#' `node = "filt"`, respectively. The [setCallFilter()] function generate filtered
-#' read count data in the "annotation/format/AD/filt.data" node which can be accessed as
-#' mentioned above.
-#'
-#' @examples
-#' gdata <- loadGDS("/path/to/GDS.gds")
-#' gdata <- countRead(gdata)
-#' read_depth_per_marker <- getCountRead(gdata, target = "snp")
-#' reference_read_freq <- getCountReadRef(gdata, target = "snp", prop = TRUE)
-#' hist(gdata, stats = "ad_ref")
-#'
-#' @export
-#'
+#' @rdname countRead
 setMethod("countRead",
           "GbsrGenotypeData",
-          function(object, target="both", node = "", ...){
+          function(object, target="both", node = ""){
             if(node != "raw" & object@data@genotypeVar == "filt.genotype"){
               ad_node <- gdsfmt::index.gdsn(node=object@data@handler,
                                             path="annotation/format/AD/filt.data")
@@ -2137,37 +1430,12 @@ setMethod("countRead",
 )
 
 
-#' Calculate mean, standard deviation, and quantile values of reads per sample and per marker.
-#'
-#' This function calculates several summary statistics of read counts
-#' per marker and per sample. Those values will be stored in the SnpAnnotaionDataSet slot
-#' and the ScanAnnotationDataSet slot and obtained via getter functions, e.g.
-#' [getMeanReadRef()] and [getQtileReadAlt()].
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param target Either of "snp" and "scan".
-#' @param q A numeric value [0-1] to indicate quantile to obtain.
-#'
-#' @details
-#' Read count data can be obtained from the "annotation/format/AD/data" node or the
-#' "annotation/format/AD/filt.data" node of the GDS file with `node = "raw"` or
-#' `node = "filt"`, respectively. The [setCallFilter()] function generate filtered
-#' read count data in the "annotation/format/AD/filt.data" node which can be accessed as
-#' mentioned above.
-#'
-#' @examples
-#' gdata <- loadGDS("/path/to/GDS.gds")
-#' gdata <- calcReadStats(gdata, q = 0.5)
-#' mean_reference_read_depth <- getMeanReadRef(gdata, target = "snp")
-#' median_reference_read_depth <- getQtileReadAlt(gdata, target = "snp", q = 0.5)
-#' hist(gdata, stats = "mean_ref")
-#' hist(gdata, stats = "qtile_alt", q = 0.5)
-#'
-#' @export
-#'
+#' @rdname calcReadStats
+#' @importFrom Biobase pData pData<-
+#' 
 setMethod("calcReadStats",
           "GbsrGenotypeData",
-          function(object, target="both", q=NULL, ...){
+          function(object, target="both", q=NULL){
 
             valid_markers <- getValidSnp(object)
             valid_scans <- getValidScan(object)
@@ -2304,47 +1572,10 @@ setMethod("calcReadStats",
           }
 )
 
-#' Set labels to samples which should be recognized as parents of the population to be subjected to error correction.
-#'
-#' Specify two or more samples in the dataset as parents of the population. Markers will be filtered out up on your specification.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param parents A vector of strings with at least length two. The specified strings should match with the samples ID available via [getScanID()].
-#' @param flip A logical value to indicate whether markers should be checked for "flip". See details.
-#' @param mono A logical value whether to filter out markers which are not monomorphic in parents.
-#' @param bi A logical value whether to filter out marekrs which are not biallelic between parents.
-#'
-#' @details
-#' The `clean` function of `GBScleanR` uses read count information of samples and
-#' their parents separately to estimate most probable genotype calls of them.
-#' Therefore, you must specify proper samples as parents via this function.
-#' If you would like to remove SNP markers which are not biallelic and/or
-#' not monomorphic in each parent, set `mono = TRUE` and `bi = TRUE`.
-#' `flip = TRUE` flips alleles of markers where the alleles expected as reference
-#' allele are called as alternative allele. The alleles found in the parent specified as
-#' the first element to the `parents` argument are supposed as reference alleles
-#' of the markers. If the "expected" reference alleles are not actually called
-#' as reference alleles but alternative alleles in the given data. setParents()
-#' will automatically labels those markers "flipped".
-#' The SnpAnnotatoinDataSet slot sores this information and accessible
-#' via [getFlipped()] which gives you a logical vector
-#' indicating which markers are labeled as flipped `TRUE` or not flipped `FALSE`.
-#' [haveFlipped()] just tells you whether the SnpAnnotatoinDataSet slot has
-#' the information of flipped markers or not.
-#'
-#' @return A GbsrGenotypeData object.
-#'
-#' @examples
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' parents <- grep("parent", getScanID(gds), value = TRUE)
-#' gds <- setParents(gds, parents = parents, mono = TRUE, bi = TRUE, flip = TRUE)
-#' gds <- clean(gds)
-#'
-#' @export
-#'
+#' @rdname setParents
 setMethod("setParents",
           "GbsrGenotypeData",
-          function(object, parents, flip, mono, bi, ...){
+          function(object, parents, flip, mono, bi){
             if(length(parents) == 0 | any(is.na(parents))){
               stop('Specify valid sample names as parents.')
             }
@@ -2414,24 +1645,10 @@ setMethod("setParents",
           }
 )
 
-#' Get parental sample information
-#'
-#' This function returns scan IDs, member IDs and indexes of parental samples
-#' set via [setParents()]. Scan IDs are IDs given by user or obtained from the
-#' original VCF file. Member IDs are serial numbers assigned by [setParents()].
-#'
-#' @param object A GbsrGenotypeData object.
-#'
-#' @export
-#'
-#' @examples
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' gds <- setParents(gds, parents = c("parent1", "parent2"))
-#' getParents(gds)
-#'
+#' @rdname getParents
 setMethod("getParents",
           "GbsrGenotypeData",
-          function(object, ...){
+          function(object){
             parents <- object@scanAnnot$parents
             if(is.null(parents)){
               stop('No information of parents.')
@@ -2442,46 +1659,7 @@ setMethod("getParents",
             return(data.frame(scanID = p_name, memberID = p_id, indexes = p_index))
           })
 
-#' Swap the alleles recorded in a GDS file linked to the given GbsrGenotypeData object.
-#'
-#' The alleles of each marker are automatically obtained to match with those
-#' recorded in an input VCF file when it was converted to a GDS file. This function swap
-#' those alleles.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param allele A vector or matrix of characters each of which is either of "A", "T", "G", and "C". The length and the number of rows should be same with the number of "valid" markers. See details.
-#'
-#' @details
-#' The `allele` argument can take a vector or a two-column matrix of characters
-#' indicating reference alleles or both alleles. If A vector was given, this
-#' function check the current reference and alternative allele of each marker is
-#' same with the specified allele for each marker in the vector.
-#' If a marker showed that the current alternative allele matched with the allele
-#' in the vector, the reference allele and the alternative allele will be swapped
-#' each other. In the case of a matrix, the alleles specified in the first column are
-#' supposed to be reference alleles while the second column is for alternative alleles.
-#' This function compares both alleles between the current record and the specified in
-#' the matrix. If a marker showed one of the alleles specified in the allele matrix
-#' do not exist in the current allele of the marker, this marker will be labeled as "invalid"
-#' marker. In the case of that both of the specified alleles exist but swapped
-#' in the current record, the current alleles will be swapped to match with those specified in
-#' the allele matrix.
-#'
-#' @return A GbsrGenotypeData object.
-#'
-#' @examples
-#' In the case of that you have a reference genome data but it was not used for the SNP call, or reference alleles in the genotype data do not match with the alleles in the reference genome, e.g. TASSEL-GBS do.
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' ref_genome <- Biostrings::readDNAStringSet("/path/to/genome.fasta")
-#' chr_names <- getChromosome(object, name = TRUE)
-#' snp_pos <- GenomicRanges::GRanges(seqnames = chr_names,
-#'                                   ranges = IRanges::IRanges(start = getPosition(object),
-#'                                                             width = 1))
-#' ref_allele <- as.character(genome[snp_pos])
-#' gds <- swapAlleles(gds, allele = ref_allele)
-#'
-#' @export
-#'
+#' @rdname swapAlleles
 setMethod("swapAlleles",
           "GbsrGenotypeData",
           function(object, allele){
@@ -2512,41 +1690,14 @@ setMethod("swapAlleles",
             object <- setValidSnp(object, update = !invalid)
             flipped <- flipped[!invalid]
             # Find markers of which reference allele was called as alternative allele.
-            object <- setFlipped(object, flipped)
+            object <- .setFlipped(object, flipped)
             return(object)
           })
 
-#' Remove markers potentially having redundant information.
-#'
-#' Markers within the length of the sequenced reads (usually ~ 150 bp, up to your sequencer)
-#' potentially have redundant information and those will cause unexpected errors
-#' in error correction which assumes independency of markers each other.
-#' This function only retains the first marker or the least missing rate marker
-#' from the markers locating within the specified stretch.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param range A integer value to indicate the stretch to search markers.
-#'
-#' @details
-#' This function search valid markers from the first marker of each chromosome and
-#' compare its physical position with a neighbor marker. If the distance between those
-#' markers are equal or less then `range`, one of them which has a larger missing rate
-#' will be removed (labeled as invalid marker). When the first marker was retained and
-#' the second marker was removed as invalid marker, next the distance between the first marker
-#' and the third marker will be checked and this cycle is repeated until reaching the
-#' end of each chromosome. Run [getValidSnp()] to check the valid SNP markers.
-#'
-#' @return A GbsrGenotypeData object.
-#'
-#' @examples
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' gds <- thinMarker(gds, range = 150)
-#'
-#' @export
-#'
+#' @rdname thinMarker
 setMethod("thinMarker",
           "GbsrGenotypeData",
-          function(object, range = 150, ...){
+          function(object, range = 150){
             if(is.null(object@snpAnnot$countGenoMissing)){
               stop('Run countGenotype first.')
             }
@@ -2588,52 +1739,7 @@ setMethod("thinMarker",
             return(object)
           })
 
-#' Filter out each genotype call meeting criteria
-#'
-#' Perform filtering of each genotype call, neither markers nor samples. Each genotype call
-#' is supported by its read counts for the reference allele and the alternative allele of
-#' a marker of a sample. `setCallFilter()` set missing to the genotype calls which are
-#' not reliable enough and set zero to reference and alternative read counts of
-#' the genotype calls.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param dp_count A numeric vector with length two specifying lower and upper limit of total read counts (reference reads + alternative reads).
-#' @param ref_count A numeric vector with length two specifying lower and upper limit of reference read counts.
-#' @param alt_count A numeric vector with length two specifying lower and upper limit of alternative read counts.
-#' @param norm_dp_count A numeric vector with length two specifying lower and upper limit of normalized total read counts (normalized reference reads + normalized alternaitve reads).
-#' @param norm_ref_count A numeric vector with length two specifying lower and upper limit of normalized reference read counts.
-#' @param norm_alt_count A numeric vector with length two specifying lower and upper limit of normalized alternative read counts
-#' @param scan_dp_qtile A numeric vector with length two specifying lower and upper limit of quantile of total read counts in each scan (sample).
-#'@param scan_ref_qtile A numeric vector with length two specifying lower and upper limit of quantile of reference read counts in each scan (sample).
-#' @param scan_alt_qtile A numeric vector with length two specifying lower and upper limit of quantile of alternative read counts in each scan (sample).
-#' @param snp_dp_qtile A numeric vector with length two specifying lower and upper limit of quantile of total read counts in each SNP marker
-#'@param snp_ref_qtile A numeric vector with length two specifying lower and upper limit of quantile of reference read counts in each SNP marker.
-#' @param snp_alt_qtile A numeric vector with length two specifying lower and upper limit of quantile of alternative read counts in each SNP marker.
-#' @param omit_geno A vector of string with combinations of "ref", "het", and "alt" to remove specified genotype calls.
-#'
-#' @details
-#' `norm_dp_count`, `norm_ref_count`, and `norm_alt_count` use normalized read counts which
-#' are obtained by dividing each read count by the total read count of each sample.
-#' `scan_dp_qtile`, `scan_ref_qtile`, and `scan_alt_qtile` work similarly but use quantile
-#' values of read counts of each sample to decide the lower and upper limit of read counts.
-#' This function generate two new nodes in the GDS file linked with the given GbsrGenotypeData
-#' object. The new nodes "filt.data" in the AD node and "filt.genotype" contains read count
-#' data and genotype data after filtering, respectively.
-#'
-#' @return A GbsrGenotypeData object.
-#'
-#' @examples
-#' # Filter out genotype calls supported by less than 5 reads.
-#' gds <- setCallFilter(gds, dp_count = c(5, Inf))
-#'
-#' # Filter out genotype calls supported by reads less than the 20 percentile of read counts per marker in each sample.
-#' gds <- setCallFilter(gds, scan_dp_qtile = c(0.2, 1))
-#'
-#' # Filter out all reference homozygote genotype calls.
-#' gds <- setCallFilter(gds, omit_geno = "ref")
-#'
-#' @export
-#'
+#' @rdname setCallFilter
 setMethod("setCallFilter",
           "GbsrGenotypeData",
           function(object,
@@ -2649,8 +1755,7 @@ setMethod("setCallFilter",
                    snp_dp_qtile=c(0, 1),
                    snp_ref_qtile=c(0, 1),
                    snp_alt_qtile=c(0, 1),
-                   omit_geno = NULL,
-                   ...){
+                   omit_geno = NULL){
 
             .initFilt(object)
 
@@ -2690,41 +1795,9 @@ setMethod("setCallFilter",
   }
 }
 
-#' Filter out scans (samples)
-#'
-#' Search samples which do not meet the criteria and label them as "invalid".
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param id A vector of strings match with scan ID which can be retrieve by `getScanID()`.
-#' @param missing A numeric value [0-1] to specify the maximum missing genotype call rate per sample.
-#' @param het A numeric value [0-1] to specify the maximum heterozygous genotype call rate per sample.
-#' @param mac A integer value to specify the minimum minor allele count per sample.
-#' @param maf A numeric value to specify the minimum minor allele frequency per sample.
-#' @param ad_ref A numeric vector with length two specifying lower and upper limit of reference read counts per sample.
-#' @param ad_alt A numeric vector with length two specifying lower and upper limit of alternative read counts per sample.
-#' @param dp A numeric vector with length two specifying lower and upper limit of total read counts per sample.
-#' @param mean_ref A numeric vector with length two specifying lower and upper limit of mean of reference read counts per sample.
-#' @param mean_alt A numeric vector with length two specifying lower and upper limit of mean of alternative read counts per sample.
-#' @param sd_ref A numeric value specifying the upper limit of standard deviation of reference read counts per sample.
-#' @param sd_alt A numeric value specifying the upper limit of standard deviation of alternative read counts per sample.
-#'
-#' @details
-#' For `mean_ref`, `mean_alt`, `sd_ref`, and `sd_alt`, this function calculate mean and
-#' standard deviation of reads obtained at SNP markers of each sample. If a mean read counts
-#' of a sample was smaller than the specified lower limit or larger than the upper limit,
-#' this function labels the sample as "invalid". In the case of `sd_ref` and `sd_alt`,
-#' standard deviations of read counts of each sample are checked and the samples having a
-#' larger standard deviation will be labeled as "invalid". To check valid and invalid
-#' samples, run [getValidScan()].
-#'
-#' @return A GbsrGenotypeData object.
-#'
-#' @examples
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' gds <- setScanFilter(gds, id = getScanID(gds)[1:10], missing = 0.2, dp = c(5, Inf))
-#'
-#' @export
-#'
+#' @rdname setScanFilter
+#' @importFrom Biobase pData pData<-
+#' 
 setMethod("setScanFilter",
           "GbsrGenotypeData",
           function(object,
@@ -2739,9 +1812,9 @@ setMethod("setScanFilter",
                    mean_ref=c(0, Inf),
                    mean_alt=c(0, Inf),
                    sd_ref=Inf,
-                   sd_alt=Inf,
-                   ...){
+                   sd_alt=Inf){
 
+            snpID <- ploidy <- NULL
             if(missing(id)){
               id <- rep(TRUE, nscan(object, valid=TRUE))
             } else {
@@ -2775,7 +1848,7 @@ setMethod("setScanFilter",
             scan_ad_alt <- .getSubFilter(scan_ad_alt, ad_alt, c(0, Inf), T, T)
 
             ## Total read count
-            scan_dp <- getCountRead(object, "scan", prop=FALSE, valid=TRUE)
+            scan_dp <- getCountRead(object, "scan", valid=TRUE)
             scan_dp <- .getSubFilter(scan_dp, dp, c(0, Inf), T, T)
 
             ## Mean reference allele read count
@@ -2803,41 +1876,8 @@ setMethod("setScanFilter",
             return(object)
           })
 
-#' Filter out markers
-#'
-#' Search markers which do not meet the criteria and label them as "invalid".
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param id A vector of strings match with scan ID which can be retrieve by `getScanID()`.
-#' @param missing A numeric value [0-1] to specify the maximum missing genotype call rate per marker
-#' @param het A numeric value [0-1] to specify the maximum heterozygous genotype call rate per marker
-#' @param mac A integer value to specify the minimum minor allele count per marker
-#' @param maf A numeric value to specify the minimum minor allele frequency per marker.
-#' @param ad_ref A numeric vector with length two specifying lower and upper limit of reference read counts per marker.
-#' @param ad_alt A numeric vector with length two specifying lower and upper limit of alternative read counts per marker.
-#' @param dp A numeric vector with length two specifying lower and upper limit of total read counts per marker.
-#' @param mean_ref A numeric vector with length two specifying lower and upper limit of mean of reference read counts per marker.
-#' @param mean_alt A numeric vector with length two specifying lower and upper limit of mean of alternative read counts per marker.
-#' @param sd_ref A numeric value specifying the upper limit of standard deviation of reference read counts per marker.
-#' @param sd_alt A numeric value specifying the upper limit of standard deviation of alternative read counts per marker.
-#'
-#' @details
-#' For `mean_ref`, `mean_alt`, `sd_ref`, and `sd_alt`, this function calculate mean and
-#' standard deviation of reads obtained for samples at each SNP marker. If a mean read counts
-#' of a marker was smaller than the specified lower limit or larger than the upper limit,
-#' this function labels the marker as "invalid". In the case of `sd_ref` and `sd_alt`,
-#' standard deviations of read counts of each marker are checked and the markers having a
-#' larger standard deviation will be labeled as "invalid". To check valid and invalid
-#' markers, run [getValidSnp()].
-#'
-#' @return A GbsrGenotypeData object.
-#'
-#' @examples
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' gds <- setSnpFilter(gds, id = getSnpID(gds)[1:1000], missing = 0.2, dp = c(5, Inf))
-#'
-#' @export
-#'
+#' @rdname setSnpFilter
+#' @importFrom Biobase pData pData<-
 setMethod("setSnpFilter",
           "GbsrGenotypeData",
           function(object,
@@ -2852,8 +1892,8 @@ setMethod("setSnpFilter",
                    mean_ref=c(0, Inf),
                    mean_alt=c(0, Inf),
                    sd_ref=Inf,
-                   sd_alt=Inf,
-                   ...){
+                   sd_alt=Inf){
+            scanID <- validScan <- parents <- NULL
 
             if(missing(id)){
               id <- rep(TRUE, nsnp(object, valid=TRUE))
@@ -2888,7 +1928,7 @@ setMethod("setSnpFilter",
             snp_ad_alt <- .getSubFilter(snp_ad_alt, ad_alt, c(0, Inf), T, T)
 
             ## Total read count
-            snp_dp <- getCountRead(object, "snp", prop=FALSE, valid=TRUE)
+            snp_dp <- getCountRead(object, "snp", valid=TRUE)
             snp_dp <- .getSubFilter(snp_dp, dp, c(0, Inf), T, T)
 
             ## Mean reference allele read count
@@ -2920,32 +1960,8 @@ setMethod("setSnpFilter",
           }
 )
 
-#' Filter out markers based on marker quality metrics
-#'
-#' A VCF file usually has marker quality metrics in the INFO filed and those are stored in
-#' a GDS file created via `GBScleanR`. This function filter out markers based on those marker
-#' quality metrics.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param mq A numeric value to specify minimum mapping quality (shown as MQ in the VCF format).
-#' @param fs A numeric value to specify maximum Phred-scaled p-value (strand bias) (shown as FS in the VCF format).
-#' @param qd A numeric value to specify minimum Variant Quality by Depth (shown as QD in the VCF format).
-#' @param sor A numeric value to specify maximum Symmetric Odds Ratio (strand bias) (shown as SOR in the VCF format).
-#' @param mqranksum A numeric values to specify the lower and upper limit of Alt vs. Ref read mapping qualities (shown as MQRankSum in the VCF format).
-#' @param readposranksum A numeric values to specify the lower and upper limit of Alt vs. Ref read position bias (shown as ReadPosRankSum in the VCF format).
-#' @param baseqranksum A numeric values to specify the lower and upper limit of Alt Vs. Ref base qualities (shown as BaseQRankSum in the VCF format).
-#'
-#' @details
-#' Detailed explanation of each metric can be found in [GATK's web site](https://gatk.broadinstitute.org/hc/en-us).
-#'
-#' @return A GbsrGenotypeData object.
-#'
-#' @examples
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' gds <- setInfoFilter(gds, mq = 40, qd = 20)
-#'
-#' @export
-#'
+#' @rdname setInfoFilter
+#' @importFrom Biobase pData pData<-
 setMethod("setInfoFilter",
           "GbsrGenotypeData",
           function(object,
@@ -2955,9 +1971,9 @@ setMethod("setInfoFilter",
                    sor=Inf,
                    mqranksum=c(-Inf, Inf),
                    readposranksum=c(-Inf, Inf),
-                   baseqranksum=c(-Inf, Inf),
-                   ...){
+                   baseqranksum=c(-Inf, Inf)){
 
+            scanID <- validScan <- parents <- pdata <- NULL
             # Filtering for samples.
             ## MQ
             snp_mq <- getInfo(object, "MQ")
@@ -2999,37 +2015,20 @@ setMethod("setInfoFilter",
           }
 )
 
-#' Reset the filter made by [setCallFiler()]
-#'
-#' Return genotype calls and read count data to the original data which are same with
-#' those data before running [setCallFilter()].
-#'
-#' @param object A GbsrGenotypeData object.
-#'
-#' @return A GbsrGenotypeData object.
-#'
-#' @export
-#'
+#' @rdname resetCallFilters
 setMethod("resetCallFilters",
           "GbsrGenotypeData",
-          function(object, ...){
+          function(object){
             object@data@genotypeVar <- "genotype"
             return(object)
           })
-
-#' Reset the filter made by [setScanFiler()]
-#'
-#' Remove "invalid" labels put on samples and make all samples valid.
-#'
-#' @param object A GbsrGenotypeData object.
-#'
-#' @return A GbsrGenotypeData object.
-#'
-#' @export
-#'
+ 
+#' @rdname resetScanFilters
+#' @importFrom Biobase pData pData<-
 setMethod("resetScanFilters",
           "GbsrGenotypeData",
-          function(object, ...){
+          function(object){
+            scanID <- validScan <- parents <- NULL
             object <- setValidScan(object, new = TRUE)
             pdata <- pData(object@scanAnnot)
             if("parents" %in% names(pdata)){
@@ -3040,19 +2039,13 @@ setMethod("resetScanFilters",
             return(object)
           })
 
-#' Reset the filter made by [setSnpFiler()]
-#'
-#' Remove "invalid" labels put on markers and make all markers valid.
-#'
-#' @param object A GbsrGenotypeData object.
-#'
-#' @return A GbsrGenotypeData object.
-#'
-#' @export
-#'
+#' @rdname resetSnpFilters
+#' @importFrom Biobase pData pData<-
+#' 
 setMethod("resetSnpFilters",
           "GbsrGenotypeData",
-          function(object, ...){
+          function(object){
+            snpID <- ploidy <- NULL
             object <- setValidSnp(object, new = TRUE)
             pdata <- pData(object@snpAnnot)
             pdata <- subset(pdata, select=snpID:ploidy)
@@ -3060,26 +2053,17 @@ setMethod("resetSnpFilters",
             return(object)
           })
 
-#' Reset all filters made by [setScanFiler()], [setSnpFiler()], and [setCallFiler()].
-#'
-#' Return all data intact.
-#'
-#' @param object A GbsrGenotypeData object.
-#'
-#' @return A GbsrGenotypeData object.
-#'
-#' @export
-#'
+#' @rdname resetFilters
 setMethod("resetFilters",
           "GbsrGenotypeData",
-          function(object, ...){
+          function(object){
             object <- resetCallFilters(object)
             object <- resetScanFilters(object)
             object <- resetSnpFilters(object)
             return(object)
           })
 
-.getSubFilter <- function(variable, threshold, default, greater, equal, ...){
+.getSubFilter <- function(variable, threshold, default, greater, equal){
   if(is.null(variable)){
     return(TRUE)
   }
@@ -3137,8 +2121,7 @@ setMethod("resetFilters",
                                alt_qtile,
                                omit_geno,
                                count_default = c(0, Inf),
-                               qtile_default = c(0, 1),
-                               ...){
+                               qtile_default = c(0, 1)){
   ad_node <- gdsfmt::index.gdsn(node=object@data@handler,
                                 path="annotation/format/AD")
   ad_data_node <- gdsfmt::index.gdsn(node=object@data@handler,
@@ -3282,8 +2265,7 @@ setMethod("resetFilters",
                               dp_qtile,
                               ref_qtile,
                               alt_qtile,
-                              qtile_default = c(0, 1),
-                              ...){
+                              qtile_default = c(0, 1)){
   ad_node <- gdsfmt::index.gdsn(node=object@data@handler,
                                 path="annotation/format/AD")
   ad_data_node <- gdsfmt::index.gdsn(node=object@data@handler,
@@ -3385,7 +2367,7 @@ setMethod("resetFilters",
   return(any(out))
 }
 
-.makeCallFilteredData <- function(object, ...){
+.makeCallFilteredData <- function(object){
   ad_node <- gdsfmt::index.gdsn(node=object@data@handler, path="annotation/format/AD")
   ad_data <- gdsfmt::index.gdsn(node=object@data@handler, path="annotation/format/AD/data")
   ad_data_desp <- gdsfmt::objdesp.gdsn(node=ad_data)
@@ -3499,34 +2481,10 @@ setMethod("resetFilters",
 
 }
 
-#' Create a GDS file with subset data of the current GDS file
-#'
-#' Create a new GDS file storing the subset data from the current GDS file linked to
-#' the given GbsrGenotypeData object with keeping (or removing) information based on
-#' valid markers and samples information.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param out_fn A string to specify the path to an output GDS file.
-#' @param snp_incl A logical vector having the same length with the total number of markers. The values obtained via [getValidSnp()] are used.
-#' @param scan_incl A logical vector having the same length with the total number of scans (samples). The values obtained via [getValidScan()] are used.
-#' @param incl_parents A logical value to specify whether parental samples should be included in a subset data or not.
-#'
-#' @details
-#' A resultant subset data in a new GDS file includes subsets of each category of data, e.g.
-#' genotype, SNP ID, scan ID, read counts, and quality metrics of SNP markers.
-#'
-#' @return A GbsrGenotypeData object linking to the new GDS file storing subset data.
-#'
-#' @examples
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' gds <- setSnpFilter(gds, missing = 0.2, het = c(0.1, 0.9), maf = 0.05)
-#' new_gds <- subsetGDS(gds, out_fn = "/path/to/newGDS.gds")
-#'
-#' @export
-#'
+#' @rdname subsetGDS
 setMethod("subsetGDS",
           "GbsrGenotypeData",
-          function(object, out_fn = "./susbet.gds", snp_incl, scan_incl, incl_parents = TRUE, ...){
+          function(object, out_fn = "./susbet.gds", snp_incl, scan_incl, incl_parents = TRUE){
 
             n_scan <- nscan(object, valid=FALSE)
             n_snp <- nsnp(object, valid=FALSE)
@@ -3705,88 +2663,26 @@ setMethod("subsetGDS",
           }
 )
 
-#' Set the filtered data to be used in GBScleanR's functions
-#'
-#' Set the "filt.genotype" node and the "filt.data" node as primary nodes for genotype
-#' data and read count data. The data stored in the primary nodes are used in the
-#' functions of GBScleanR.
-#'
-#' @param object A GbsrGenotypeData object.
-#'
-#' @details
-#' A GbsrGenotypeData object storing information of the primary node of genotype data and
-#' read count data. All of the functions implemented in `GBScleanR` check the primary nodes
-#' and use data stored in those nodes. [setCallFilter()] create new nodes storing
-#' filtered genotype calls and read counts in a GDS file and change the primary nodes to
-#' "filt.genotype" and "filt.data" for genotype and read count data, respectively.
-#' [SetRawGenotype()] set back the nodes to the original, those are "genotype" and "data" for
-#' genotype and read count data, respectively. You can set the filtered data again by
-#' `SetFiltGenotype()`.
-#'
-#' @return A GbsrGenotypeData object.
-#'
-#' @export
-#'
+#' @rdname setFiltGenotype
 setMethod("setFiltGenotype",
           "GbsrGenotypeData",
-          function(object, ...){
+          function(object){
             object@data@genotypeVar <- "filt.genotype"
             return(object)
           })
 
-#' Set the origina; data to be used in GBScleanR's functions
-#'
-#' Set the "genotype" node and the "data" node as primary nodes for genotype
-#' data and read count data. The data stored in the primary nodes are used in the
-#' functions of GBScleanR.
-#'
-#' @param object A GbsrGenotypeData object.
-#'
-#' @details
-#' A GbsrGenotypeData object storing information of the primary node of genotype data and
-#' read count data. All of the functions implemented in `GBScleanR` check the primary nodes
-#' and use data stored in those nodes. [setCallFilter()] create new nodes storing
-#' filtered genotype calls and read counts in a GDS file and change the primary nodes to
-#' "filt.genotype" and "filt.data" for genotype and read count data, respectively.
-#' `SetRawGenotype()` set back the nodes to the original, those are "genotype" and "data" for
-#' genotype and read count data, respectively. You can set the filtered data again by
-#' [SetFiltGenotype()].
-#'
-#' @return A GbsrGenotypeData object.
-#'
-#' @export
-#'
+#' @rdname setRawGenotype
 setMethod("setRawGenotype",
           "GbsrGenotypeData",
-          function(object, ...){
+          function(object){
             object@data@genotypeVar <- "genotype"
             return(object)
           })
 
-#' Replace data stored in the GDS file
-#'
-#' Replace the original data with the filtered data or replace sample IDs in the GDS file linked
-#' to an input GbsrGenotypeData object.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param target A vector of combinations of "sample.id", "genotype", and "ad".
-#' @param node Either one of "filt" and "cor" to replace raw genotype data with filtered genotype data or corrected genotype data, respectively.
-#'
-#' @details
-#' If `target = "genotype"`, replace the data stored in the "genotype" node with the
-#' data in the "filt.genotype" node for genotype call data. If `target = "ad`,
-#' The data stored in the "data" node is also replaced with the data in the
-#' "filt.data" node for read count data. `target = "sample.id"` makes this function to
-#' replace data in the "sample.id" node with the sample IDs stored in the
-#' ScanAnnotationDataSet slot of the input GbsrGenotypeData object.
-#'
-#' @return A GbsrGenotypeData object.
-#'
-#' @export
-#'
+#' @rdname replaceGDSdata
 setMethod("replaceGDSdata",
           "GbsrGenotypeData",
-          function(object, target, node, ...){
+          function(object, target, node){
             if("sample.id" %in% target){
               id <- getScanID(object, valid = FALSE)
               gdsfmt::add.gdsn(object@data@handler, "sample.id", id, "string",
@@ -3839,151 +2735,19 @@ setMethod("replaceGDSdata",
             }
           })
 
-#' Build a GbsrScheme object
-#'
-#' GBScleanR uses breeding scheme information to set the expected
-#' number of cross overs in a chromosome which is a required parameter
-#' for the genotype error correction with the Hidden Markov model
-#' implemented in the "clean" function. This function build the object storing
-#' type crosses performed at each generation of breeding and population sizes.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param crosstype A string to indicate the type of cross conducted with a given generation.
-#' @param mating An integer matrix to indicate mating combinations. The each element should match with IDs of parental samples which are 1 to N. see Details.
-#'
-#' @return A GbsrScheme object.
-#'
-#' @details
-#' A GbsrScheme object stores information of a population size, mating combinations and
-#' a type of cross applied to each generation of the breeding process
-#' to generate the population which you are going to subject to the "clean" function.
-#' The first generation should be parents of the population. It is supposed that
-#' [setParents()] has been already executed and parents are labeled in the
-#' GbsrGenotypeData object. The number of parents are automatically recognized.
-#' The "crosstype" of the first generation can be "pairing" or "random" with
-#' `pop_size = N`, where N is the number of parents.
-#' You need to specify a matrix indicating combinations of `mating`, in which each column shows
-#' a pair of parental samples. For example, if you have only two parents, the `mating` matirix
-#' should be `mating = matrix(1:2, nrow = 1, ncol = 2)`. The indices used in the matrix
-#' should match with the IDs labeled to parental samples by [setParents()].
-#' The created GbsrScheme object is set in the `scheme` slot of the GbsrGenotypeData object.
-#'
-#' @export
-#'
-#' @seealso [addScheme()] and [showScheme()]
-#'
-#' @examples
-#' # Biparental F2 population.
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' gds <- setParents(gds, parents = c("parent1", "parent2"))
-#' # setParents gave member ID 1 and 2 to parent1 and parent2, respectively.
-#' gds <- initScheme(gds, crosstype = "pair", mating = matrix(1:2, nrow = 1, ncol = 2))
-#' # Now the progenies of the cross above have member ID 3.
-#' # If `crosstype = "selfing"` or `"sibling"`, you can omit a `mating` matrix.
-#' gds <- addScheme(gds, crosstype = "self")
-#'
-#' 8-way RILs with sibling mating.
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' gds <- setParents(gds, parents = paste("parent", 1:8, sep = ""))
-#' # setParents set member ID 1 to 8 to parent1 to parent8, respectively.
-#'
-#' # If you made crosses of parent1 x parent2, parent3 x parent4, parent5 x parent6, and parent7 x parent8, run the following.
-#' gds <- initScheme(gds, crosstype = "pair", mating = matrix(1:8, nrow = 4, ncol = 2))
-#'
-#' # Now the progenies of the crosses above have member ID 9, 10, 11, and 12 for each combination of mating.You can check IDs with showScheme().
-#' showScheme(gds)
-#'
-#' # Then, produce 4-way crosses.
-#' gds <- addScheme(gds, crosstype = "pair", mating = matrix(9:12, nrow = 2, ncol = 2))
-#' # 8-way crosses.
-#' gds <- addScheme(gds, crosstype = "pair", mating = matrix(13:14, nrow = 1, ncol = 2))
-#' # Inbreeding by 4 times selfing.
-#' gds <- addScheme(gds, crosstype = "self")
-#' gds <- addScheme(gds, crosstype = "self")
-#' gds <- addScheme(gds, crosstype = "self")
-#' gds <- addScheme(gds, crosstype = "self")
-#'
-#' # Execute error correction
-#' gds <- clean(gds)
-#'
+#' @rdname initScheme
 setMethod("initScheme",
           "GbsrGenotypeData",
-          function(object, crosstype, mating, ...){
+          function(object, crosstype, mating){
             parents <- getParents(object)
             object@scheme <- initScheme(object@scheme, crosstype, mating, parents$memberID)
             return(object)
           })
 
-#' Build a GbsrScheme object
-#'
-#' GBScleanR uses breeding scheme information to set the expected
-#' number of cross overs in a chromosome which is a required parameter
-#' for the genotype error correction with the Hidden Markov model
-#' implemented in the "clean" function. This function build the object storing
-#' type crosses performed at each generation of breeding and population sizes.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param crosstype A string to indicate the type of cross conducted with a given generation.
-#' @param mating An integer matrix to indicate mating combinations. The each element should match with member IDs of the last generation.
-#' @param pop_size An integer of the number of individuals in a given generation.
-#'
-#' @return A GbsrScheme object.
-#'
-#' @details
-#' A scheme object is just a data.frame indicating a population size and
-#' a type of cross applied to each generation of the breeding process
-#' to generate the population which you are going to subject to the "clean" function.
-#' The `crosstype` can take either of "selfing", "sibling", "pairing", and "random".
-#' When you set `crosstype = "random"`, you need to specify `pop_size` to indicate how many
-#' individuals were crossed in the random mating.
-#' You also need to specify a matrix indicating combinations of `mating`, in which
-#' each column shows a pair of member IDs indicating parental samples of the cross.
-#' Member IDs are serial numbers starts from 1 and automatically assigned by
-#' [initScheme()] and [addScheme()]. To check the member IDs, run [showScheme()].
-#' Please see the examples section for more details of specifying a `mating` matrix.
-#' The created GbsrScheme object is set in the `scheme` slot of the GbsrGenotypeData object.
-#'
-#' @export
-#'
-#' @seealso [addScheme()] and [showScheme()]
-#'
-#' @examples
-#' # Biparental F2 population.
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' gds <- setParents(gds, parents = c("parent1", "parent2"))
-#' # setParents gave member ID 1 and 2 to parent1 and parent2, respectively.
-#' gds <- initScheme(gds, crosstype = "pair", mating = matrix(1:2, nrow = 1, ncol = 2))
-#' # Now the progenies of the cross above have member ID 3.
-#' # If `crosstype = "selfing"` or `"sibling"`, you can omit a `mating` matrix.
-#' gds <- addScheme(gds, crosstype = "self")
-#'
-#' 8-way RILs with sibling mating.
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' gds <- setParents(gds, parents = paste("parent", 1:8, sep = ""))
-#' # setParents set member ID 1 to 8 to parent1 to parent8, respectively.
-#'
-#' # If you made crosses of parent1 x parent2, parent3 x parent4, parent5 x parent6, and parent7 x parent8, run the following.
-#' gds <- initScheme(gds, crosstype = "pair", mating = matrix(1:8, nrow = 4, ncol = 2))
-#'
-#' # Now the progenies of the crosses above have member ID 9, 10, 11, and 12 for each combination of mating.You can check IDs with showScheme().
-#' showScheme(gds)
-#'
-#' # Then, produce 4-way crosses.
-#' gds <- addScheme(gds, crosstype = "pair", mating = matrix(9:12, nrow = 2, ncol = 2))
-#' # 8-way crosses.
-#' gds <- addScheme(gds, crosstype = "pair", mating = matrix(13:14, nrow = 1, ncol = 2))
-#' # Inbreeding by 4 times selfing.
-#' gds <- addScheme(gds, crosstype = "self")
-#' gds <- addScheme(gds, crosstype = "self")
-#' gds <- addScheme(gds, crosstype = "self")
-#' gds <- addScheme(gds, crosstype = "self")
-#'
-#' # Execute error correction
-#' gds <- clean(gds)
-#'
+#' @rdname addScheme
 setMethod("addScheme",
           "GbsrGenotypeData",
-          function(object, crosstype, mating, pop_size, ...){
+          function(object, crosstype, mating, pop_size){
             if(missing(pop_size)){
               pop_size <- NA
             }
@@ -3994,33 +2758,10 @@ setMethod("addScheme",
             return(object)
           })
 
-#' Show the information stored in a GbsrScheme object
-#'
-#' Print the information of each generation in a GbsrScheme object in the scheme
-#' slot of a GbsrGenotypeData object.
-#' A GbsrScheme object stores information of a population size, mating combinations and
-#' a type of cross applied to each generation of the breeding process
-#' to generate the population which you are going to subject to the "clean" function.
-#'
-#' @param object A GbsrGenotypeData object.
-#'
-#' @export
-#'
-#' @seealso [initScheme()] and [addScheme()]
-#'
-#' @examples
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' gds <- setParents(gds, parents = paste("parent", 1:8, sep = ""))
-#' # setParents set member ID 1 to 8 to parent1 to parent8, respectively.
-#' # If you made crosses of parent1 x parent2, parent3 x parent4, parent5 x parent6, and parent7 x parent8, run the following.
-#' gds <- initScheme(gds, crosstype = "pair", mating = matrix(1:8, nrow = 4, ncol = 2))
-#'
-#' Now the progenies of the crosses above have member ID 9, 10, 11, and 12 for each combination of mating. You can check IDs with showScheme().
-#' showScheme(gds)
-#'
+#' @rdname showScheme
 setMethod("showScheme",
           "GbsrGenotypeData",
-          function(object, ...){
+          function(object){
             parents <- getParents(object)
             showScheme(object@scheme, parents$scanID)
           })

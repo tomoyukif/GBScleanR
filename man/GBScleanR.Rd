@@ -8,8 +8,16 @@
 \description{
 GBScleanR is a package for quality check, filtering, and error correction of genotype data derived from next generation sequcener (NGS) based genotyping platforms. GBScleanR takes Variant Call Format (VCF) file as input. The main function of this package is "clean.geno" which estimates the true genotypes of samples from given read counts for genotype markers using a hidden Markov model with incorporating uneven observation ratio of allelic reads. This implementation gives robust genotype estimation even in noisy genotype data usually observed in Genotyping-By-Sequnencing (GBS) and similar methods, e.g. RADseq. GBScleanR currenly only supports genotype data of biparental populations.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/tomoyukif/GBScleanR}
+  \item Report bugs at \url{https://github.com/tomoyukif/GBScleanR/issues}
+}
+
+}
 \author{
-\strong{Maintainer}: Tomoyuki Furuta \email{f.tomoyuki@okayama-u.ac.jp}
+\strong{Maintainer}: Tomoyuki Furuta \email{f.tomoyuki@okayama-u.ac.jp} (\href{https://orcid.org/0000-0002-0869-6626}{ORCID})
 
 }
 \keyword{internal}

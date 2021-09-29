@@ -10,8 +10,7 @@ plotReadRatio(
   chr = NULL,
   ind = NULL,
   valid_only = TRUE,
-  dot_fill = "blue",
-  ...
+  dot_fill = "blue"
 )
 }
 \arguments{

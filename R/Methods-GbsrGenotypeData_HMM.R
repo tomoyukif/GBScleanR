@@ -1,33 +1,5 @@
-#' Genotype estimation using hiden Morkov model
-#'
-#' Clean up genotype data by error correction based on genotype estimation using a hidden Markov model.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param chr An integer vector of chromosome indices to be analyzed. All chromosomes will be analyzed if you left it default.
-#' @param recomb_rate A numeric value to indicate the expected recombination frequency per chromosome per megabase pairs.
-#' @param error_rate A numeric value of the expected sequence error rate.
-#' @param call_threshold A numeric value of the probability threhosld to accept estimated genotype calls.
-#' @param het_parent A logical value to indicate whether parental samples are outbred or inbred. If FALSE, this function assume all true genotype of markers in parents are homozygotes.
-#' @param optim A logical value to specify whether to conduct parameter optimization for
-#' error correction.
-#' @param iter An integer value to specify the number of iterative parameter updates.
-#' @param n_threads An integer value to specify the number of threads used for the calculation. The default is `n_threads = NULL` and automatically set half the number of available threads on the computer.
-#'
-#' @details
-#'
-#' @return A GbsrGenotypeData object.
-#'
-#' @examples
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' gds <- setParents(gds, parents = getScanID(gds)[1:4])
-#' gds <- initScheme(gds, crosstype = "pairing", mating = matrix(1:4, 2))
-#' gds <- addScheme(gds, "pairing", mating = matrix(5:6, 2))
-#' gds <- addScheme(gds, "selfing")
-#' gds <- clean(gds, recomb_rate = 0.03, het_parent = FALSE, iter = 3)
-#'
-#' @export
-#'
-setMethod("clean",
+#' @rdname estGeno
+setMethod("estGeno",
           "GbsrGenotypeData",
           function(object,
                    chr,
@@ -37,7 +9,7 @@ setMethod("clean",
                    het_parent,
                    optim,
                    iter,
-                   n_threads, ...){
+                   n_threads){
             max_threads <- RcppParallel::defaultNumThreads()
             if(is.null(n_threads)){
               n_threads <- max_threads / 2
@@ -53,12 +25,12 @@ setMethod("clean",
               }
               n_threads <- max_threads
             }
-
+            
             message("Set the number of threads: ", n_threads)
             RcppParallel::setThreadOptions(numThreads = n_threads)
-
+            
             message("Start cleaning...")
-
+            
             .initGDS(object)
             chr_all <- getChromosome(object, levels = TRUE)
             if(missing(chr)){
@@ -67,7 +39,7 @@ setMethod("clean",
             for(chr_i in chr_all){
               index <- getChromosome(object, valid = FALSE) %in% chr_i
               valid_index <- index & getValidSnp(object)
-
+              
               if(!chr_i %in% chr){
                 .saveHap(object, NA, sum(index), FALSE)
                 .saveGeno(object, NA, sum(index), FALSE)
@@ -75,9 +47,9 @@ setMethod("clean",
                 message(paste0("Chr ", chr_i, " was skipped."))
                 next
               }
-
+              
               message(paste0("\nNow cleaning chr ", chr_i, "..."))
-
+              
               best_seq <- .cleanEachChr(object = object,
                                         index = valid_index,
                                         error_rate = error_rate,
@@ -116,9 +88,9 @@ setMethod("clean",
   gdsfmt::readmode.gdsn(node=gdsfmt::index.gdsn(node=object@data@handler,
                                                 path = "estimated.haplotype"))
   gdsfmt::readmode.gdsn(node=gdsfmt::index.gdsn(node=object@data@handler,
-                                                path =　"corrected.genotype"))
+                                                path = "corrected.genotype"))
   gdsfmt::readmode.gdsn(node=gdsfmt::index.gdsn(node=object@data@handler,
-                                                path =　"parents.genotype"))
+                                                path = "parents.genotype"))
 }
 
 .loadReadCounts <- function(object, index){
@@ -136,10 +108,10 @@ setMethod("clean",
   p_index <- which(parents != 0)
   valid_scan[p_index] <- TRUE
   parents_index <- p_index[order(parents[p_index])]
-
+  
   parents <- parents[valid_scan]
   samples_index <- parents == 0
-
+  
   ad <- gdsfmt::readex.gdsn(ad_node, list(valid_scan, valid_markers_2))
   ref <- ad[, c(TRUE, FALSE)]
   alt <- ad[, c(FALSE, TRUE)]
@@ -149,7 +121,7 @@ setMethod("clean",
     ref[, flipped] <- alt[, flipped]
     alt[, flipped] <- tmp
   }
-
+  
   p_ref <- ref[parents != 0, ]
   p_alt <- alt[parents != 0, ]
   ref <- ref[parents == 0, ]
@@ -171,7 +143,7 @@ setMethod("clean",
   } else {
     n_pairing <- max(i_pairing)
   }
-
+  
   n_founder <- scheme@pop_size[1] * 2^het_parent
   if(n_pairing == 0){
     jnum <- .initJnum(n_founder)
@@ -179,7 +151,7 @@ setMethod("clean",
     next_crosstype <- scheme@crosstype[n_pairing + 1]
     jnum <- .initJnum(n_founder, n_pairing + het_parent, next_crosstype)
   }
-
+  
   s_gen <- n_pairing + 1
   n_gen <- length(scheme@crosstype)
   for(i in s_gen:n_gen){
@@ -206,7 +178,7 @@ setMethod("clean",
     jnum$a12 <- 1
     if(next_crosstype == "selfing"){
       jnum$j1232 <- jnum$r <- n_pairing - 1
-
+      
     } else {
       jnum$j1232 <- jnum$r <- jnum$k1232 <- switch(n_pairing, "1" = 0, n_pairing - 2)
       if(n_founder > 2){
@@ -250,7 +222,7 @@ setMethod("clean",
     next_j1122 <- 0.5 * prob_df$j1122 + 0.5 * prob_df$r
     next_k1122 <- 0
     next_j1222 <- 0.5 * (next_r - next_j1122 - next_j1232)
-
+    
   } else {
     next_a12 <- prob_df$b12
     next_b12 <- 0.5 * s * prob_df$a12 + (1 - s) * prob_df$b12
@@ -284,45 +256,46 @@ setMethod("clean",
 }
 
 .getValidPat <- function(scheme, het_parent, n_origin){
+  Var1 <- Var2 <- NULL
   homo <- FALSE
-
+  
   if(het_parent){
     pat <- apply(matrix(1:n_origin, nrow = 2), 2, paste, collapse = "/")
     chr <- pat[match(scheme@mating[[1]], 1:(0.5*n_origin))]
     if(scheme@crosstype[1] == "pairing"){
       pat <- apply(matrix(chr, dim(scheme@mating[[1]])), 2, paste, collapse = "|")
-
+      
     } else if(scheme@crosstype[1] == "random"){
       mating <- t(expand.grid(chr, chr))
       mating <- mating[,apply(mating, 2, function(x) length(unique(x)) != 1)]
       pat <- apply(mating, 2, paste, collapse = "|")
     }
-
+    
   } else {
     chr <- scheme@mating[[1]]
     chr[chr != 1] <- chr[chr != 1] * 2 - 1
     if(scheme@crosstype[1] == "pairing"){
       pat <- apply(chr, 2, paste, collapse = "|")
-
+      
     } else if(scheme@crosstype[1] == "random"){
       mating <- t(expand.grid(chr, chr))
       mating <- mating[,apply(mating, 2, function(x) length(unique(x)) != 1)]
       pat <- apply(mating, 2, paste, collapse = "|")
     }
   }
-
+  
   for(i in 2:length(scheme@crosstype)){
     if(scheme@crosstype[i] == "pairing"){
       chr <- sub("\\|", "/", pat)
       mating <- matrix(chr[match(scheme@mating[[i]], scheme@progenies[[i - 1]])],
                        dim(scheme@mating[[i]]))
       pat <- apply(mating, 2, paste, collapse = "|")
-
+      
     } else if(scheme@crosstype[i] == "sibling"){
       chr <- strsplit(pat, "\\|")[[1]]
       pat <- apply(t(expand.grid(chr, chr)), 2, paste, collapse = "|")
       homo <- TRUE
-
+      
     } else if(scheme@crosstype[i] == "random"){
       chr <- sub("\\|", "/", pat)
       mating <- t(expand.grid(chr, chr))
@@ -343,7 +316,7 @@ setMethod("clean",
   pat <- subset(pat, subset = Var1 != Var2)
   pat <- as.matrix(pat)
   pat <- rbind(pat, cbind(pat[, 2], pat[, 1]))
-
+  
   if(homo){
     pat <- rbind(pat, t(matrix(rep(unique(as.vector(pat)), each = 2), 2)))
   }
@@ -363,7 +336,7 @@ setMethod("clean",
       return(!check1 & !check2)
     })
   })
-
+  
   ibd <- apply(pat$hap_progeny, 1, function(x)abs(length(unique(x)) - 2))
   ibd <- sapply(ibd, function(x) paste0(ibd, x))
   ibd[ibd == "00"] <- jrate$r00
@@ -372,7 +345,7 @@ setMethod("clean",
   ibd[ibd == "11"] <- jrate$r11
   ibd[invalid_joint] <- 0
   q_mat <- as.numeric(ibd)
-
+  
   snp_dist <- diff(pos)
   rf <- snp_dist * 1e-6 * recomb_rate
   q_mat <- matrix(q_mat, nrow(pat$hap_progeny), nrow(pat$hap_progeny))
@@ -383,7 +356,7 @@ setMethod("clean",
     return(x)
   })
   prob_dim <- c(pat$n_hap_pat, pat$n_hap_pat, length(snp_dist))
-
+  
   prob <- array(prob, prob_dim)
   return(prob)
 }
@@ -413,7 +386,7 @@ setMethod("clean",
   output[, valid_index, getValidScan(object, parents = TRUE)] <- best_hap
   output <- t(matrix(output, n_snp * 2))
   output[is.na(output)] <- 0
-
+  
   hap_gdsn <- gdsfmt::index.gdsn(object@data@handler, "estimated.haplotype")
   gdsn_dim <- gdsfmt::objdesp.gdsn(hap_gdsn)$dim
   if(gdsn_dim[1] == 0){
@@ -517,7 +490,7 @@ setMethod("clean",
   best_hap <- .addParents(best_hap = best_hap,
                           p_geno = vit_list$p_geno,
                           param_list = param_list)
-
+  
   return(best_hap)
 }
 
@@ -533,9 +506,9 @@ setMethod("clean",
                        recomb_rate,
                        call_threshold,
                        het_parent){
-
+  
   reads <- .loadReadCounts(object, index)
-
+  
   n_parents <- nrow(reads$p_ref)
   n_samples <- nrow(reads$ref)
   n_alleles <- 2
@@ -548,13 +521,13 @@ setMethod("clean",
                       het_parent,
                       scheme = object@scheme,
                       n_origin)
-
+  
   pos <- getPosition(object, valid = FALSE)[index]
   n_snp <- length(pos)
   trans_prob <- .transitionProb(pat, pos, recomb_rate,
                                 scheme = object@scheme, n_origin, het_parent)
   init_prob <- .getInitProb(trans_prob[,, 1], pat$n_p_pat, n_samples)
-
+  
   return(list(n_parents = n_parents,
               n_samples = n_samples,
               n_alleles = n_alleles,
@@ -587,7 +560,7 @@ setMethod("clean",
                          scheme,
                          n_origin){
   alleles <- seq(0, length.out = n_alleles)
-
+  
   geno_pat <- NULL
   for(i in 1:n_ploidy){
     geno_pat <- c(geno_pat, list(alleles))
@@ -595,7 +568,7 @@ setMethod("clean",
   geno_pat <- expand.grid(geno_pat)
   geno_pat <- t(apply(geno_pat, 1, sort))
   geno_pat <- rowSums(geno_pat[!duplicated(geno_pat), ])
-
+  
   geno_parents <- NULL
   for(i in 1:(n_parents * 2)){
     geno_parents <- c(geno_parents, list(alleles))
@@ -608,11 +581,11 @@ setMethod("clean",
     geno_parents <- geno_parents[valid, ]
   }
   attributes(geno_parents) <- list(dim = dim(geno_parents))
-
+  
   hap_progeny <- .getValidPat(scheme = scheme, het_parent, n_origin)
-
+  
   hap_vec <- as.vector(t(hap_progeny))
-
+  
   derived_geno <- apply(geno_parents, 1, function(x){
     x <- x[hap_vec]
     x <- x[c(T, F)] + x[c(F, T)]
@@ -621,7 +594,7 @@ setMethod("clean",
   derived_geno <- as.vector(derived_geno)
   possiblehap <- rbind(derived_geno, derived_geno, derived_geno) == geno_pat
   possiblehap <- apply(possiblehap, 2, which)
-
+  
   possiblegeno <- apply(geno_parents, 1, function(x){
     x <- x[c(T, F)] + x[c(F, T)]
     return(x)
@@ -629,7 +602,7 @@ setMethod("clean",
   possiblegeno <- as.vector(possiblegeno)
   possiblegeno <- rbind(possiblegeno, possiblegeno, possiblegeno) == geno_pat
   possiblegeno <- apply(possiblegeno, 2, which)
-
+  
   n_p_pat <- nrow(geno_parents)
   n_hap_pat <- nrow(hap_progeny)
   return(list(alleles = alleles,
@@ -663,20 +636,20 @@ setMethod("clean",
                           possiblehap = param_list$pat$possiblehap - 1,
                           possiblegeno = param_list$pat$possiblegeno - 1,
                           p_geno_fix = param_list$p_geno_fix - 1)
-
+  
   if(outprob){
     prob <- run_fb(ref = param_list$reads$ref,
-                    alt = param_list$reads$alt,
-                    eseq_in = param_list$error_rate,
-                    bias = param_list$bias,
-                    mismap = param_list$mismap,
-                    trans_prob = param_list$trans_prob,
-                    init_prob = param_list$init_prob,
-                    p_geno = out_list$p_geno,
-                    n_h = param_list$pat$n_hap_pat,
-                    n_o = param_list$n_samples,
-                    n_m = param_list$n_snp,
-                    possiblehap = param_list$pat$possiblehap - 1)
+                   alt = param_list$reads$alt,
+                   eseq_in = param_list$error_rate,
+                   bias = param_list$bias,
+                   mismap = param_list$mismap,
+                   trans_prob = param_list$trans_prob,
+                   init_prob = param_list$init_prob,
+                   p_geno = out_list$p_geno,
+                   n_h = param_list$pat$n_hap_pat,
+                   n_o = param_list$n_samples,
+                   n_m = param_list$n_snp,
+                   possiblehap = param_list$pat$possiblehap - 1)
     prob <- array(apply(prob, 3, function(x) return(t(x))),
                   dim = c(3, param_list$n_samples, param_list$n_snp))
     out_list$prob <- prob
@@ -704,11 +677,11 @@ setMethod("clean",
   half <- round(n_snp / 2)
   first <- (n_snp:1)[1:half]
   latter <- (half + 1):n_snp
-
+  
   best_seq <- rbind(best_pat_r$best_seq[first, ],
                     best_pat_f$best_seq[latter, ])
   p_geno <- c(best_pat_r$p_geno[first], best_pat_f$p_geno[latter])
-
+  
   prob <- c(best_pat_r$prob[,, first],
             best_pat_f$prob[,, latter])
   prob <- array(prob, dim(best_pat_f$prob))
@@ -730,14 +703,14 @@ setMethod("clean",
     n_alt <- rowSums(est_het, na.rm = TRUE)
     alt_prop <- alt / n_alt
     bias <- ref_prop / (ref_prop + alt_prop)
-
+    
   } else {
     est_ref <- best_seq == 0
     ref[!est_ref] <- NA
     ref <- rowSums(ref, na.rm = TRUE)
     n_ref <- rowSums(est_ref, na.rm = TRUE)
     ref_prop <- ref / n_ref
-
+    
     est_alt <- best_seq == 2
     alt[!est_alt] <- NA
     alt <- rowSums(alt, na.rm = TRUE)
@@ -765,7 +738,7 @@ setMethod("clean",
   alt <- t(rbind(param_list$reads$p_alt, param_list$reads$alt))
   ref[, indices] <- ref
   alt[, indices] <- alt
-
+  
   bias1 <- .getBias(best_seq, 1, ref, alt)
   bias2 <- .getBias(best_seq, 2, ref, alt)
   bias_cor <- suppressWarnings(cor(bias1$bias, bias2$bias, "pair"))
@@ -784,7 +757,7 @@ setMethod("clean",
   alt <- t(param_list$reads$alt) > 0
   alt[!est] <- NA
   alt_mis <- rowSums(alt, na.rm = TRUE) / n_ref
-
+  
   est <- best_seq[, param_list$samples_index] == 2
   n_alt <- rowSums(est, na.rm = TRUE)
   ref <- t(param_list$reads$ref) > 0
@@ -835,14 +808,14 @@ setMethod("clean",
   message("Cycle ", param_list$count, "...")
   cycle <- paste0("Cycle ", param_list$count, ": ")
   message("\r", paste0(cycle, " Forward path..."))
-
+  
   if(param_list$flip){
     best_pat_r <- .getBestSeq(.flipParam(param_list), outprob)
     best_hap_r <- .pat2hap(best_pat_r, param_list)
     p_geno_r <- .parentPat2Geno(best_pat_r, param_list)
     best_geno_r <- .hap2geno(best_hap_r, p_geno_r, param_list)
     param_list$p_geno_fix <- best_pat_r$p_geno[param_list$n_snp]
-
+    
   } else {
     best_pat_f <- .getBestSeq(param_list, outprob)
     best_hap_f <- .pat2hap(best_pat_f, param_list)
@@ -850,7 +823,7 @@ setMethod("clean",
     best_geno_f <- .hap2geno(best_hap_f, p_geno_f, param_list)
     param_list$p_geno_fix <- best_pat_f$p_geno[param_list$n_snp]
   }
-
+  
   message("\r", paste0(cycle, "Backward path..."))
   if(param_list$flip){
     best_pat_f <- .getBestSeq(param_list, outprob)
@@ -858,7 +831,7 @@ setMethod("clean",
     p_geno_f <- .parentPat2Geno(best_pat_f, param_list)
     best_geno_f <- .hap2geno(best_hap_f, p_geno_f, param_list)
     param_list$p_geno_fix <- best_pat_f$p_geno[param_list$n_snp]
-
+    
   } else {
     best_pat_r <- .getBestSeq(.flipParam(param_list), outprob)
     best_hap_r <- .pat2hap(best_pat_r, param_list)
@@ -866,7 +839,7 @@ setMethod("clean",
     best_geno_r <- .hap2geno(best_hap_r, p_geno_r, param_list)
     param_list$p_geno_fix <- best_pat_r$p_geno[param_list$n_snp]
   }
-
+  
   if(!outprob){
     message("\r", paste0(cycle, "Estimating error pattern..."))
     error_f <- .calcErrors(best_geno_f, param_list)
@@ -875,7 +848,7 @@ setMethod("clean",
     param_list$bias <- error$bias
     param_list$mismap <- error$mismap
   }
-
+  
   if(outgeno){
     message("\r", "Summarizing output...")
     best_pat <- .halfJoint(best_pat_f,
@@ -887,7 +860,7 @@ setMethod("clean",
     best_geno <- .hap2geno(best_hap, p_geno, param_list)
     out_list <- .summarizeEst(best_hap, best_geno, best_pat$prob, param_list)
     out_list$p_geno <- p_geno
-
+    
     message("\r", "Done!")
     return(out_list)
   } else {
@@ -919,7 +892,7 @@ setMethod("clean",
                           het_parent,
                           optim,
                           iter){
-
+  
   param_list <- .getParams(object,
                            index,
                            error_rate,
@@ -927,19 +900,19 @@ setMethod("clean",
                            call_threshold,
                            het_parent)
   param_list <- .checkPread(param_list)
-
+  
   if(iter == 1){
     optim <- FALSE
   }
-
+  
   if(optim){
     param_list <- .runCycle(param_list, FALSE, FALSE)
-
+    
     for(i in 2:iter){
-
+      
       if(i == iter){
         out_list <- .runCycle(param_list, TRUE, TRUE)
-
+        
       } else {
         param_list <- .runCycle(param_list, FALSE, FALSE)
       }
@@ -949,42 +922,48 @@ setMethod("clean",
   }
   return(out_list)
 }
-
-#
+# 
+# 
 # # dir <- "~/02_gbscleanr/ForManuscript/simpop_8way_RIL_noADbias_homoParents"
-# dir <- "~/02_gbscleanr/ForManuscript/simpop_2way_F2_noADbias_homoParents"
-#
+# # dir <- "~/02_gbscleanr/ForManuscript/simpop_2way_F2_noADbias_homoParents"
+# dir <- "~/02_gbscleanr/ForManuscript/simpop_2way_F2_noADbias_hetParents_sibling/"
+# 
 # ############
 # library(GBScleanR)
 # files <- list.files(dir, ".vcf")
 # files <- grep("_LB.vcf", files, invert = T, value = T)
-# file_i<-files[1]
-#   vcf_fn <- paste0(dir, "/", file_i)
-#   gds_fn <- sub(".vcf", "_gbsr.gds", vcf_fn)
-#   # gbsrVCF2GDS(vcf_fn, gds_fn, force = T)
-#   gds <- loadGDS(gds_fn)
-#   parents <- grep("Founder", getScanID(gds), value = TRUE)
-#   gds <- setParents(gds, parents, flip = FALSE, mono = FALSE, bi = FALSE)
-#
-#   # gds <- initScheme(gds, "pairing", matrix(1:8, 2))
-#   # gds <- addScheme(gds, "pairing", matrix(9:12, 2))
-#   # gds <- addScheme(gds, "pairing", matrix(13:14, 2))
-#   # gds <- addScheme(gds, "self")
-#   # gds <- addScheme(gds, "self")
-#   # gds <- addScheme(gds, "self")
-#   # gds <- addScheme(gds, "self")
-#   # gds <- addScheme(gds, "self")
-#
-#   gds <- initScheme(gds, "pair", matrix(1:2, 2))
-#   gds <- addScheme(gds, "self")
+# file_i<-files[112]
+# vcf_fn <- paste0(dir, "/", file_i)
+# gds_fn <- sub(".vcf", "_gbsr.gds", vcf_fn)
+# # gbsrVCF2GDS(vcf_fn, gds_fn, force = T)
+# gds <- loadGDS(gds_fn)
+# parents <- grep("Founder", getScanID(gds), value = TRUE)
+# gds <- setParents(gds, parents, flip = FALSE, mono = FALSE, bi = FALSE)
+# 
+# # gds <- initScheme(gds, "pairing", matrix(1:8, 2))
+# # gds <- addScheme(gds, "pairing", matrix(9:12, 2))
+# # gds <- addScheme(gds, "pairing", matrix(13:14, 2))
+# # gds <- addScheme(gds, "self")
+# # gds <- addScheme(gds, "self")
+# # gds <- addScheme(gds, "self")
+# # gds <- addScheme(gds, "self")
+# # gds <- addScheme(gds, "self")
+# 
+# # gds <- initScheme(gds, "pair", matrix(1:2, 2))
+# # gds <- addScheme(gds, "self")
+# 
+# gds <- initScheme(gds, "pairing", matrix(1:2, 2))
+# gds <- addScheme(gds, "sibling")
+# 
 # object = gds
-#       recomb_rate = 0.04
-#       call_threshold = 0.9
-#       error_rate = 0.0025
-#       iter = 4
-#       het_parent = FALSE
-#       optim = TRUE
-#       n_threads = NULL
+# recomb_rate = 0.04
+# call_threshold = 0.9
+# error_rate = 0.0025
+# iter = 4
+# het_parent = TRUE
+# # het_parent = FALSE
+# optim = TRUE
+# n_threads = NULL
 # index <- getChromosome(object, valid = FALSE) %in% 1
 # valid_index <- index & getValidSnp(object)
 # param_list <- .getParams(object,
@@ -993,15 +972,15 @@ setMethod("clean",
 #                          recomb_rate,
 #                          call_threshold,
 #                          het_parent)
-#
+# 
 # param_list <- .checkPread(param_list)
-#
+# 
 # # param_list <- .flipParam(param_list)
-#
+# 
 # param_list$trans_prob <- matrix(param_list$trans_prob,
 #                                 nrow = dim(param_list$trans_prob)[1])
-#
-#
+# 
+# 
 # Rcpp::sourceCpp("src/GBSR_HMM.cpp")
 # out_list <- run_viterbi(p_ref = param_list$reads$p_ref,
 #                         p_alt = param_list$reads$p_alt,
@@ -1022,22 +1001,22 @@ setMethod("clean",
 #                         p_geno_fix = param_list$p_geno_fix - 1)
 # out_list$p_geno
 # prob <- run_fb(ref = param_list$reads$ref,
-#                 alt = param_list$reads$alt,
-#                 eseq_in = param_list$error_rate,
-#                 bias = param_list$bias,
-#                 mismap = param_list$mismap,
-#                 trans_prob = param_list$trans_prob,
-#                 init_prob = param_list$init_prob,
-#                 p_geno = out_list$p_geno,
-#                 n_h = param_list$pat$n_hap_pat,
-#                 n_o = param_list$n_samples,
-#                 n_m = param_list$n_snp,
-#                 possiblehap = param_list$pat$possiblehap - 1)
+#                alt = param_list$reads$alt,
+#                eseq_in = param_list$error_rate,
+#                bias = param_list$bias,
+#                mismap = param_list$mismap,
+#                trans_prob = param_list$trans_prob,
+#                init_prob = param_list$init_prob,
+#                p_geno = out_list$p_geno,
+#                n_h = param_list$pat$n_hap_pat,
+#                n_o = param_list$n_samples,
+#                n_m = param_list$n_snp,
+#                possiblehap = param_list$pat$possiblehap - 1)
 # out_list$prob <- prob
 # geno <- out_list$best_geno[, -(1:2)]
 # geno[geno == 3] <- NA
 # geno<-abs(geno -2)
 # geno <- t(geno)
-#
-#
+# 
+# 
 # geno <- best_geno_f[, -(1:2)]

@@ -1,6 +1,9 @@
+#' @param parents Indices of parental lines.
+#' @rdname initScheme
+#' 
 setMethod("initScheme",
           "GbsrScheme",
-          function(object, crosstype, mating, parents, ...){
+          function(object, crosstype, mating, parents){
             crosstype <- match.arg(crosstype,
                                    c("pairing", "random"),
                                    FALSE)
@@ -27,10 +30,13 @@ setMethod("initScheme",
             return(object)
           })
 
-
+#'
+#' @importFrom utils tail
+#' @rdname addScheme
+#' 
 setMethod("addScheme",
           "GbsrScheme",
-          function(object, crosstype, mating, pop_size, ...){
+          function(object, crosstype, mating, pop_size){
             crosstype <- match.arg(crosstype,
                                    c("pairing", "selfing", "sibling", "random"),
                                    FALSE)
@@ -71,10 +77,13 @@ setMethod("addScheme",
             return(object)
           })
 
-
+#' 
+#' @param parents_name A vector of strings to indicate names of parental samples.
+#' @rdname showScheme
+#' 
 setMethod("showScheme",
           "GbsrScheme",
-          function(object, parents_name, ...){
+          function(object, parents_name){
             for(i in 1:length(object@crosstype)){
               if(i == 1){
                 message('Generation: Parents')
