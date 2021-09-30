@@ -9,8 +9,7 @@ setMethod("estGeno",
                    het_parent,
                    optim,
                    iter,
-                   n_threads,
-                   sep_vit){
+                   n_threads){
             max_threads <- RcppParallel::defaultNumThreads()
             if(is.null(n_threads)){
               n_threads <- max_threads / 2
@@ -58,8 +57,7 @@ setMethod("estGeno",
                                         call_threshold = call_threshold,
                                         het_parent = het_parent,
                                         optim = optim,
-                                        iter = iter,
-                                        sep_vit = sep_vit)
+                                        iter = iter)
               .saveHap(object, best_seq$best_hap, sum(index), valid_index[index])
               .saveGeno(object, best_seq$best_geno, sum(index), valid_index[index])
               .savePGeno(object, best_seq$p_geno, sum(index), valid_index[index])
@@ -638,28 +636,6 @@ setMethod("estGeno",
   param_list$trans_prob <- matrix(param_list$trans_prob,
                                   nrow = dim(param_list$trans_prob)[1])
   
-  
-  if(param_list$sep_vit){
-    
-    out_list <- run_viterbi2(p_ref = param_list$reads$p_ref,
-                             p_alt = param_list$reads$p_alt,
-                             ref = param_list$reads$ref,
-                             alt = param_list$reads$alt,
-                             eseq_in = param_list$error_rate,
-                             bias = param_list$bias,
-                             mismap = param_list$mismap,
-                             trans_prob = param_list$trans_prob,
-                             init_prob = param_list$init_prob,
-                             n_p = param_list$pat$n_p_pat,
-                             n_h = param_list$pat$n_hap_pat,
-                             n_f = param_list$n_parents,
-                             n_o = param_list$n_samples,
-                             n_m = param_list$n_snp,
-                             possiblehap = param_list$pat$possiblehap - 1,
-                             possiblegeno = param_list$pat$possiblegeno - 1,
-                             p_geno_fix = param_list$p_geno_fix - 1)
-  } else {
-    
     out_list <- run_viterbi(p_ref = param_list$reads$p_ref,
                              p_alt = param_list$reads$p_alt,
                              ref = param_list$reads$ref,
@@ -677,7 +653,6 @@ setMethod("estGeno",
                              possiblehap = param_list$pat$possiblehap - 1,
                              possiblegeno = param_list$pat$possiblegeno - 1,
                              p_geno_fix = param_list$p_geno_fix - 1)
-  }
   
   if(outprob){
     prob <- run_fb(ref = param_list$reads$ref,
@@ -933,8 +908,7 @@ setMethod("estGeno",
                           call_threshold,
                           het_parent,
                           optim,
-                          iter,
-                          sep_vit){
+                          iter){
   
   param_list <- .getParams(object,
                            index,
@@ -943,7 +917,6 @@ setMethod("estGeno",
                            call_threshold,
                            het_parent)
   param_list <- .checkPread(param_list)
-  param_list$sep_vit <- sep_vit
   
   if(iter == 1){
     optim <- FALSE
