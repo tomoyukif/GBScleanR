@@ -5,6 +5,10 @@ run_viterbi <- function(p_ref, p_alt, ref, alt, eseq_in, bias, mismap, trans_pro
     .Call(`_GBScleanR_run_viterbi`, p_ref, p_alt, ref, alt, eseq_in, bias, mismap, trans_prob, init_prob, n_p, n_h, n_o, n_f, n_m, possiblehap, possiblegeno, p_geno_fix)
 }
 
+run_viterbi2 <- function(p_ref, p_alt, ref, alt, eseq_in, bias, mismap, trans_prob, init_prob, n_p, n_h, n_o, n_f, n_m, possiblehap, possiblegeno, p_geno_fix) {
+    .Call(`_GBScleanR_run_viterbi2`, p_ref, p_alt, ref, alt, eseq_in, bias, mismap, trans_prob, init_prob, n_p, n_h, n_o, n_f, n_m, possiblehap, possiblegeno, p_geno_fix)
+}
+
 run_fb <- function(ref, alt, eseq_in, bias, mismap, possiblehap, trans_prob, init_prob, n_h, n_o, n_m, p_geno) {
     .Call(`_GBScleanR_run_fb`, ref, alt, eseq_in, bias, mismap, possiblehap, trans_prob, init_prob, n_h, n_o, n_m, p_geno)
 }

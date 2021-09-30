@@ -9,7 +9,8 @@ setMethod("estGeno",
                    het_parent,
                    optim,
                    iter,
-                   n_threads){
+                   n_threads,
+                   sep_vit){
             max_threads <- RcppParallel::defaultNumThreads()
             if(is.null(n_threads)){
               n_threads <- max_threads / 2
@@ -57,7 +58,8 @@ setMethod("estGeno",
                                         call_threshold = call_threshold,
                                         het_parent = het_parent,
                                         optim = optim,
-                                        iter = iter)
+                                        iter = iter,
+                                        sep_vit = sep_vit)
               .saveHap(object, best_seq$best_hap, sum(index), valid_index[index])
               .saveGeno(object, best_seq$best_geno, sum(index), valid_index[index])
               .savePGeno(object, best_seq$p_geno, sum(index), valid_index[index])
@@ -382,10 +384,15 @@ setMethod("estGeno",
 }
 
 .saveHap <- function(object, best_hap, n_snp, valid_index){
-  output <- array(0, c(2, n_snp, nscan(object, valid = FALSE)))
-  output[, valid_index, getValidScan(object, parents = TRUE)] <- best_hap
-  output <- t(matrix(output, n_snp * 2))
-  output[is.na(output)] <- 0
+  if(is.array(best_hap)){
+    output <- array(0, c(2, n_snp, nscan(object, valid = FALSE)))
+    output[, valid_index, getValidScan(object, parents = TRUE)] <- best_hap
+    output <- t(matrix(output, n_snp * 2))
+    output[is.na(output)] <- 0
+    
+  } else {
+    output <- array(0, c(2, n_snp, nscan(object, valid = FALSE)))
+  }
   
   hap_gdsn <- gdsfmt::index.gdsn(object@data@handler, "estimated.haplotype")
   gdsn_dim <- gdsfmt::objdesp.gdsn(hap_gdsn)$dim
@@ -447,9 +454,15 @@ setMethod("estGeno",
 }
 
 .saveGeno <- function(object, best_geno, n_snp, valid_index){
-  output <- matrix(NA, n_snp, nscan(object, valid = FALSE))
-  output[valid_index, getValidScan(object, parents = TRUE)] <- best_geno
-  output[is.na(output)] <- 3
+  if(is.na(best_geno[1])){
+    output <- matrix(3, n_snp, nscan(object, valid = FALSE))
+    
+  } else {
+    output <- matrix(3, n_snp, nscan(object, valid = FALSE))
+    output[valid_index, getValidScan(object, parents = TRUE)] <- best_geno
+    output[is.na(output)] <- 3
+  }
+  
   out_gdsn <- gdsfmt::index.gdsn(object@data@handler, "corrected.genotype")
   gdsn_dim <- gdsfmt::objdesp.gdsn(out_gdsn)$dim
   if(gdsn_dim[1] == 0){
@@ -465,8 +478,13 @@ setMethod("estGeno",
 }
 
 .savePGeno <- function(object, p_geno, n_snp, valid_index){
-  output <- matrix(NA, nrow(p_geno), n_snp)
-  output[, valid_index] <- p_geno
+  if(is.na(p_geno[1])){
+    n_p <- nrow(getParents(object))
+    output <- matrix(3, n_p * 2, n_snp)
+  } else {
+    output <- matrix(3, nrow(p_geno), n_snp)
+    output[, valid_index] <- p_geno
+  }
   out_gdsn <- gdsfmt::index.gdsn(object@data@handler, "parents.genotype")
   gdsn_dim <- gdsfmt::objdesp.gdsn(out_gdsn)$dim
   if(gdsn_dim[1] == 0){
@@ -619,23 +637,47 @@ setMethod("estGeno",
 .getBestSeq <- function(param_list, outprob){
   param_list$trans_prob <- matrix(param_list$trans_prob,
                                   nrow = dim(param_list$trans_prob)[1])
-  out_list <- run_viterbi(p_ref = param_list$reads$p_ref,
-                          p_alt = param_list$reads$p_alt,
-                          ref = param_list$reads$ref,
-                          alt = param_list$reads$alt,
-                          eseq_in = param_list$error_rate,
-                          bias = param_list$bias,
-                          mismap = param_list$mismap,
-                          trans_prob = param_list$trans_prob,
-                          init_prob = param_list$init_prob,
-                          n_p = param_list$pat$n_p_pat,
-                          n_h = param_list$pat$n_hap_pat,
-                          n_f = param_list$n_parents,
-                          n_o = param_list$n_samples,
-                          n_m = param_list$n_snp,
-                          possiblehap = param_list$pat$possiblehap - 1,
-                          possiblegeno = param_list$pat$possiblegeno - 1,
-                          p_geno_fix = param_list$p_geno_fix - 1)
+  
+  
+  if(param_list$sep_vit){
+    
+    out_list <- run_viterbi2(p_ref = param_list$reads$p_ref,
+                             p_alt = param_list$reads$p_alt,
+                             ref = param_list$reads$ref,
+                             alt = param_list$reads$alt,
+                             eseq_in = param_list$error_rate,
+                             bias = param_list$bias,
+                             mismap = param_list$mismap,
+                             trans_prob = param_list$trans_prob,
+                             init_prob = param_list$init_prob,
+                             n_p = param_list$pat$n_p_pat,
+                             n_h = param_list$pat$n_hap_pat,
+                             n_f = param_list$n_parents,
+                             n_o = param_list$n_samples,
+                             n_m = param_list$n_snp,
+                             possiblehap = param_list$pat$possiblehap - 1,
+                             possiblegeno = param_list$pat$possiblegeno - 1,
+                             p_geno_fix = param_list$p_geno_fix - 1)
+  } else {
+    
+    out_list <- run_viterbi(p_ref = param_list$reads$p_ref,
+                             p_alt = param_list$reads$p_alt,
+                             ref = param_list$reads$ref,
+                             alt = param_list$reads$alt,
+                             eseq_in = param_list$error_rate,
+                             bias = param_list$bias,
+                             mismap = param_list$mismap,
+                             trans_prob = param_list$trans_prob,
+                             init_prob = param_list$init_prob,
+                             n_p = param_list$pat$n_p_pat,
+                             n_h = param_list$pat$n_hap_pat,
+                             n_f = param_list$n_parents,
+                             n_o = param_list$n_samples,
+                             n_m = param_list$n_snp,
+                             possiblehap = param_list$pat$possiblehap - 1,
+                             possiblegeno = param_list$pat$possiblegeno - 1,
+                             p_geno_fix = param_list$p_geno_fix - 1)
+  }
   
   if(outprob){
     prob <- run_fb(ref = param_list$reads$ref,
@@ -891,7 +933,8 @@ setMethod("estGeno",
                           call_threshold,
                           het_parent,
                           optim,
-                          iter){
+                          iter,
+                          sep_vit){
   
   param_list <- .getParams(object,
                            index,
@@ -900,6 +943,7 @@ setMethod("estGeno",
                            call_threshold,
                            het_parent)
   param_list <- .checkPread(param_list)
+  param_list$sep_vit <- sep_vit
   
   if(iter == 1){
     optim <- FALSE
@@ -922,8 +966,8 @@ setMethod("estGeno",
   }
   return(out_list)
 }
-# 
-# 
+
+
 # # dir <- "~/02_gbscleanr/ForManuscript/simpop_8way_RIL_noADbias_homoParents"
 # # dir <- "~/02_gbscleanr/ForManuscript/simpop_2way_F2_noADbias_homoParents"
 # dir <- "~/02_gbscleanr/ForManuscript/simpop_2way_F2_noADbias_hetParents_sibling/"
@@ -932,7 +976,7 @@ setMethod("estGeno",
 # library(GBScleanR)
 # files <- list.files(dir, ".vcf")
 # files <- grep("_LB.vcf", files, invert = T, value = T)
-# file_i<-files[112]
+# file_i<-files[42]
 # vcf_fn <- paste0(dir, "/", file_i)
 # gds_fn <- sub(".vcf", "_gbsr.gds", vcf_fn)
 # # gbsrVCF2GDS(vcf_fn, gds_fn, force = T)
@@ -980,9 +1024,8 @@ setMethod("estGeno",
 # param_list$trans_prob <- matrix(param_list$trans_prob,
 #                                 nrow = dim(param_list$trans_prob)[1])
 # 
-# 
 # Rcpp::sourceCpp("src/GBSR_HMM.cpp")
-# out_list <- run_viterbi(p_ref = param_list$reads$p_ref,
+# out_list <- run_viterbi2(p_ref = param_list$reads$p_ref,
 #                         p_alt = param_list$reads$p_alt,
 #                         ref = param_list$reads$ref,
 #                         alt = param_list$reads$alt,
@@ -1013,10 +1056,15 @@ setMethod("estGeno",
 #                n_m = param_list$n_snp,
 #                possiblehap = param_list$pat$possiblehap - 1)
 # out_list$prob <- prob
+# 
+# 
+# out_list <- .runCycle(param_list, TRUE, TRUE)
 # geno <- out_list$best_geno[, -(1:2)]
 # geno[geno == 3] <- NA
 # geno<-abs(geno -2)
 # geno <- t(geno)
-# 
+# df <- compareGeno(geno, true)
+# df_ind_mean <- apply(df$ind, 2, mean, na.rm = TRUE)
+# df_ind_mean
 # 
 # geno <- best_geno_f[, -(1:2)]

@@ -15,6 +15,7 @@ estGeno(
   optim = TRUE,
   iter = 2,
   n_threads = NULL,
+  sep_vit,
   ...
 )
 
@@ -27,7 +28,8 @@ estGeno(
   het_parent,
   optim,
   iter,
-  n_threads
+  n_threads,
+  sep_vit
 )
 }
 \arguments{
@@ -49,6 +51,8 @@ error correction.}
 \item{iter}{An integer value to specify the number of iterative parameter updates.}
 
 \item{n_threads}{An integer value to specify the number of threads used for the calculation. The default is `n_threads = NULL` and automatically set half the number of available threads on the computer.}
+
+\item{sep_vit}{A logical value. If TRUE, estimation of founder genotype will be done first and then offspring genotype. The separate estimation of founder and offspring genotypes uses less RAM.}
 
 \item{...}{Unused.}
 }
