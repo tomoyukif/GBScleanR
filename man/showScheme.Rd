@@ -20,12 +20,18 @@ showScheme(object, ...)
 
 \item{parents_name}{A vector of strings to indicate names of parental samples.}
 }
+\value{
+NULL. Print the scheme information on the R console.
+}
 \description{
-Print the information of each generation in a GbsrScheme object in the scheme
+Print the information of each generation in
+a GbsrScheme object in the scheme
 slot of a GbsrGenotypeData object.
-A GbsrScheme object stores information of a population size, mating combinations and
+A GbsrScheme object stores information of a population size,
+mating combinations and
 a type of cross applied to each generation of the breeding process
-to generate the population which you are going to subject to the \code{estGeno()} function.
+to generate the population which you are going to
+subject to the \code{estGeno()} function.
 }
 \examples{
 gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")

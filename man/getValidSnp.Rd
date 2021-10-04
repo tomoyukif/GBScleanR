@@ -14,8 +14,18 @@ getValidSnp(object, ...)
 
 \item{...}{Unused.}
 }
+\value{
+A logical vector of the same length with
+the number of total SNP markers
+}
 \description{
 Return a logical vector indicating which are valid SNP markers.
+}
+\examples{
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+getValidSnp(gdata)
+
 }
 \seealso{
 \code{\link[=setValidSnp]{setValidSnp()}}

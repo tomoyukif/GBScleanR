@@ -3,7 +3,8 @@
 \name{flipData}
 \alias{flipData}
 \alias{flipData,GbsrGenotypeData-method}
-\title{Flip genotype, allele information, and allele read counts of the flipped SNP markers.}
+\title{Flip genotype, allele information, and allele
+read counts of the flipped SNP markers.}
 \usage{
 flipData(object, ...)
 
@@ -14,22 +15,39 @@ flipData(object, ...)
 
 \item{...}{Unused.}
 }
+\value{
+A GbsrGenotypeData object linked to the GDS file
+in which data was modified.
+}
 \description{
-Genotype data, allele information, and allele read counts to be the expected reference
-allele as actually reference allele.
+Replace genotype data, allele information, and allele read counts
+to be the expected reference allele as actually reference allele,
+in other wards, "flipped data" created via \code{\link[=setParents]{setParents()}}.
+This function overwrite the data in the GDS file and this
+modification cannot be undone.
 }
 \details{
-Flipped markers are markers where the alleles expected as reference allele are called as
-alternative allele. If you specify two parents in the \code{parents} argument of
-\code{\link[=setParents]{setParents()}} with \code{flip = TRUE}, \code{bi = TRUE}, and \code{homo = TRUE}, the alleles found
-in the parent specified as the first element to the \code{parents} argument are supposed as
-reference alleles of the markers. If the "expected" reference alleles are not actually
-called as reference alleles but alternative alleles in the given data. \code{\link[=setParents]{setParents()}} will
-automatically labels those markers "flipped". The SnpAnnotatoinDataSet slot sores this
-information and accessible via \code{\link[=getFlipped]{getFlipped()}} which gives you a logical vector
-indicating which markers are labeled as flipped \code{TRUE} or not flipped \code{FALSE}.
-\code{\link[=haveFlipped]{haveFlipped()}} just tells you whether the SnpAnnotatoinDataSet slot has
-the information of flipped markers or not.
+Flipped markers are markers where the alleles expected as reference
+allele are called as alternative allele. If you specify two parents
+in the \code{parents} argument of \code{\link[=setParents]{setParents()}} with \code{flip = TRUE},
+\code{bi = TRUE}, and \code{homo = TRUE}, the alleles found in the parent
+specified as the first element to the \code{parents} argument are supposed as
+reference alleles of the markers. If the "expected" reference alleles
+are not actually called as reference alleles but alternative alleles
+in the given data. \code{\link[=setParents]{setParents()}} will automatically labels those
+markers "flipped". The SnpAnnotatoinDataSet slot sores this
+information and accessible via \code{\link[=getFlipped]{getFlipped()}} which gives you
+a logical vector indicating which markers are labeled as flipped \code{TRUE}
+or not flipped \code{FALSE}. \code{\link[=haveFlipped]{haveFlipped()}} just tells you whether
+the SnpAnnotatoinDataSet slot has the information of flipped markers or not.
+}
+\examples{
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+parents <- grep("Founder", getScanID(gdata), value = TRUE)
+gdata <- setParents(gdata, parents = parents, flip = TRUE)
+gdata <- flipData(gdata)
+
 }
 \seealso{
 \code{\link[=setParents]{setParents()}}, \code{\link[=getFlipped]{getFlipped()}}, and \code{\link[=haveFlipped]{haveFlipped()}}.

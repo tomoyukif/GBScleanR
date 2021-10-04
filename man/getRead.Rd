@@ -12,24 +12,38 @@ getRead(object, chr = NULL, node = "raw", parents = FALSE, ...)
 \arguments{
 \item{object}{A gbsrGenotypeData object.}
 
-\item{chr}{A integer vector of indexes indicating chromosomes to get read count data.}
+\item{chr}{A integer vector of indexes indicating
+chromosomes to get read count data.}
 
 \item{node}{Either of "raw" and "filt". See details.}
 
-\item{parents}{A logical value or "only" to include data for parents or to get data only for parents.}
+\item{parents}{A logical value or "only" to include data
+for parents or to get data only for parents.}
 
 \item{...}{Unused.}
+}
+\value{
+A named list with two elements "ref" and "alt" storing
+a matrix of reference allele read counts and a matrix of
+alternative read counts for all markers in all samples.
 }
 \description{
 Read counts for reference allele and alternative allele are retrieved
 from the GDS file linked to the given GbsrGenotypeData object.
 }
 \details{
-Read count data can be obtained from the "annotation/format/AD/data" node or the
-"annotation/format/AD/filt.data" node of the GDS file with \code{node = "raw"} or
-\code{node = "filt"}, respectively. The \code{\link[=setCallFilter]{setCallFilter()}} function generate filtered
-read count data in the "annotation/format/AD/filt.data" node which can be accessed as
+Read count data can be obtained from the "annotation/format/AD/data" node
+or the "annotation/format/AD/filt.data" node of the GDS file with
+\code{node = "raw"} or \code{node = "filt"}, respectively.
+The \code{\link[=setCallFilter]{setCallFilter()}} function generate filtered read count data
+in the "annotation/format/AD/filt.data" node which can be accessed as
 mentioned above.
+}
+\examples{
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+read <- getRead(gdata)
+
 }
 \seealso{
 \code{\link[=setCallFilter]{setCallFilter()}}

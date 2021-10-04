@@ -32,6 +32,9 @@ plotGBSR(
 
 \item{ggargs}{An expression to be internally passed to a ggplot object to be drawn.}
 }
+\value{
+NULL.
+}
 \description{
 Draw line plots of specified statistics
 }

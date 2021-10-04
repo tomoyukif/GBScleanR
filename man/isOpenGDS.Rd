@@ -15,8 +15,15 @@ isOpenGDS(object, ...)
 \item{...}{Unused.}
 }
 \value{
-\code{TRUE} if the GDS file linked to the input GbsrGenotypeData object has been opened, while \code{FALSE} if closed.
+\code{TRUE} if the GDS file linked to the input GbsrGenotypeData object
+has been opened, while \code{FALSE} if closed.
 }
 \description{
 Check if a GDS file has been opened or not.
+}
+\examples{
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+isOpenGDS(gdata)
+
 }

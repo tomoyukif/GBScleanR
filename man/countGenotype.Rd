@@ -18,25 +18,33 @@ countGenotype(object, target = "both", node = "", ...)
 
 \item{...}{Unused.}
 }
+\value{
+A GbsrGenotypeData object with genotype count information.
+}
 \description{
-This function calculates several summary statistics of genotype calls and alleles
-per marker and per sample. Those values will be stored in the SnpAnnotaionDataSet slot
-and the ScanAnnotationDataSet slot and obtained via getter functions, e.g.
+This function calculates several summary statistics of
+genotype calls and alleles per marker and per sample.
+Those values will be stored in the SnpAnnotaionDataSet slot
+and the ScanAnnotationDataSet slot and obtained via getter functions, e.g.s
 \code{\link[=getCountGenoRef]{getCountGenoRef()}}, \code{\link[=getCountAlleleRef]{getCountAlleleRef()}}, and \code{\link[=getMAF]{getMAF()}}.
 }
 \details{
-#' Genotype call data can be obtained from the "genotype" node, the "filt.genotype"
-node, or the "corrected.genotype" node of the GDS file with \code{node = "raw"},
-\code{node = "filt"}, or \code{node = "raw"}, respectively.
+#' Genotype call data can be obtained from the "genotype" node,
+the "filt.genotype" node, or the "corrected.genotype" node of
+the GDS file with \code{node = "raw"}, \code{node = "filt"}, or \code{node = "raw"},
+respectively.
 The \code{\link[=setCallFilter]{setCallFilter()}} function generate filtered genotype call data in the
-"filt.genotype" node which can be accessed as mentioned above. On the other hand, the
-"corrected.genotype" node can be generated via the \code{\link[=estGeno]{estGeno()}} function.
+"filt.genotype" node which can be accessed as mentioned above.
+On the other hand, the "corrected.genotype" node can be generated
+via the \code{\link[=estGeno]{estGeno()}} function.
 }
 \examples{
 gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 gdata <- countGenotype(gdata)
-sample_missing_rate <- getCountGenoMissing(gdata, target = "scan", prop = TRUE)
+sample_missing_rate <- getCountGenoMissing(gdata,
+target = "scan",
+prop = TRUE)
 marker_minor_allele_freq <- getMAF(gdata, target = "snp")
 histGBSR(gdata, stats = "missing")
 

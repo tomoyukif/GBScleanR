@@ -8,7 +8,8 @@
 GBScleanR uses breeding scheme information to set the expected
 number of cross overs in a chromosome which is a required parameter
 for the genotype error correction with the Hidden Markov model
-implemented in the "clean" function. This class stores those information including
-ID of parental samples, type crosses performed at each generation of breeding and
-population sizes of each generation. This class is not exported.
+implemented in the "clean" function. This class stores those
+information including ID of parental samples, type crosses
+performed at each generation of breeding and population
+sizes of each generation. This class is not exported.
 }

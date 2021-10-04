@@ -26,7 +26,17 @@ plotReadRatio(
 
 \item{dot_fill}{A string to indicate the dot color in a plot.}
 }
+\value{
+NULL.
+}
 \description{
 This function calculate a proportion of reference allele read counts per marker per sample and
 draw line plots of them in facets for each chromosome for each sample.
+}
+\examples{
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+gdata <- countGenotype(gdata)
+plotReadRatio(gdata, ind = 1)
+
 }

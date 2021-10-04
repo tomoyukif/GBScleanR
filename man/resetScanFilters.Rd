@@ -15,8 +15,22 @@ resetScanFilters(object, ...)
 \item{...}{Unused.}
 }
 \value{
-A GbsrGenotypeData object.
+A GbsrGenotypeData object after removing
+all filters on scan(samples).
 }
 \description{
 Remove "invalid" labels put on samples and make all samples valid.
+}
+\examples{
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+gdata <- setScanFilter(gdata,
+id = getScanID(gds)[1:10],
+missing = 0.2,
+dp = c(5, Inf))
+
+# Reset all filters applied above.
+gdata <- resetScanFilters(gdata)
+
+
 }

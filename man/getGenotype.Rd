@@ -12,25 +12,42 @@ getGenotype(object, chr = NULL, node = "raw", parents = FALSE, ...)
 \arguments{
 \item{object}{A gbsrGenotypeData object.}
 
-\item{chr}{A integer vector of indexes indicating chromosomes to get read count data.}
+\item{chr}{A integer vector of indexes indicating chromosomes
+to get read count data.}
 
 \item{node}{Either of "raw", "filt", and "cor. See details.}
 
-\item{parents}{A logical value or "only" to include data for parents or to get data only for parents.}
+\item{parents}{A logical value or "only" to include data for
+parents or to get data only for parents.}
 
 \item{...}{Unused.}
+}
+\value{
+An integer matirix of genotype data which is represented
+by the number of reference alleles at each marker of each sample.
 }
 \description{
 Genotype calls are retrieved from the GDS file linked to the given
 GbsrGenotypeData object.
 }
 \details{
-Genotype call data can be obtained from the "genotype" node, the "filt.genotype"
-node, or the "corrected.genotype" node of the GDS file with \code{node = "raw"},
-\code{node = "filt"}, or \code{node = "raw"}, respectively. If \verb{node = "parents}, the data in the "parents.genotype" node will be returned. The "parents.genotype" node stores phased parental genotypes estimated by the \code{\link[=estGeno]{estGeno()}} function.
+Genotype call data can be obtained from the "genotype" node,
+the "filt.genotype" node, or the "corrected.genotype" node
+of the GDS file with \code{node = "raw"}, \code{node = "filt"}, or \code{node = "raw"},
+respectively. If \verb{node = "parents}, the data in the "parents.genotype"
+node will be returned. The "parents.genotype" node stores phased
+parental genotypes estimated by the \code{\link[=estGeno]{estGeno()}} function.
 The \code{\link[=setCallFilter]{setCallFilter()}} function generate filtered genotype call data in the
-"filt.genotype" node which can be accessed as mentioned above. On the other hand, the
-"corrected.genotype" node can be generated via the \code{\link[=estGeno]{estGeno()}} function.
+"filt.genotype" node which can be accessed as mentioned above.
+On the other hand, the "corrected.genotype" node can be generated
+via the \code{\link[=estGeno]{estGeno()}} function.
+}
+\examples{
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+geno <- getGenotype(gdata)
+
+
 }
 \seealso{
 \code{\link[=setCallFilter]{setCallFilter()}} and \code{\link[=estGeno]{estGeno()}}

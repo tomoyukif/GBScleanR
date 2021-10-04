@@ -12,12 +12,24 @@ getValidScan(object, parents = FALSE, ...)
 \arguments{
 \item{object}{A GbsrGenotypeData object.}
 
-\item{parents}{A logical value to indicate to set FALSE or TRUE to parental samples. If you specify \code{parents = "only"}, this function returns a logical vector indicating TRUE for only parental samples.}
+\item{parents}{A logical value to indicate to set FALSE or TRUE
+to parental samples. If you specify \code{parents = "only"}, this
+function returns a logical vector indicating TRUE for only parental samples.}
 
 \item{...}{Unused.}
 }
+\value{
+A logical vector of the same length
+with the number of total samples.
+}
 \description{
 Return a logical vector indicating which are valid scans (samples).
+}
+\examples{
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+getValidScan(gdata)
+
 }
 \seealso{
 \code{\link[=setValidScan]{setValidScan()}}

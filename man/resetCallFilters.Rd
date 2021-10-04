@@ -15,9 +15,26 @@ resetCallFilters(object, ...)
 \item{...}{Unused.}
 }
 \value{
-A GbsrGenotypeData object.
+A GbsrGenotypeData object after removing
+all filters on genotype calls.
 }
 \description{
-Return genotype calls and read count data to the original data which are same with
+Return genotype calls and read count data to
+the original data which are same with
 those data before running \code{\link[=setCallFilter]{setCallFilter()}}.
+}
+\examples{
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+
+# Filter out genotype calls supported by less than 5 reads.
+gdata <- setCallFilter(gdata, dp_count = c(5, Inf))
+
+# Filter out genotype calls supported by reads less than
+# the 20 percentile of read counts per marker in each sample.
+gdata <- setCallFilter(gdata, scan_dp_qtile = c(0.2, 1))
+
+# Reset all filters applied above.
+gdata <- resetCallFilters(gdata)
+
 }

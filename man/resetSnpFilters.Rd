@@ -15,8 +15,20 @@ resetSnpFilters(object, ...)
 \item{...}{Unused.}
 }
 \value{
-A GbsrGenotypeData object.
+A GbsrGenotypeData object after removing all filters on markers.
 }
 \description{
 Remove "invalid" labels put on markers and make all markers valid.
+}
+\examples{
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+gdata <- setSnpFilter(gdata,
+ id = getSnpID(gdata)[1:100],
+ missing = 0.2,
+ dp = c(5, Inf))
+
+# Reset all filters applied above.
+gdata <- resetSnpFilters(gdata)
+
 }

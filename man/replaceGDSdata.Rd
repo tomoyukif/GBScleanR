@@ -14,7 +14,9 @@ replaceGDSdata(object, target, node = "filt", ...)
 
 \item{target}{A vector of combinations of "sample.id", "genotype", and "ad".}
 
-\item{node}{Either one of "filt" and "cor" to replace raw genotype data with filtered genotype data or corrected genotype data, respectively.}
+\item{node}{Either one of "filt" and "cor" to replace
+raw genotype data with filtered genotype data or
+corrected genotype data, respectively.}
 
 \item{...}{Unused.}
 }
@@ -22,14 +24,33 @@ replaceGDSdata(object, target, node = "filt", ...)
 A GbsrGenotypeData object.
 }
 \description{
-Replace the original data with the filtered data or replace sample IDs in the GDS file linked
+Replace the original data with the filtered data or
+replace sample IDs in the GDS file linked
 to an input GbsrGenotypeData object.
 }
 \details{
-If \code{target = "genotype"}, replace the data stored in the "genotype" node with the
-data in the "filt.genotype" node for genotype call data. If \verb{target = "ad},
-The data stored in the "data" node is also replaced with the data in the
-"filt.data" node for read count data. \code{target = "sample.id"} makes this function to
-replace data in the "sample.id" node with the sample IDs stored in the
+If \code{target = "genotype"}, replace the data stored
+in the "genotype" node with the
+data in the "filt.genotype" node for genotype call data.
+If \verb{target = "ad}, The data stored in the "data" node is
+also replaced with the data in the
+"filt.data" node for read count data. \code{target = "sample.id"}
+makes this function to
+replace data in the "sample.id" node
+with the sample IDs stored in the
 ScanAnnotationDataSet slot of the input GbsrGenotypeData object.
+}
+\examples{
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+gdata <- setCallFilter(gdata, dp_count = c(5, Inf))
+# Now any functions of GBScleanR reference the genotype data
+# stored in the "filt.genotype" node.
+
+gdata <- replaceGDSdata(gdata, target = "genotype", node = "filt")
+# the data stored in the "genotype" node was replaced with the data stored
+# in the "filt.genotype" node. The raw genotype data in the GDS file was
+# overwitten by the data which was in the "filt.genotype" node.
+
+
 }

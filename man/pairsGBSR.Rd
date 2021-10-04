@@ -41,6 +41,9 @@ pairsGBSR(
 
 \item{ggargs}{An expression to be internally passed to a ggplot object to be drawn.}
 }
+\value{
+NULL.
+}
 \description{
 Draw a scatter plot of a pair of specified statistics
 }

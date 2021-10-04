@@ -22,6 +22,6 @@ Suggests: knitr, rmarkdown, cowplot, mgcv, Roxygen2
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
-biocViews: GeneticVariability, SNP, Genetics, HiddenMarkovModel
+biocViews: GeneticVariability, SNP, Genetics, HiddenMarkovModel, Sequencing, QualityControl
 BugReports: https://github.com/tomoyukif/GBScleanR/issues
 URL: https://github.com/tomoyukif/GBScleanR

@@ -18,17 +18,42 @@ setFiltGenotype(object, ...)
 A GbsrGenotypeData object.
 }
 \description{
-Set the "filt.genotype" node and the "filt.data" node as primary nodes for genotype
-data and read count data. The data stored in the primary nodes are used in the
+Set the "filt.genotype" node and the "filt.data" node as
+primary nodes for genotype
+data and read count data. The data stored
+in the primary nodes are used in the
 functions of GBScleanR.
 }
 \details{
-A GbsrGenotypeData object storing information of the primary node of genotype data and
-read count data. All of the functions implemented in \code{GBScleanR} check the primary nodes
-and use data stored in those nodes. \code{\link[=setCallFilter]{setCallFilter()}} create new nodes storing
-filtered genotype calls and read counts in a GDS file and change the primary nodes to
-"filt.genotype" and "filt.data" for genotype and read count data, respectively.
-\code{\link[=SetRawGenotype]{SetRawGenotype()}} set back the nodes to the original, those are "genotype" and "data" for
-genotype and read count data, respectively. You can set the filtered data again by
-\code{SetFiltGenotype()}.
+A GbsrGenotypeData object storing information of
+the primary node of genotype data and
+read count data. All of the functions implemented
+in \code{GBScleanR} check the primary nodes
+and use data stored in those nodes. \code{\link[=setCallFilter]{setCallFilter()}}
+create new nodes storing
+filtered genotype calls and read counts in a GDS file
+and change the primary nodes to
+"filt.genotype" and "filt.data" for genotype and
+read count data, respectively.
+\code{\link[=SetRawGenotype]{SetRawGenotype()}} set back the nodes to the original,
+those are "genotype" and "data" for
+genotype and read count data, respectively.
+You can set the filtered data again by \code{SetFiltGenotype()}.
+}
+\examples{
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+gdata <- setCallFilter(gdata, dp_count = c(5, Inf))
+# Now any functions of GBScleanR reference the genotype data
+# stored in the "filt.genotype" node.
+
+closeGDS(gdata)
+gdata <- loadGDS(gdata)
+# If the connection was closed once and re-loaded,
+# raw genotype data is referenced by the functions.
+# To set the "filt.genotype" node as genotype data again,
+# run the setFiltGenotype().
+gdata <- setFiltGenotype(gdata)
+
+
 }

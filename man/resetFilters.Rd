@@ -3,7 +3,8 @@
 \name{resetFilters}
 \alias{resetFilters}
 \alias{resetFilters,GbsrGenotypeData-method}
-\title{Reset all filters made by \code{\link[=setScanFiler]{setScanFiler()}}, \code{\link[=setSnpFiler]{setSnpFiler()}}, and \code{\link[=setCallFiler]{setCallFiler()}}.}
+\title{Reset all filters made by \code{\link[=setScanFiler]{setScanFiler()}}, \code{\link[=setSnpFiler]{setSnpFiler()}},
+and \code{\link[=setCallFiler]{setCallFiler()}}.}
 \usage{
 resetFilters(object, ...)
 
@@ -15,8 +16,28 @@ resetFilters(object, ...)
 \item{...}{Unused.}
 }
 \value{
-A GbsrGenotypeData object.
+A GbsrGenotypeData object after removing all filters.
+
+A GbsrGenotypeData object after removing all filters on markers.
 }
 \description{
 Return all data intact.
+}
+\examples{
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+gdata <- setCallFilter(gdata, dp_count = c(5, Inf))
+gdata <- setScanFilter(gdata,
+id = getScanID(gds)[1:10],
+missing = 0.2,
+dp = c(5, Inf))
+gdata <- setSnpFilter(gdata,
+ id = getSnpID(gdata)[1:100],
+  missing = 0.2,
+  dp = c(5, Inf))
+gdata <- setInfoFilter(gdata, mq = 40, qd = 20)
+
+# Reset all filters applied above.
+gdata <- resetFilters(gdata)
+
 }

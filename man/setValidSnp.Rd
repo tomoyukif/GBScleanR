@@ -12,23 +12,41 @@ setValidSnp(object, new, update, ...)
 \arguments{
 \item{object}{A GbsrGenotypeData object.}
 
-\item{new}{A logical vector of the same length with the over all number of the SNP markers.}
+\item{new}{A logical vector of the same length with the over
+all number of the SNP markers.}
 
-\item{update}{A logical vector of the same length with the currently valid SNP markers.}
+\item{update}{A logical vector of the same length with the
+currently valid SNP markers.}
 
 \item{...}{Unused.}
 }
+\value{
+A GbsrGenotypeData object with updated SNP validity information.
+}
 \description{
-If you need manually set valid and invalid SNP markers, you can do it via this function,
-e.g in the case you conducted a filtering on SNP markers manually by your self.
+If you need manually set valid and invalid SNP markers,
+you can do it via this function,
+e.g in the case you conducted a filtering on SNP
+markers manually by your self.
 }
 \details{
-To over write the current validity information, give a logical vector to \code{new}.
-On the other hand, a logical vector specified to \code{update} will be used to
-update validity information of the currently valid SNP markers. If you gave
-a vector for both argument, only the vector passed to \code{new} will be used to
+To over write the current validity information,
+give a logical vector to \code{new}.
+On the other hand, a logical vector specified to \code{update}
+will be used to update validity information of the currently
+valid SNP markers. If you gave a vector for both argument,
+only the vector passed to \code{new} will be used to
 over write the validity information.
 }
+\examples{
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+
+# Randomly remove SNP markers
+gdata <- setValidSnp(gdata, update = sample(c(TRUE, FALSE), nsnp(gdata)))
+
+}
 \seealso{
-\code{\link[=setSnpFilter]{setSnpFilter()}} to filter out SNP markers based on some summary statistics.
+\code{\link[=setSnpFilter]{setSnpFilter()}} to filter out SNP markers based on
+some summary statistics.
 }

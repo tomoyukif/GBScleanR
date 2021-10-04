@@ -16,6 +16,9 @@ nscan(object, valid = TRUE, ...)
 
 \item{...}{Unused.}
 }
+\value{
+An integer value to indicate the number of samples.
+}
 \description{
 This function returns the number of samples recorded in the GDS file
 connected to the given GbsrGenotypeData object.
@@ -26,6 +29,12 @@ in the ScanAnnotationDataSet slot will be returned. You need
 the number of over all samples, set \code{valid = FALSE}.
 \code{\link[=getValidSnp]{getValidSnp()}} tells you which samples are valid.
 }
+\examples{
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+nscan(gdata)
+
+}
 \seealso{
-\code{\link[=getValidSnp]{getValidSnp()}}
+\code{\link[=getValidScan]{getValidScan()}}
 }

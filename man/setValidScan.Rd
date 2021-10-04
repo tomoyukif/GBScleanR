@@ -12,23 +12,42 @@ setValidScan(object, new, update, ...)
 \arguments{
 \item{object}{A GbsrGenotypeData object.}
 
-\item{new}{A logical vector of the same length with the over all number of the samples.}
+\item{new}{A logical vector of the same length with
+the over all number of the samples.}
 
-\item{update}{A logical vector of the same length with the currently valid samples.}
+\item{update}{A logical vector of the same length with
+the currently valid samples.}
 
 \item{...}{Unused.}
 }
+\value{
+A GbsrGenotypeData object with updated
+scan(sample) validity information.
+}
 \description{
-If you need manually set valid and invalid samples, you can do it via this function,
-e.g in the case you conducted a filtering on samples manually by your self.
+If you need manually set valid and invalid samples,
+you can do it via this function,
+e.g in the case you conducted a filtering on
+samples manually by your self.
 }
 \details{
-To over write the current validity information, give a logical vector to \code{new}.
-On the other hand, a logical vector specified to \code{update} will be used to
-update validity information of the currently valid samples. If you gave
-a vector for both argument, only the vector passed to \code{new} will be used to
-over write the validity information.
+To over write the current validity information,
+give a logical vector to \code{new}. On the other hand, a logical
+vector specified to \code{update} will be used to update validity
+information of the currently valid samples. If you gave
+a vector for both argument, only the vector passed to \code{new}
+will be used to over write the validity information.
+}
+\examples{
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+
+# Randomly remove samples
+gdata <- setValidScan(gdata, update = sample(c(TRUE, FALSE), nscan(gdata)))
+
+
 }
 \seealso{
-\code{\link[=setScanFilter]{setScanFilter()}} to filter out samples based on some summary statistics
+\code{\link[=setScanFilter]{setScanFilter()}} to filter out samples based on
+some summary statistics
 }

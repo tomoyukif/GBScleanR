@@ -33,30 +33,42 @@ estGeno(
 \arguments{
 \item{object}{A GbsrGenotypeData object.}
 
-\item{chr}{An integer vector of chromosome indices to be analyzed. All chromosomes will be analyzed if you left it default.}
+\item{chr}{An integer vector of chromosome indices to
+be analyzed. All chromosomes will be analyzed if you left it default.}
 
-\item{recomb_rate}{A numeric value to indicate the expected recombination frequency per chromosome per megabase pairs.}
+\item{recomb_rate}{A numeric value to indicate the expected
+recombination frequency per chromosome per megabase pairs.}
 
 \item{error_rate}{A numeric value of the expected sequence error rate.}
 
-\item{call_threshold}{A numeric value of the probability threhosld to accept estimated genotype calls.}
+\item{call_threshold}{A numeric value of the probability threshold
+to accept estimated genotype calls.}
 
-\item{het_parent}{A logical value to indicate whether parental samples are outbred or inbred. If FALSE, this function assume all true genotype of markers in parents are homozygotes.}
+\item{het_parent}{A logical value to indicate whether parental
+samples are outbred or inbred. If FALSE, this function assume all
+true genotype of markers in parents are homozygotes.}
 
-\item{optim}{A logical value to specify whether to conduct parameter optimization for
+\item{optim}{A logical value to specify whether to
+conduct parameter optimization for
 error correction.}
 
-\item{iter}{An integer value to specify the number of iterative parameter updates.}
+\item{iter}{An integer value to specify the number of
+iterative parameter updates.}
 
-\item{n_threads}{An integer value to specify the number of threads used for the calculation. The default is \code{n_threads = NULL} and automatically set half the number of available threads on the computer.}
+\item{n_threads}{An integer value to specify the number of
+threads used for the calculation. The default is \code{n_threads = NULL}
+and automatically set half the number of available threads on the computer.}
 
 \item{...}{Unused.}
 }
 \value{
-A GbsrGenotypeData object.
+A GbsrGenotypeData object in which the "estimated.haplotype",
+"corrected.genotype" and
+"parents.genotype" nodes were added.
 }
 \description{
-Clean up genotype data by error correction based on genotype estimation using a hidden Markov model.
+Clean up genotype data by error correction based on
+genotype estimation using a hidden Markov model.
 }
 \examples{
 gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")

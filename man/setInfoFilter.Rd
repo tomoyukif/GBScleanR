@@ -31,32 +31,45 @@ setInfoFilter(
 \arguments{
 \item{object}{A GbsrGenotypeData object.}
 
-\item{mq}{A numeric value to specify minimum mapping quality (shown as MQ in the VCF format).}
+\item{mq}{A numeric value to specify minimum mapping
+quality (shown as MQ in the VCF format).}
 
-\item{fs}{A numeric value to specify maximum Phred-scaled p-value (strand bias) (shown as FS in the VCF format).}
+\item{fs}{A numeric value to specify maximum Phred-scaled
+p-value (strand bias) (shown as FS in the VCF format).}
 
-\item{qd}{A numeric value to specify minimum Variant Quality by Depth (shown as QD in the VCF format).}
+\item{qd}{A numeric value to specify minimum Variant
+Quality by Depth (shown as QD in the VCF format).}
 
-\item{sor}{A numeric value to specify maximum Symmetric Odds Ratio (strand bias) (shown as SOR in the VCF format).}
+\item{sor}{A numeric value to specify maximum
+Symmetric Odds Ratio (strand bias) (shown as SOR in the VCF format).}
 
-\item{mqranksum}{A numeric values to specify the lower and upper limit of Alt vs. Ref read mapping qualities (shown as MQRankSum in the VCF format).}
+\item{mqranksum}{A numeric values to specify the lower
+and upper limit of Alt vs. Ref read mapping
+qualities (shown as MQRankSum in the VCF format).}
 
-\item{readposranksum}{A numeric values to specify the lower and upper limit of Alt vs. Ref read position bias (shown as ReadPosRankSum in the VCF format).}
+\item{readposranksum}{A numeric values to specify the lower
+and upper limit of Alt vs. Ref read position
+bias (shown as ReadPosRankSum in the VCF format).}
 
-\item{baseqranksum}{A numeric values to specify the lower and upper limit of Alt Vs. Ref base qualities (shown as BaseQRankSum in the VCF format).}
+\item{baseqranksum}{A numeric values to specify the lower
+and upper limit of Alt Vs. Ref base
+qualities (shown as BaseQRankSum in the VCF format).}
 
 \item{...}{Unused.}
 }
 \value{
-A GbsrGenotypeData object.
+A GbsrGenotypeData object with filters on markers.
 }
 \description{
-A VCF file usually has marker quality metrics in the INFO filed and those are stored in
-a GDS file created via \code{GBScleanR}. This function filter out markers based on those marker
+A VCF file usually has marker quality metrics in
+the INFO filed and those are stored in
+a GDS file created via \code{GBScleanR}. This function filter
+out markers based on those marker
 quality metrics.
 }
 \details{
-Detailed explanation of each metric can be found in \href{https://gatk.broadinstitute.org/hc/en-us}{GATK's web site}.
+Detailed explanation of each metric can be found
+in \href{https://gatk.broadinstitute.org/hc/en-us}{GATK's web site}.
 }
 \examples{
 gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")

@@ -14,8 +14,18 @@ loadScanAnnot(object, ...)
 
 \item{...}{Unused.}
 }
+\value{
+NULL.
+}
 \description{
-All the data stored in the ScanAnnotationDataSet slot of the GbsrGenotypeData
-object can be saved in the GDS file linked to the given GbsrGenotypeData object via \code{\link[=saveScanAnnot]{saveScanAnnot()}}.
+All the data stored in the ScanAnnotationDataSet slot of
+the GbsrGenotypeData object can be saved in the GDS file
+linked to the given GbsrGenotypeData object via \code{\link[=saveScanAnnot]{saveScanAnnot()}}.
 You can load the saved data using this function.
+}
+\examples{
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+loadScanAnnot(gdata)
+
 }

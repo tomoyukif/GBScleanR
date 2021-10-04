@@ -20,32 +20,44 @@ subsetGDS(object, out_fn, snp_incl, scan_incl, incl_parents = TRUE, ...)
 
 \item{out_fn}{A string to specify the path to an output GDS file.}
 
-\item{snp_incl}{A logical vector having the same length with the total number of markers. The values obtained via \code{\link[=getValidSnp]{getValidSnp()}} are used.}
+\item{snp_incl}{A logical vector having the same length
+with the total number of markers.
+The values obtained via \code{\link[=getValidSnp]{getValidSnp()}} are used.}
 
-\item{scan_incl}{A logical vector having the same length with the total number of scans (samples). The values obtained via \code{\link[=getValidScan]{getValidScan()}} are used.}
+\item{scan_incl}{A logical vector having the same length
+with the total number of scans (samples).
+The values obtained via \code{\link[=getValidScan]{getValidScan()}} are used.}
 
-\item{incl_parents}{A logical value to specify whether parental samples should be included in a subset data or not.}
+\item{incl_parents}{A logical value to specify whether parental
+samples should be included in a subset data or not.}
 
 \item{...}{Unused.}
 }
 \value{
-A GbsrGenotypeData object linking to the new GDS file storing subset data.
+A GbsrGenotypeData object linking to
+the new GDS file storing subset data.
 }
 \description{
-Create a new GDS file storing the subset data from the current GDS file linked to
-the given GbsrGenotypeData object with keeping (or removing) information based on
+Create a new GDS file storing the subset
+data from the current GDS file linked to
+the given GbsrGenotypeData object with
+keeping (or removing) information based on
 valid markers and samples information.
 }
 \details{
-A resultant subset data in a new GDS file includes subsets of each category of data, e.g.
-genotype, SNP ID, scan ID, read counts, and quality metrics of SNP markers.
+A resultant subset data in a new GDS file includes subsets
+of each category of data, e.g.
+genotype, SNP ID, scan ID, read counts,
+and quality metrics of SNP markers.
 }
 \examples{
 gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 gdata <- setSnpFilter(gdata, missing = 0.2, het = c(0.1, 0.9), maf = 0.05)
 
-subsetgds_fn <- system.file("extdata", "simpop_subset.gds", package = "GBScleanR")
+subsetgds_fn <- system.file("extdata",
+"simpop_subset.gds",
+package = "GBScleanR")
 subset_gdata <- subsetGDS(gdata, out_fn = subsetgds_fn)
 
 }

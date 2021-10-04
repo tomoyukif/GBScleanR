@@ -18,17 +18,22 @@ countRead(object, target = "both", node = "", ...)
 
 \item{...}{Unused.}
 }
+\value{
+A GbsrGenotypeData object with read count information.
+}
 \description{
 This function calculates several summary statistics of read counts
-per marker and per sample. Those values will be stored in the SnpAnnotaionDataSet slot
-and the ScanAnnotationDataSet slot and obtained via getter functions, e.g.
+per marker and per sample. Those values will be stored
+in the SnpAnnotaionDataSet slot and the ScanAnnotationDataSet slot
+and obtained via getter functions, e.g.
 \code{\link[=getCountReadRef]{getCountReadRef()}} and \code{\link[=getCountReadAlt]{getCountReadAlt()}}.
 }
 \details{
-Read count data can be obtained from the "annotation/format/AD/data" node or the
-"annotation/format/AD/filt.data" node of the GDS file with \code{node = "raw"} or
-\code{node = "filt"}, respectively. The \code{\link[=setCallFilter]{setCallFilter()}} function generate filtered
-read count data in the "annotation/format/AD/filt.data" node which can be accessed as
+Read count data can be obtained from the "annotation/format/AD/data" node
+or the "annotation/format/AD/filt.data" node of the GDS file
+with \code{node = "raw"} or \code{node = "filt"}, respectively.
+The \code{\link[=setCallFilter]{setCallFilter()}} function generate filtered read count data
+in the "annotation/format/AD/filt.data" node which can be accessed as
 mentioned above.
 }
 \examples{

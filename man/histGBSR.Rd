@@ -32,6 +32,9 @@ histGBSR(
 
 \item{ggargs}{An expression to be internally passed to a ggplot object to be drawn.}
 }
+\value{
+NULL.
+}
 \description{
 Draw histograms of specified statistics
 }
@@ -71,14 +74,14 @@ and "baseqranksum" only work with \code{target = "snp"}, if your data contains t
 values supplied via SNP calling tools like \href{https://gatk.broadinstitute.org/hc/en-us}{GATK}.
 }
 \examples{
-# Draw histograms of missing rate, heterozygosity, and reference 
+# Draw histograms of missing rate, heterozygosity, and reference
 # allele frequency per SNP and per sample.
 gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 gdata <- countGenotype(gdata)
 histGBSR(gdata, stats = c("missing", "het", "raf"))
 
-# Draw histograms of 90 percentile values of reference read counts 
+# Draw histograms of 90 percentile values of reference read counts
 # and alternative read counts per SNP and per sample.
 gdata <- calcReadStats(gdata, q = 0.9)
 histGBSR(gdata, stats = c("qtile_ref", "qtile_alt"), q = 0.9)

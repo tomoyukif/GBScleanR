@@ -18,13 +18,23 @@ getMAF(object, target = "snp", valid = TRUE, ...)
 
 \item{...}{Unused.}
 }
+\value{
+A numeric vector of the minor allele frequencies per marker.
+}
 \description{
 Obtain minor allele frequencies per SNP or per scan (sample)
 }
 \details{
 You need to execute \code{\link[=countGenotype]{countGenotype()}} to calculate sumaary statisticsto be
 obtained via this function.
-If \code{valid = TRUE}, the chromosome information of markers which are labeled \code{TRUE}
-in the ScanAnnotationDataSet slot will be returned. \code{\link[=getValidSnp]{getValidSnp()}} tells you
-which samples are valid.
+If \code{valid = TRUE}, the chromosome information of markers which are
+labeled \code{TRUE} in the ScanAnnotationDataSet slot will be returned.
+\code{\link[=getValidSnp]{getValidSnp()}} tells you which samples are valid.
+}
+\examples{
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+gdata <- countGenotype(gdata)
+getMAF(gdata)
+
 }

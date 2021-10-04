@@ -14,6 +14,10 @@ getParents(object, ...)
 
 \item{...}{Unused.}
 }
+\value{
+A data frame of parents information indicating scanIDs, memberIDs
+and indexes of parental lines assigned via \code{\link[=setParents]{setParents()}}.
+}
 \description{
 This function returns scan IDs, member IDs and indexes of parental samples
 set via \code{\link[=setParents]{setParents()}}. Scan IDs are IDs given by user or obtained from the

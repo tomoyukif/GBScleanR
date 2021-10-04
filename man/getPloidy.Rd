@@ -16,13 +16,22 @@ getPloidy(object, valid = TRUE, ...)
 
 \item{...}{Unused.}
 }
+\value{
+A integer vector indicating the ploidy of each marker.
+}
 \description{
-This function returns ploidy of each SNP marker. The ploidy of all the markers in
-a dataset is a same value and the current implementation of GBScleanR only works
-with data having ploidy = 2 for all markers.
+This function returns ploidy of each SNP marker. The ploidy of all
+the markers in a dataset is a same value and the current implementation
+of GBScleanR only works with data having ploidy = 2 for all markers.
 }
 \details{
-If \code{valid = TRUE}, the chromosome information of markers which are labeled \code{TRUE}
-in the ScanAnnotationDataSet slot will be returned. \code{\link[=getValidSnp]{getValidSnp()}} tells you
-which samples are valid.
+If \code{valid = TRUE}, the chromosome information of markers which are
+labeled \code{TRUE} in the ScanAnnotationDataSet slot will be returned.
+\code{\link[=getValidSnp]{getValidSnp()}} tells you which samples are valid.
+}
+\examples{
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+getPloidy(gdata)
+
 }

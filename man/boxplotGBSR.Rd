@@ -29,6 +29,9 @@ boxplotGBSR(
 
 \item{ggargs}{An expression to be internally passed to a ggplot object to be drawn.}
 }
+\value{
+NULL.
+}
 \description{
 Draw boxplots of specified statistics
 }
@@ -69,7 +72,7 @@ and "baseqranksum" only work with \code{target = "snp"}, if your data contains t
 values supplied via SNP calling tools like \href{https://gatk.broadinstitute.org/hc/en-us}{GATK}.
 }
 \examples{
-# Draw boxplots of missing rate, heterozygosity, and reference 
+# Draw boxplots of missing rate, heterozygosity, and reference
 # allele frequency per SNP and per sample.
 gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)

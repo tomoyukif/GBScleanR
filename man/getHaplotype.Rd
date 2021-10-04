@@ -12,11 +12,23 @@ getHaplotype(object, chr = NULL, parents = FALSE, ...)
 \arguments{
 \item{object}{A gbsrGenotypeData object.}
 
-\item{chr}{A integer vector of indexes indicating chromosomes to get read count data.}
+\item{chr}{A integer vector of indexes indicating chromosomes
+to get read count data.}
 
-\item{parents}{A logical value or "only" to include data for parents or to get data only for parents.}
+\item{parents}{A logical value or "only" to include data for
+parents or to get data only for parents.}
 
 \item{...}{Unused.}
+}
+\value{
+An integer array of haplotype data. The array have 2 x M x N
+dimensions, where M is the number of markers and N is the number of
+samples. Each integer values represent the origin of the haplotype.
+For example, in the population with two inbred founders, values take
+either 1 or 2 indicating the hapotype descent from founder 1 and 2.
+If two outbred founders, values take 1, 2, 3, or 4 indicating
+the first and second haplotype in founder 1 and the first and
+second haplotype in founder 2.
 }
 \description{
 Haplotype calls are retrieved from the GDS file linked to the given
@@ -24,8 +36,17 @@ GbsrGenotypeData object.
 }
 \details{
 Haplotype call data can be obtained from the "estimated.haplotype" node of
-the GDS file which can be generated via the \code{\link[=estGeno]{estGeno()}} function. Thus, this function
-is valid only after having executed \code{\link[=estGeno]{estGeno()}}.
+the GDS file which can be generated via the \code{\link[=estGeno]{estGeno()}} function.
+Thus, this function is valid only after having executed \code{\link[=estGeno]{estGeno()}}.
+}
+\examples{
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+parents <- grep("Founder", getScanID(gdata), value = TRUE)
+gdata <- setParents(gdata, parents = parents, flip = TRUE)
+gdata <- estGeno(gdata)
+hap <- getHaplotype(gdata)
+
 }
 \seealso{
 \code{\link[=estGeno]{estGeno()}}

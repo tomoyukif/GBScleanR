@@ -14,6 +14,16 @@ closeGDS(object, ...)
 
 \item{...}{Unused.}
 }
+\value{
+NULL.
+}
 \description{
-Close the connection to the GDS file linked to the given GbsrGenotypeData object.
+Close the connection to the GDS file linked to the given
+GbsrGenotypeData object.
+}
+\examples{
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+closeGDS(gdata)
+
 }

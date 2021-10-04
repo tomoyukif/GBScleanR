@@ -41,50 +41,67 @@ setScanFilter(
 \arguments{
 \item{object}{A GbsrGenotypeData object.}
 
-\item{id}{A vector of strings match with scan ID which can be retrieve by \code{getScanID()}.}
+\item{id}{A vector of strings match with scan ID which can
+be retrieve by \code{getScanID()}.}
 
-\item{missing}{A numeric value \link{0-1} to specify the maximum missing genotype call rate per sample.}
+\item{missing}{A numeric value \link{0-1} to specify the maximum
+missing genotype call rate per sample.}
 
-\item{het}{A numeric value \link{0-1} to specify the maximum heterozygous genotype call rate per sample.}
+\item{het}{A numeric value \link{0-1} to specify the maximum
+heterozygous genotype call rate per sample.}
 
-\item{mac}{A integer value to specify the minimum minor allele count per sample.}
+\item{mac}{A integer value to specify the minimum minor
+allele count per sample.}
 
-\item{maf}{A numeric value to specify the minimum minor allele frequency per sample.}
+\item{maf}{A numeric value to specify the minimum minor
+allele frequency per sample.}
 
-\item{ad_ref}{A numeric vector with length two specifying lower and upper limit of reference read counts per sample.}
+\item{ad_ref}{A numeric vector with length two specifying lower
+and upper limit of reference read counts per sample.}
 
-\item{ad_alt}{A numeric vector with length two specifying lower and upper limit of alternative read counts per sample.}
+\item{ad_alt}{A numeric vector with length two specifying lower
+and upper limit of alternative read counts per sample.}
 
-\item{dp}{A numeric vector with length two specifying lower and upper limit of total read counts per sample.}
+\item{dp}{A numeric vector with length two specifying lower
+and upper limit of total read counts per sample.}
 
-\item{mean_ref}{A numeric vector with length two specifying lower and upper limit of mean of reference read counts per sample.}
+\item{mean_ref}{A numeric vector with length two specifying lower
+and upper limit of mean of reference read counts per sample.}
 
-\item{mean_alt}{A numeric vector with length two specifying lower and upper limit of mean of alternative read counts per sample.}
+\item{mean_alt}{A numeric vector with length two specifying lower
+and upper limit of mean of alternative read counts per sample.}
 
-\item{sd_ref}{A numeric value specifying the upper limit of standard deviation of reference read counts per sample.}
+\item{sd_ref}{A numeric value specifying the upper limit of
+standard deviation of reference read counts per sample.}
 
-\item{sd_alt}{A numeric value specifying the upper limit of standard deviation of alternative read counts per sample.}
+\item{sd_alt}{A numeric value specifying the upper limit of
+standard deviation of alternative read counts per sample.}
 
 \item{...}{Unused.}
 }
 \value{
-A GbsrGenotypeData object.
+A GbsrGenotypeData object with filters on scan(samples).
 }
 \description{
 Search samples which do not meet the criteria and label them as "invalid".
 }
 \details{
-For \code{mean_ref}, \code{mean_alt}, \code{sd_ref}, and \code{sd_alt}, this function calculate mean and
-standard deviation of reads obtained at SNP markers of each sample. If a mean read counts
-of a sample was smaller than the specified lower limit or larger than the upper limit,
-this function labels the sample as "invalid". In the case of \code{sd_ref} and \code{sd_alt},
-standard deviations of read counts of each sample are checked and the samples having a
-larger standard deviation will be labeled as "invalid". To check valid and invalid
-samples, run \code{\link[=getValidScan]{getValidScan()}}.
+For \code{mean_ref}, \code{mean_alt}, \code{sd_ref}, and \code{sd_alt},
+this function calculate mean and standard deviation of reads
+obtained at SNP markers of each sample. If a mean read counts
+of a sample was smaller than the specified lower limit or larger
+than the upper limit, this function labels the sample as "invalid".
+In the case of \code{sd_ref} and \code{sd_alt}, standard deviations of read counts
+of each sample are checked and the samples having
+a larger standard deviation will be labeled as "invalid".
+To check valid and invalid samples, run \code{\link[=getValidScan]{getValidScan()}}.
 }
 \examples{
 gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
-gdata <- setScanFilter(gdata, id = getScanID(gds)[1:10], missing = 0.2, dp = c(5, Inf))
+gdata <- setScanFilter(gdata,
+id = getScanID(gds)[1:10],
+missing = 0.2,
+dp = c(5, Inf))
 
 }

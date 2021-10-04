@@ -22,15 +22,23 @@ gbsrGDS2VCF(
 
 \item{out_fn}{A string to specify the path to an output VCF file.}
 
-\item{node}{Either one of "raw", "filt", and "cor" to output raw genotype data, filtered genotype data, or corrected genotype data, respectively.}
+\item{node}{Either one of "raw", "filt", and "cor" to output raw
+genotype data, filtered genotype data, or corrected genotype data,
+respectively.}
 
-\item{valid}{A logical value to specify whether to output valid markers and samples only or all.}
+\item{valid}{A logical value to specify whether to output valid markers
+and samples only or all.}
 
-\item{out_fmt}{A character vector to specify which variables in the annotation/format node should be output.}
+\item{out_fmt}{A character vector to specify which variables in
+the annotation/format node should be output.}
 
-\item{out_info}{A character vector to specify which variables in the annotation/info node should be output.}
+\item{out_info}{A character vector to specify which variables in
+the annotation/info node should be output.}
 
 \item{...}{Unused.}
+}
+\value{
+Create a VCF file at location specified by out_fn.
 }
 \description{
 Write out a VCF file with raw, filtered, or corrected genotype data

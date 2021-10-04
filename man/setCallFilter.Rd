@@ -43,52 +43,69 @@ setCallFilter(
 \arguments{
 \item{object}{A GbsrGenotypeData object.}
 
-\item{dp_count}{A numeric vector with length two specifying lower and upper limit of total read counts (reference reads + alternative reads).}
+\item{dp_count}{A numeric vector with length two specifying lower and
+upper limit of total read counts (reference reads + alternative reads).}
 
-\item{ref_count}{A numeric vector with length two specifying lower and upper limit of reference read counts.}
+\item{ref_count}{A numeric vector with length two specifying lower and
+upper limit of reference read counts.}
 
-\item{alt_count}{A numeric vector with length two specifying lower and upper limit of alternative read counts.}
+\item{alt_count}{A numeric vector with length two specifying lower and
+upper limit of alternative read counts.}
 
-\item{norm_dp_count}{A numeric vector with length two specifying lower and upper limit of normalized total read counts (normalized reference reads + normalized alternaitve reads).}
+\item{norm_dp_count}{A numeric vector with length two specifying lower
+and upper limit of normalized total read counts
+(normalized reference reads + normalized alternaitve reads).}
 
-\item{norm_ref_count}{A numeric vector with length two specifying lower and upper limit of normalized reference read counts.}
+\item{norm_ref_count}{A numeric vector with length two specifying lower
+and upper limit of normalized reference read counts.}
 
-\item{norm_alt_count}{A numeric vector with length two specifying lower and upper limit of normalized alternative read counts}
+\item{norm_alt_count}{A numeric vector with length two specifying lower
+and upper limit of normalized alternative read counts}
 
-\item{scan_dp_qtile}{A numeric vector with length two specifying lower and upper limit of quantile of total read counts in each scan (sample).}
+\item{scan_dp_qtile}{A numeric vector with length two specifying lower
+and upper limit of quantile of total read counts in each scan (sample).}
 
-\item{scan_ref_qtile}{A numeric vector with length two specifying lower and upper limit of quantile of reference read counts in each scan (sample).}
+\item{scan_ref_qtile}{A numeric vector with length two specifying lower
+and upper limit of quantile of reference read counts in each scan (sample).}
 
-\item{scan_alt_qtile}{A numeric vector with length two specifying lower and upper limit of quantile of alternative read counts in each scan (sample).}
+\item{scan_alt_qtile}{A numeric vector with length two specifying lower
+and upper limit of quantile of alternative read counts in each scan (sample).}
 
-\item{snp_dp_qtile}{A numeric vector with length two specifying lower and upper limit of quantile of total read counts in each SNP marker}
+\item{snp_dp_qtile}{A numeric vector with length two specifying lower
+and upper limit of quantile of total read counts in each SNP marker}
 
-\item{snp_ref_qtile}{A numeric vector with length two specifying lower and upper limit of quantile of reference read counts in each SNP marker.}
+\item{snp_ref_qtile}{A numeric vector with length two specifying lower
+and upper limit of quantile of reference read counts in each SNP marker.}
 
-\item{snp_alt_qtile}{A numeric vector with length two specifying lower and upper limit of quantile of alternative read counts in each SNP marker.}
+\item{snp_alt_qtile}{A numeric vector with length two specifying lower
+and upper limit of quantile of alternative read counts in each SNP marker.}
 
-\item{omit_geno}{A vector of string with combinations of "ref", "het", and "alt" to remove specified genotype calls.}
+\item{omit_geno}{A vector of string with combinations of "ref", "het",
+and "alt" to remove specified genotype calls.}
 
 \item{...}{Unused.}
 }
 \value{
-A GbsrGenotypeData object.
+A GbsrGenotypeData object with filters on genotype calls.
 }
 \description{
-Perform filtering of each genotype call, neither markers nor samples. Each genotype call
-is supported by its read counts for the reference allele and the alternative allele of
-a marker of a sample. \code{setCallFilter()} set missing to the genotype calls which are
-not reliable enough and set zero to reference and alternative read counts of
-the genotype calls.
+Perform filtering of each genotype call, neither markers
+nor samples. Each genotype call is supported by its read counts
+for the reference allele and the alternative allele of
+a marker of a sample. \code{setCallFilter()} set missing to
+the genotype calls which are not reliable enough and set zero
+to reference and alternative read counts of the genotype calls.
 }
 \details{
-\code{norm_dp_count}, \code{norm_ref_count}, and \code{norm_alt_count} use normalized read counts which
-are obtained by dividing each read count by the total read count of each sample.
-\code{scan_dp_qtile}, \code{scan_ref_qtile}, and \code{scan_alt_qtile} work similarly but use quantile
-values of read counts of each sample to decide the lower and upper limit of read counts.
-This function generate two new nodes in the GDS file linked with the given GbsrGenotypeData
-object. The new nodes "filt.data" in the AD node and "filt.genotype" contains read count
-data and genotype data after filtering, respectively.
+\code{norm_dp_count}, \code{norm_ref_count}, and \code{norm_alt_count} use
+normalized read counts which are obtained by dividing each read count
+by the total read count of each sample. \code{scan_dp_qtile}, \code{scan_ref_qtile},
+and \code{scan_alt_qtile} work similarly but use quantile values of read counts
+of each sample to decide the lower and upper limit of read counts.
+This function generate two new nodes in the GDS file linked with
+the given GbsrGenotypeData object. The new nodes "filt.data" in the AD node
+and "filt.genotype" contains read count data and genotype data
+after filtering, respectively.
 }
 \examples{
 
@@ -98,7 +115,7 @@ gdata <- loadGDS(gds_fn)
 # Filter out genotype calls supported by less than 5 reads.
 gdata <- setCallFilter(gdata, dp_count = c(5, Inf))
 
-# Filter out genotype calls supported by reads less than 
+# Filter out genotype calls supported by reads less than
 # the 20 percentile of read counts per marker in each sample.
 gdata <- setCallFilter(gdata, scan_dp_qtile = c(0.2, 1))
 

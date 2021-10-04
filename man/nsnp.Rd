@@ -16,6 +16,9 @@ nsnp(object, valid = TRUE, ...)
 
 \item{...}{Unused.}
 }
+\value{
+An integer value to indicate the number of SNP markers.
+}
 \description{
 This function returns the number of SNPs recorded in the GDS file
 connected to the given GbsrGenotypeData object.
@@ -25,6 +28,12 @@ If \code{valid = TRUE}, the number of SNPs which are labeled \code{TRUE} in
 the SnpAnnotationDataSet slot will be returned. You need the number
 of over all SNPs, set \code{valid = FALSE}. \code{\link[=getValidSnp]{getValidSnp()}} tells you
 which markers are valid.
+}
+\examples{
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+nsnp(gdata)
+
 }
 \seealso{
 \code{\link[=getValidSnp]{getValidSnp()}}

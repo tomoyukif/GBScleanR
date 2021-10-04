@@ -3,7 +3,8 @@
 \name{getQtileReadRef}
 \alias{getQtileReadRef}
 \alias{getQtileReadRef,GbsrGenotypeData-method}
-\title{Obtain quantile values of total reference read counts per SNP or per scan (sample)}
+\title{Obtain quantile values of total reference read counts per
+SNP or per scan (sample)}
 \usage{
 getQtileReadRef(object, target = "snp", q = 0.5, valid = TRUE, ...)
 
@@ -20,13 +21,25 @@ getQtileReadRef(object, target = "snp", q = 0.5, valid = TRUE, ...)
 
 \item{...}{Unused.}
 }
+\value{
+A numeric vector of the quantile values of
+alternative allele reads per marker.
+}
 \description{
-Obtain quantile values of total reference read counts per SNP or per scan (sample)
+Obtain quantile values of total reference read counts per
+SNP or per scan (sample)
 }
 \details{
 You need to execute \code{\link[=calcReadStats]{calcReadStats()}} to calculate sumaary statisticsto be
 obtained via this function.
-If \code{valid = TRUE}, the chromosome information of markers which are labeled \code{TRUE}
-in the ScanAnnotationDataSet slot will be returned. \code{\link[=getValidSnp]{getValidSnp()}} tells you
-which samples are valid.
+If \code{valid = TRUE}, the chromosome information of markers which are
+labeled \code{TRUE} in the ScanAnnotationDataSet slot will be returned.
+\code{\link[=getValidSnp]{getValidSnp()}} tells you which samples are valid.
+}
+\examples{
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+gdata <- calcReadStats(gdata)
+getQtileReadRef(gdata)
+
 }
