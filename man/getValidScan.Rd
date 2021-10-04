@@ -12,7 +12,7 @@ getValidScan(object, parents = FALSE, ...)
 \arguments{
 \item{object}{A GbsrGenotypeData object.}
 
-\item{parents}{A logical value to indicate to set FALSE or TRUE to parental samples. If you specify `parents = "only"`, this function returns a logical vector indicating TRUE for only parental samples.}
+\item{parents}{A logical value to indicate to set FALSE or TRUE to parental samples. If you specify \code{parents = "only"}, this function returns a logical vector indicating TRUE for only parental samples.}
 
 \item{...}{Unused.}
 }
@@ -20,5 +20,5 @@ getValidScan(object, parents = FALSE, ...)
 Return a logical vector indicating which are valid scans (samples).
 }
 \seealso{
-[setValidScan()]
+\code{\link[=setValidScan]{setValidScan()}}
 }

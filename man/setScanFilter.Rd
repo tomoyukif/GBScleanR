@@ -41,11 +41,11 @@ setScanFilter(
 \arguments{
 \item{object}{A GbsrGenotypeData object.}
 
-\item{id}{A vector of strings match with scan ID which can be retrieve by `getScanID()`.}
+\item{id}{A vector of strings match with scan ID which can be retrieve by \code{getScanID()}.}
 
-\item{missing}{A numeric value [0-1] to specify the maximum missing genotype call rate per sample.}
+\item{missing}{A numeric value \link{0-1} to specify the maximum missing genotype call rate per sample.}
 
-\item{het}{A numeric value [0-1] to specify the maximum heterozygous genotype call rate per sample.}
+\item{het}{A numeric value \link{0-1} to specify the maximum heterozygous genotype call rate per sample.}
 
 \item{mac}{A integer value to specify the minimum minor allele count per sample.}
 
@@ -74,18 +74,17 @@ A GbsrGenotypeData object.
 Search samples which do not meet the criteria and label them as "invalid".
 }
 \details{
-For `mean_ref`, `mean_alt`, `sd_ref`, and `sd_alt`, this function calculate mean and
+For \code{mean_ref}, \code{mean_alt}, \code{sd_ref}, and \code{sd_alt}, this function calculate mean and
 standard deviation of reads obtained at SNP markers of each sample. If a mean read counts
 of a sample was smaller than the specified lower limit or larger than the upper limit,
-this function labels the sample as "invalid". In the case of `sd_ref` and `sd_alt`,
+this function labels the sample as "invalid". In the case of \code{sd_ref} and \code{sd_alt},
 standard deviations of read counts of each sample are checked and the samples having a
 larger standard deviation will be labeled as "invalid". To check valid and invalid
-samples, run [getValidScan()].
+samples, run \code{\link[=getValidScan]{getValidScan()}}.
 }
 \examples{
-\dontrun{
-gds <- loadGDS("/path/to/GDS.gds")
-gds <- setScanFilter(gds, id = getScanID(gds)[1:10], missing = 0.2, dp = c(5, Inf))
-}
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+gdata <- setScanFilter(gdata, id = getScanID(gds)[1:10], missing = 0.2, dp = c(5, Inf))
 
 }

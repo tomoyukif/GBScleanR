@@ -12,7 +12,7 @@ getFlipped(object, valid = TRUE, ...)
 \arguments{
 \item{object}{A GbsrGenotypeData object.}
 
-\item{valid}{A logical value to specify flip alleles only of valid markers. see also[setSnpFilter()].}
+\item{valid}{A logical value to specify flip alleles only of valid markers. see also\code{\link[=setSnpFilter]{setSnpFilter()}}.}
 
 \item{...}{Unused.}
 }
@@ -21,17 +21,17 @@ Get a logical vector indicating flipped SNP markers.
 }
 \details{
 Flipped markers are markers where the alleles expected as reference allele are called as
-alternative allele. If you specify two parents in the `parents` argument of
-[setParents()] with `flip = TRUE`, `bi = TRUE`, and `homo = TRUE`, the alleles found
-in the parent specified as the first element to the `parents` argument are supposed as
+alternative allele. If you specify two parents in the \code{parents} argument of
+\code{\link[=setParents]{setParents()}} with \code{flip = TRUE}, \code{bi = TRUE}, and \code{homo = TRUE}, the alleles found
+in the parent specified as the first element to the \code{parents} argument are supposed as
 reference alleles of the markers. If the "expected" reference alleles are not actually
-called as reference alleles but alternative alleles in the given data. [setParents()] will
+called as reference alleles but alternative alleles in the given data. \code{\link[=setParents]{setParents()}} will
 automatically labels those markers "flipped". The SnpAnnotatoinDataSet slot sores this
-information and accessible via [getFlipped()] which gives you a logical vector
-indicating which markers are labeled as flipped `TRUE` or not flipped `FALSE`.
-[haveFlipped()] just tells you whether the SnpAnnotatoinDataSet slot has
+information and accessible via \code{\link[=getFlipped]{getFlipped()}} which gives you a logical vector
+indicating which markers are labeled as flipped \code{TRUE} or not flipped \code{FALSE}.
+\code{\link[=haveFlipped]{haveFlipped()}} just tells you whether the SnpAnnotatoinDataSet slot has
 the information of flipped markers or not.
 }
 \seealso{
-[setParents()] and [haveFlipped()].
+\code{\link[=setParents]{setParents()}} and \code{\link[=haveFlipped]{haveFlipped()}}.
 }

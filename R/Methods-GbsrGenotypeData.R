@@ -175,33 +175,34 @@ setMethod("gbsrGDS2VCF",
                                                            out_fn = subset_gds,
                                                            incl_parents = TRUE))
               if(is.null(tmp_subset_gds)){
-                gds_file <- tmp_gds@data@filename
+                tmp_gds_file <- tmp_gds@data@filename
 
               } else {
+                tmp_subset_file <- tmp_subset_gds@data@filename
                 suppressMessages(closeGDS(tmp_subset_gds))
-                gds_file <- tmp_subset_gds@data@filename
+                tmp_gds_file <- tmp_subset_gds@data@filename
               }
             } else {
-              gds_file <- tmp_gds@data@filename
+              tmp_gds_file <- tmp_gds@data@filename
             }
             suppressMessages(closeGDS(tmp_gds))
 
             if(!grepl(".vcf$", out_fn)){
               out_fn <- paste0(out_fn, ".vcf")
             }
-            out_fn_tmp <- sub(".vcf", ".tmp.gds", out_fn)
-            SeqArray::seqSNP2GDS(gds.fn = gds_file,
+            out_fn_tmp <- sub(".vcf", ".tmpout.gds", out_fn)
+            SeqArray::seqSNP2GDS(gds.fn = tmp_gds_file,
                                  out.fn = out_fn_tmp,
                                  verbose = FALSE)
 
             out_gds <- gdsfmt::openfn.gds(out_fn_tmp, readonly = FALSE)
             if(have_hap){
-              in_gds <- gdsfmt::openfn.gds(object@data@filename)
+              in_gds <- gdsfmt::openfn.gds(gds_file)
               .insertHaplotype(out_gds, in_gds)
               gdsfmt::closefn.gds(in_gds)
             }
 
-            in_gds <- gdsfmt::openfn.gds(gds_file)
+            in_gds <- gdsfmt::openfn.gds(tmp_gds_file)
             .insertAnnot(out_gds, in_gds, out_fmt, out_info)
             gdsfmt::closefn.gds(in_gds)
             gdsfmt::closefn.gds(out_gds)
@@ -211,15 +212,13 @@ setMethod("gbsrGDS2VCF",
                                  verbose = FALSE)
             on.exit({
               if(valid){
-                suppressWarnings(file.remove(tmp_subset_gds@data@filename))
+                if(!is.null(tmp_subset_gds)){
+                  suppressWarnings(file.remove(tmp_subset_file))
+                }
               }
-              suppressWarnings(file.remove(tmp_gds@data@filename))
+              suppressWarnings(file.remove(tmp_gds_file))
               suppressWarnings(file.remove(out_fn_tmp))
             })
-            object@data@handler <- gdsfmt::openfn.gds(object@data@filename,
-                                                      readonly = FALSE,
-                                                      allow.duplicate = TRUE)
-            return(object)
           })
 
 #' @rdname isOpenGDS
@@ -1658,41 +1657,40 @@ setMethod("getParents",
             p_name <- getScanID(object, valid = FALSE)[p_index]
             return(data.frame(scanID = p_name, memberID = p_id, indexes = p_index))
           })
-
-#' @rdname swapAlleles
-setMethod("swapAlleles",
-          "GbsrGenotypeData",
-          function(object, allele){
-            if(is.matrix(allele)){
-              if(ncol(allele) != 2){
-                stop('The object passed to "allele" should be a data.frame with two columns for reference alleles and alternative alleles.')
-              }
-              if(nrow(allele) != nsnp(object)){
-                stop('The number of markers given as "allele" does not match with that in the data object.')
-              }
-              a <- getAlleleA(object)
-              b <- getAlleleB(object)
-              valid <- a == allele[, 1] & b == allele[, 2]
-              flipped <- a == allele[, 2] & b == allele[, 1]
-              invalid <- !valid & !flipped
-
-            } else if(is.vector(allele)){
-              valid <- getAlleleA(object) == allele
-              flipped <- getAlleleB(object) == allele
-              invalid <- !valid & !flipped
-
-            } else {
-              stop('Specify either of allele and genome.')
-            }
-            message(paste0(sum(invalid), ' SNPs were found as invalid markers which were found to have the 3rd alleles in your genotype data.'))
-            message(paste0(sum(flipped), ' SNPs were found as flipped markers.'))
-
-            object <- setValidSnp(object, update = !invalid)
-            flipped <- flipped[!invalid]
-            # Find markers of which reference allele was called as alternative allele.
-            object <- .setFlipped(object, flipped)
-            return(object)
-          })
+#' 
+#' setMethod("swapAlleles",
+#'           "GbsrGenotypeData",
+#'           function(object, allele){
+#'             if(is.matrix(allele)){
+#'               if(ncol(allele) != 2){
+#'                 stop('The object passed to "allele" should be a data.frame with two columns for reference alleles and alternative alleles.')
+#'               }
+#'               if(nrow(allele) != nsnp(object)){
+#'                 stop('The number of markers given as "allele" does not match with that in the data object.')
+#'               }
+#'               a <- getAlleleA(object)
+#'               b <- getAlleleB(object)
+#'               valid <- a == allele[, 1] & b == allele[, 2]
+#'               flipped <- a == allele[, 2] & b == allele[, 1]
+#'               invalid <- !valid & !flipped
+#' 
+#'             } else if(is.vector(allele)){
+#'               valid <- getAlleleA(object) == allele
+#'               flipped <- getAlleleB(object) == allele
+#'               invalid <- !valid & !flipped
+#' 
+#'             } else {
+#'               stop('Specify either of allele and genome.')
+#'             }
+#'             message(paste0(sum(invalid), ' SNPs were found as invalid markers which were found to have the 3rd alleles in your genotype data.'))
+#'             message(paste0(sum(flipped), ' SNPs were found as flipped markers.'))
+#' 
+#'             object <- setValidSnp(object, update = !invalid)
+#'             flipped <- flipped[!invalid]
+#'             # Find markers of which reference allele was called as alternative allele.
+#'             object <- .setFlipped(object, flipped)
+#'             return(object)
+#'           })
 
 #' @rdname thinMarker
 setMethod("thinMarker",

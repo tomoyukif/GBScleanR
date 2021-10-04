@@ -26,8 +26,8 @@ You may use "bcftools" or "vcftools" for filtering.
 gbsrVCF2GDS converts a VCF file to a GDS file.
 The data structure of the GDS file created via this functions is same with
 those created by snpgdsVCF2GDS of
-[SNPRelate](https://www.bioconductor.org/packages/release/bioc/html/SNPRelate.html).
- Unlike the GDS files created by SNPRelate GBScleanR's GDS files: \cr
+\href{https://www.bioconductor.org/packages/release/bioc/html/SNPRelate.html}{SNPRelate}.
+Unlike the GDS files created by SNPRelate GBScleanR's GDS files: \cr
 \itemize{
 \item{"Include annotation information of variants recorded in the INFO filed of the input VCF."}
 \item{"Include allelic read count data (indicated as AD) recoreded in the FORMAT filed of the input VCF."}

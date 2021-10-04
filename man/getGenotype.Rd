@@ -26,12 +26,12 @@ GbsrGenotypeData object.
 }
 \details{
 Genotype call data can be obtained from the "genotype" node, the "filt.genotype"
-node, or the "corrected.genotype" node of the GDS file with `node = "raw"`,
-`node = "filt"`, or `node = "raw"`, respectively. If `node = "parents`, the data in the "parents.genotype" node will be returned. The "parents.genotype" node stores phased parental genotypes estimated by the [clean()] function.
-The [setCallFilter()] function generate filtered genotype call data in the
+node, or the "corrected.genotype" node of the GDS file with \code{node = "raw"},
+\code{node = "filt"}, or \code{node = "raw"}, respectively. If \verb{node = "parents}, the data in the "parents.genotype" node will be returned. The "parents.genotype" node stores phased parental genotypes estimated by the \code{\link[=estGeno]{estGeno()}} function.
+The \code{\link[=setCallFilter]{setCallFilter()}} function generate filtered genotype call data in the
 "filt.genotype" node which can be accessed as mentioned above. On the other hand, the
-"corrected.genotype" node can be generated via the [clean()] function.
+"corrected.genotype" node can be generated via the \code{\link[=estGeno]{estGeno()}} function.
 }
 \seealso{
-[setCallFilter()] and [clean()]
+\code{\link[=setCallFilter]{setCallFilter()}} and \code{\link[=estGeno]{estGeno()}}
 }

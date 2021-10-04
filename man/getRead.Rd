@@ -26,11 +26,11 @@ from the GDS file linked to the given GbsrGenotypeData object.
 }
 \details{
 Read count data can be obtained from the "annotation/format/AD/data" node or the
-"annotation/format/AD/filt.data" node of the GDS file with `node = "raw"` or
-`node = "filt"`, respectively. The [setCallFilter()] function generate filtered
+"annotation/format/AD/filt.data" node of the GDS file with \code{node = "raw"} or
+\code{node = "filt"}, respectively. The \code{\link[=setCallFilter]{setCallFilter()}} function generate filtered
 read count data in the "annotation/format/AD/filt.data" node which can be accessed as
 mentioned above.
 }
 \seealso{
-[setCallFilter()]
+\code{\link[=setCallFilter]{setCallFilter()}}
 }

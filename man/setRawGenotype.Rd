@@ -24,11 +24,11 @@ functions of GBScleanR.
 }
 \details{
 A GbsrGenotypeData object storing information of the primary node of genotype data and
-read count data. All of the functions implemented in `GBScleanR` check the primary nodes
-and use data stored in those nodes. [setCallFilter()] create new nodes storing
+read count data. All of the functions implemented in \code{GBScleanR} check the primary nodes
+and use data stored in those nodes. \code{\link[=setCallFilter]{setCallFilter()}} create new nodes storing
 filtered genotype calls and read counts in a GDS file and change the primary nodes to
 "filt.genotype" and "filt.data" for genotype and read count data, respectively.
-`SetRawGenotype()` set back the nodes to the original, those are "genotype" and "data" for
+\code{SetRawGenotype()} set back the nodes to the original, those are "genotype" and "data" for
 genotype and read count data, respectively. You can set the filtered data again by
-[SetFiltGenotype()].
+\code{\link[=SetFiltGenotype]{SetFiltGenotype()}}.
 }

@@ -3,7 +3,7 @@
 \name{resetScanFilters}
 \alias{resetScanFilters}
 \alias{resetScanFilters,GbsrGenotypeData-method}
-\title{Reset the filter made by [setScanFiler()]}
+\title{Reset the filter made by \code{\link[=setScanFiler]{setScanFiler()}}}
 \usage{
 resetScanFilters(object, ...)
 

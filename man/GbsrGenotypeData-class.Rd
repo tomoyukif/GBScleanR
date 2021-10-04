@@ -5,14 +5,14 @@
 \alias{GbsrGenotypeData-class}
 \title{GbsrGenotypeData class}
 \description{
-The `GbsrGenotypeData` class is a container for genotype data from a VCF file
+The \code{GbsrGenotypeData} class is a container for genotype data from a VCF file
 together with the metadata associated with the samples and SNPs.
 }
 \details{
-The `GbsrGenotypeData` class has three slots: data, SNP annotation, and scan annotation.
+The \code{GbsrGenotypeData} class has three slots: data, SNP annotation, and scan annotation.
 "Samples" or "individuals" subjected to genotyping are called "scan" here with
-following the way used in the `GWASTools` package.
-SNP and scan annotation are automatically obtained via the [loadGDS()] function and
+following the way used in the \code{GWASTools} package.
+SNP and scan annotation are automatically obtained via the \code{\link[=loadGDS]{loadGDS()}} function and
 update when the class methods to calculate SNP wise and scan wise statistics and
 set some labels on them.
 }

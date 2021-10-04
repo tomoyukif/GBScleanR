@@ -51,16 +51,15 @@
 #' @examples
 #' # Draw histograms of missing rate, heterozygosity, and reference 
 #' # allele frequency per SNP and per sample.
-#' \dontrun{
-#' gdata <- loadGDS("/path/to/GDS.gds")
+#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gdata <- loadGDS(gds_fn)
 #' gdata <- countGenotype(gdata)
-#' hist(gdata, stats = c("missing", "het", "raf"))
+#' histGBSR(gdata, stats = c("missing", "het", "raf"))
 #'
 #' # Draw histograms of 90 percentile values of reference read counts 
 #' # and alternative read counts per SNP and per sample.
 #' gdata <- calcReadStats(gdata, q = 0.9)
-#' hist(gdata, stats = c("qtile_ref", "qtile_alt"), q = 0.9)
-#' }
+#' histGBSR(gdata, stats = c("qtile_ref", "qtile_alt"), q = 0.9)
 #'
 histGBSR  <- function(x,
                       stats = c("dp", "missing", "het"),
@@ -171,18 +170,17 @@ histGBSR  <- function(x,
 #' @import ggplot2
 #' 
 #' @examples
-#' \dontrun{
 #' # Draw boxplots of missing rate, heterozygosity, and reference 
 #' # allele frequency per SNP and per sample.
-#' gdata <- loadGDS("/path/to/GDS.gds")
+#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gdata <- loadGDS(gds_fn)
 #' gdata <- countGenotype(gdata)
-#' boxplot(gdata, stats = c("missing", "het", "raf"))
+#' boxplotGBSR(gdata, stats = c("missing", "het", "raf"))
 #'
 #' # Draw boxplots of 90 percentile values of reference read counts and
 #' # alternative read counts per SNP and per sample.
 #' gdata <- calcReadStats(gdata, q = 0.9)
-#' boxplot(gdata, stats = c("qtile_ref", "qtile_alt"), q = 0.9)
-#' }
+#' boxplotGBSR(gdata, stats = c("qtile_ref", "qtile_alt"), q = 0.9)
 #'
 boxplotGBSR <- function(x,
                         stats = "missing",
@@ -289,17 +287,16 @@ boxplotGBSR <- function(x,
 #' @import ggplot2
 #'
 #' @examples
-#' \dontrun{
 #' # Draw line plots of missing rate, heterozygosity, proportion of genotype calls per SNP.
-#' gdata <- loadGDS("/path/to/GDS.gds")
+#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gdata <- loadGDS(gds_fn)
 #' gdata <- countGenotype(gdata)
-#' plot(gdata, stats = c("missing", "het", "raf", "geno"))
+#' plotGBSR(gdata, stats = c("missing", "het", "raf", "geno"))
 #'
 #' # Draw line plots of 90 percentile values of reference read counts and
 #' # alternative read counts per SNP and per sample.
 #' gdata <- calcReadStats(gdata, q = 0.9)
-#' plot(gdata, stats = c("qtile_ref", "qtile_alt"), q = 0.9)
-#' }
+#' plotGBSR(gdata, stats = c("qtile_ref", "qtile_alt"), q = 0.9)
 #'
 plotGBSR  <- function(x,
                       stats = c("dp", "missing", "het"),
@@ -414,12 +411,11 @@ plotGBSR  <- function(x,
 #' @import ggplot2
 #'
 #' @examples
-#' \dontrun{
 #' # Draw scatter plots of missing rate vs heterozygosity.
-#' gdata <- loadGDS("/path/to/GDS.gds")
+#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gdata <- loadGDS(gds_fn)
 #' gdata <- countGenotype(gdata)
-#' plot(gdata, stats1 = "missing", stats2 = "het")
-#' }
+#' plotGBSR(gdata, stats1 = "missing", stats2 = "het")
 #'
 pairsGBSR  <- function(x,
                        stats1 = "dp",

@@ -23,7 +23,7 @@ The "annotation/info" node stores annotation infromation of markers obtained
 via SNP calling tools like bcftools and GATK.
 }
 \details{
-If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
+If \code{valid = TRUE}, the chromosome information of markers which are labeled \code{TRUE}
+in the ScanAnnotationDataSet slot will be returned. \code{\link[=getValidSnp]{getValidSnp()}} tells you
 which samples are valid.
 }

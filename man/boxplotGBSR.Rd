@@ -19,9 +19,9 @@ boxplotGBSR(
 
 \item{stats}{A vector of strings to specify statistics to be drawn.}
 
-\item{target}{Either or both of "snp" and "scan", e.g. `target = "snp"` to draw a histogram only for SNPs.}
+\item{target}{Either or both of "snp" and "scan", e.g. \code{target = "snp"} to draw a histogram only for SNPs.}
 
-\item{q}{An integer to specify a quantile calculated via [calcReadStats()].}
+\item{q}{An integer to specify a quantile calculated via \code{\link[=calcReadStats]{calcReadStats()}}.}
 
 \item{color}{A named vector "Marker" and "Sample" to specify border color of bins in the histograms.}
 
@@ -60,26 +60,25 @@ the following values:
 \item{"baseqranksum"}{"Alt Vs. Ref base qualities"},
 }
 
-To draw boxplots for "missing", "het", "raf", you need to run [countGenotype()]
+To draw boxplots for "missing", "het", "raf", you need to run \code{\link[=countGenotype]{countGenotype()}}
 first to obtain statistics. Similary, "dp", "ad_ref", "ad_alt", "rrf" requires
-values obtained via [countRead()]. [calcReadStats()] should be executed before
+values obtained via \code{\link[=countRead]{countRead()}}. \code{\link[=calcReadStats]{calcReadStats()}} should be executed before
 drawing boxplots of "mean_ref", "sd_ref", "qtile_ref", "mean_alt", "sd_alt",
 and "qtile_alt". "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
-and "baseqranksum" only work with `target = "snp"`, if your data contains those
-values supplied via SNP calling tools like [GATK](https://gatk.broadinstitute.org/hc/en-us).
+and "baseqranksum" only work with \code{target = "snp"}, if your data contains those
+values supplied via SNP calling tools like \href{https://gatk.broadinstitute.org/hc/en-us}{GATK}.
 }
 \examples{
-\dontrun{
 # Draw boxplots of missing rate, heterozygosity, and reference 
 # allele frequency per SNP and per sample.
-gdata <- loadGDS("/path/to/GDS.gds")
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
 gdata <- countGenotype(gdata)
-boxplot(gdata, stats = c("missing", "het", "raf"))
+boxplotGBSR(gdata, stats = c("missing", "het", "raf"))
 
 # Draw boxplots of 90 percentile values of reference read counts and
 # alternative read counts per SNP and per sample.
 gdata <- calcReadStats(gdata, q = 0.9)
-boxplot(gdata, stats = c("qtile_ref", "qtile_alt"), q = 0.9)
-}
+boxplotGBSR(gdata, stats = c("qtile_ref", "qtile_alt"), q = 0.9)
 
 }

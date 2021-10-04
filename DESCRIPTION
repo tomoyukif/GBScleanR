@@ -18,8 +18,9 @@ Depends: GWASTools
 LinkingTo: Rcpp, RcppParallel
 SystemRequirements: GNU make, C++11
 Imports: graphics, stats, utils, methods, gdsfmt, ggplot2, tidyr, SeqArray, Rcpp, RcppParallel, expm, Biobase
-Suggests: knitr, rmarkdown, cowplot, mgcv
+Suggests: knitr, rmarkdown, cowplot, mgcv, Roxygen2
 VignetteBuilder: knitr
+Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 biocViews: GeneticVariability, SNP, Genetics, HiddenMarkovModel
 BugReports: https://github.com/tomoyukif/GBScleanR/issues

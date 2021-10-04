@@ -52,16 +52,15 @@ A GbsrGenotypeData object.
 }
 \description{
 A VCF file usually has marker quality metrics in the INFO filed and those are stored in
-a GDS file created via `GBScleanR`. This function filter out markers based on those marker
+a GDS file created via \code{GBScleanR}. This function filter out markers based on those marker
 quality metrics.
 }
 \details{
-Detailed explanation of each metric can be found in [GATK's web site](https://gatk.broadinstitute.org/hc/en-us).
+Detailed explanation of each metric can be found in \href{https://gatk.broadinstitute.org/hc/en-us}{GATK's web site}.
 }
 \examples{
-\dontrun{
-gds <- loadGDS("/path/to/GDS.gds")
-gds <- setInfoFilter(gds, mq = 40, qd = 20)
-}
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+gdata <- setInfoFilter(gdata, mq = 40, qd = 20)
 
 }

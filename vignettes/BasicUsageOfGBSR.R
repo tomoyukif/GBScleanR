@@ -5,41 +5,30 @@ knitr::opts_chunk$set(fig.pos = 'H', fig.align = "center", warning = FALSE, mess
 #  if (!requireNamespace("BiocManager", quietly = TRUE))
 #      install.packages("BiocManager")
 #  
-#  BiocManager::install("GWASTools")
-#  BiocManager::install("SNPRelate")
-#  BiocManager::install("SeqArray")
-#  install.packages("ggplot2")
-#  install.packages("dplyr")
-#  install.packages("tidyr")
-
-## ----eval=FALSE---------------------------------------------------------------
-#  install.packages("path/to/source/GBScleanR.tar.gz", repos = NULL, type = "source")
+#  BiocManager::install("GBScleanR")
 
 ## ----eval=FALSE---------------------------------------------------------------
 #  if (!requireNamespace("devtools", quietly = TRUE))
 #      install.packages("devtools")
-#  devtools::install_github("")
+#  devtools::install_github("https://github.com/tomoyukif/GBScleanR.git")
 
 ## ----warning=FALSE, message=FALSE---------------------------------------------
 library("GBScleanR")
 
-## ----warning=FALSE, message=FALSE, eval=FALSE---------------------------------
-#  gbsrVCF2GDS(vcf_fn = "./data/gbs_nbolf2.vcf.gz", # Path to the input VCF file.
-#              out_fn = "./data/gbs_nbolf2.gds") # Path to the output GDS file.
+## -----------------------------------------------------------------------------
+vcf_fn <- system.file("extdata", "simpop.vcf", package = "GBScleanR")
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
 
-## ----eval=FALSE---------------------------------------------------------------
-#  exec_time <- system.time({
-#    gbsrVCF2GDS(vcf_fn = "./data/gbs_nbolf2.vcf.gz", # Path to the input VCF file.
-#                out_fn = "./data/gbs_nbolf2.gds") # Path to the output GDS file.
-#  })
-#  exec_time
+## ----warning=FALSE, message=FALSE, eval = FALSE-------------------------------
+#  gbsrVCF2GDS(vcf_fn = vcf_fn, # Path to the input VCF file.
+#              out_fn = gds_fn) # Path to the output GDS file.
 
 ## -----------------------------------------------------------------------------
-gdata <- loadGDS("../inst/extdata/sim_pop.gds")
+gdata <- loadGDS(gds_fn)
 
 ## ----eval=FALSE---------------------------------------------------------------
 #  # Not run.
-#  gdata <- loadGDS("./data/gbs_nbolf2.gds",
+#  gdata <- loadGDS(gds_fn,
 #                   non_autosomes =  list(X = 13,
 #                                         Y = 14,
 #                                         M = 15)) # M indicates mitochondrial chromosome.
@@ -75,23 +64,11 @@ head(getSnpID(gdata)) # SNP IDs
 head(getScanID(gdata)) # sample IDs
 
 ## -----------------------------------------------------------------------------
-g <- getGenotype(gdata) # Genotype calls in which 0, 1, and 2 indicate the number of reference allele.
+geno <- getGenotype(gdata)
 
 ## -----------------------------------------------------------------------------
 gdata <- countGenotype(gdata)
 gdata <- countRead(gdata)
-
-## -----------------------------------------------------------------------------
-gdata@snpAnnot
-
-## -----------------------------------------------------------------------------
-gdata@scanAnnot
-
-## -----------------------------------------------------------------------------
-head(pData(gdata@snpAnnot), n = 3)
-
-## -----------------------------------------------------------------------------
-head(pData(gdata@scanAnnot), n = 3)
 
 ## ----fig.cap="Missing rate per marker and per sample.", out.height="35%"------
 histGBSR(gdata, stats = "missing") # Histgrams of missing rate
@@ -136,10 +113,12 @@ histGBSR(gdata, stats = "qtile_ref", q = 0.5) # Histgrams of quantile of read de
 histGBSR(gdata, stats = "qtile_ref", q = 0.5) # Histgrams of quantile of read depth
 
 ## -----------------------------------------------------------------------------
-plotGBSR(gdata, stats = "missing", coord = c(6, 2)) # coord controls the number of rows and columns of facets.
+plotGBSR(gdata, stats = "missing", coord = c(6, 2))
+# coord controls the number of rows and columns of facets.
 
 ## -----------------------------------------------------------------------------
-plotGBSR(gdata, stats = "geno", coord = c(6, 2)) # coord controls the number of rows and columns of facets.
+plotGBSR(gdata, stats = "geno", coord = c(6, 2))
+# coord controls the number of rows and columns of facets.
 
 ## -----------------------------------------------------------------------------
 pairsGBSR(gdata, stats1 = "missing", stats2 = "dp")
@@ -181,32 +160,46 @@ head(getCountReadAlt(gdata, target = "snp")) # Alternative read count per marker
 head(getCountReadAlt(gdata, target = "scan")) # Alternative read count per sample
 
 ## -----------------------------------------------------------------------------
-head(getCountRead(gdata, target = "snp")) # Sum of reference and alternative read counts per marker
-head(getCountRead(gdata, target = "scan")) # Sum of reference and alternative read counts per sample
+head(getCountRead(gdata, target = "snp")) 
+# Sum of reference and alternative read counts per marker
+head(getCountRead(gdata, target = "scan")) 
+# Sum of reference and alternative read counts per sample
 
 ## -----------------------------------------------------------------------------
-head(getMeanReadRef(gdata, target = "snp")) # Mean of reference allele read count per marker
-head(getMeanReadRef(gdata, target = "scan")) # Mean of reference allele read count per sample
+head(getMeanReadRef(gdata, target = "snp")) 
+# Mean of reference allele read count per marker
+head(getMeanReadRef(gdata, target = "scan"))
+# Mean of reference allele read count per sample
 
 ## -----------------------------------------------------------------------------
-head(getMeanReadAlt(gdata, target = "snp")) # Mean of Alternative allele read count per marker
-head(getMeanReadAlt(gdata, target = "scan")) # Mean of Alternative allele read count per sample
+head(getMeanReadAlt(gdata, target = "snp")) 
+# Mean of Alternative allele read count per marker
+head(getMeanReadAlt(gdata, target = "scan")) 
+# Mean of Alternative allele read count per sample
 
 ## -----------------------------------------------------------------------------
-head(getSDReadRef(gdata, target = "snp")) # SD of reference allele read count per marker
-head(getSDReadRef(gdata, target = "scan")) # SD of reference allele read count per sample
+head(getSDReadRef(gdata, target = "snp")) 
+# SD of reference allele read count per marker
+head(getSDReadRef(gdata, target = "scan")) 
+# SD of reference allele read count per sample
 
 ## -----------------------------------------------------------------------------
-head(getSDReadAlt(gdata, target = "snp")) # SD of Alternative allele read count per marker
-head(getSDReadAlt(gdata, target = "scan")) # SD of Alternative allele read count per sample
+head(getSDReadAlt(gdata, target = "snp")) 
+# SD of Alternative allele read count per marker
+head(getSDReadAlt(gdata, target = "scan"))
+# SD of Alternative allele read count per sample
 
 ## -----------------------------------------------------------------------------
-head(getQtileReadRef(gdata, target = "snp", q = 0.5)) # Quantile of reference allele read count per marker
-head(getQtileReadRef(gdata, target = "scan", q = 0.5)) # Quantile of reference allele read count per sample
+head(getQtileReadRef(gdata, target = "snp", q = 0.5)) 
+# Quantile of reference allele read count per marker
+head(getQtileReadRef(gdata, target = "scan", q = 0.5))
+# Quantile of reference allele read count per sample
 
 ## -----------------------------------------------------------------------------
-head(getQtileReadAlt(gdata, target = "snp", q = 0.5)) # Quantile of Alternative allele read count per marker
-head(getQtileReadAlt(gdata, target = "scan", q = 0.5)) # Quantile of Alternative allele read count per sample
+head(getQtileReadAlt(gdata, target = "snp", q = 0.5))
+# Quantile of Alternative allele read count per marker
+head(getQtileReadAlt(gdata, target = "scan", q = 0.5)) 
+# Quantile of Alternative allele read count per sample
 
 ## -----------------------------------------------------------------------------
 head(getMAF(gdata, target = "snp")) # Minor allele frequency per marker
@@ -239,13 +232,15 @@ head(getCountReadAlt(gdata, target = "snp", prop = TRUE))
 #    het = c(0, 1),   # Specify a lower and an upper limit of heterozygosity rate.
 #    mac = 0,   # Specify a lower limit of minor allele count.
 #    maf = 0.05,   # Specify a lower limit of minor allele frequency.
-#    ad_ref = c(0, Inf),   # Specify a lower and an upper limit of reference allele count.
-#    ad_alt = c(0, Inf),   # Specify a lower and an upper limit of alternative allele count.
-#    dp = c(0, Inf),   # Specify a lower and an upper limit of total read count.
-#    mean_ref = c(0, Inf),   # Specify a lower and an upper limit of mean reference allele count.
-#    mean_alt = c(0, Inf),   # Specify a lower and an upper limit of mean alternative allele count.
-#    sd_ref = Inf,   # Specify a lower and an upper limit of SD of reference allele count.
-#    sd_alt = Inf    # Specify a lower and an upper limit of SD of alternative allele count.
+#    ad_ref = c(0, Inf), # Specify a lower and an upper limit of reference allele count.
+#    ad_alt = c(0, Inf), # Specify a lower and an upper limit of alternative allele count.
+#    dp = c(0, Inf), # Specify a lower and an upper limit of total read count.
+#    mean_ref = c(0, Inf),
+#    # Specify a lower and an upper limit of mean reference allele count.
+#    mean_alt = c(0, Inf),
+#    # Specify a lower and an upper limit of mean alternative allele count.
+#    sd_ref = Inf, # Specify a lower and an upper limit of SD of reference allele count.
+#    sd_alt = Inf # Specify a lower and an upper limit of SD of alternative allele count.
 #  )
 #  
 #  gdata <- setScanFilter(
@@ -257,8 +252,10 @@ head(getCountReadAlt(gdata, target = "snp", prop = TRUE))
 #    ad_ref = c(0, Inf),   # Specify a lower and an upper limit of reference allele count.
 #    ad_alt = c(0, Inf),   # Specify a lower and an upper limit of alternative allele count.
 #    dp = c(0, Inf),   # Specify a lower and an upper limit of total read count.
-#    mean_ref = c(0, Inf),   # Specify a lower and an upper limit of mean reference allele count.
-#    mean_alt = c(0, Inf),   # Specify a lower and an upper limit of mean alternative allele count.
+#    mean_ref = c(0, Inf),
+#    # Specify a lower and an upper limit of mean reference allele count.
+#    mean_alt = c(0, Inf),
+#    # Specify a lower and an upper limit of mean alternative allele count.
 #    sd_ref = Inf,   # Specify a lower and an upper limit of SD of reference allele count.
 #    sd_alt = Inf   # Specify a lower and an upper limit of SD of alternative allele count.
 #  )
@@ -301,7 +298,7 @@ nsnp(gdata, valid = FALSE)
 
 ## ----eval=FALSE---------------------------------------------------------------
 #  subset_gdata <- subsetGDS(gdata,
-#                            out_fn = "./data/gbs_nbolf2_subset.gds",
+#                            out_fn = "simpop_subset.gds",
 #                            snp_incl = getValidSnp(gdata),
 #                            scan_incl = getValidScan(gdata))
 

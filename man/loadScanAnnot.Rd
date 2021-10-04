@@ -16,6 +16,6 @@ loadScanAnnot(object, ...)
 }
 \description{
 All the data stored in the ScanAnnotationDataSet slot of the GbsrGenotypeData
-object can be saved in the GDS file linked to the given GbsrGenotypeData object via [saveScanAnnot()].
+object can be saved in the GDS file linked to the given GbsrGenotypeData object via \code{\link[=saveScanAnnot]{saveScanAnnot()}}.
 You can load the saved data using this function.
 }

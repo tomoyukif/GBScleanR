@@ -21,11 +21,11 @@ This function returns the number of SNPs recorded in the GDS file
 connected to the given GbsrGenotypeData object.
 }
 \details{
-If `valid = TRUE`, the number of SNPs which are labeled `TRUE` in
+If \code{valid = TRUE}, the number of SNPs which are labeled \code{TRUE} in
 the SnpAnnotationDataSet slot will be returned. You need the number
-of over all SNPs, set `valid = FALSE`. [getValidSnp()] tells you
+of over all SNPs, set \code{valid = FALSE}. \code{\link[=getValidSnp]{getValidSnp()}} tells you
 which markers are valid.
 }
 \seealso{
-[getValidSnp()]
+\code{\link[=getValidSnp]{getValidSnp()}}
 }

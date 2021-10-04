@@ -22,13 +22,13 @@ plotGBSR(
 
 \item{coord}{A vector with two integer specifying the number of rows and columns to draw faceted line plots for chromosomes.}
 
-\item{q}{An integer to specify a quantile calculated via [calcReadStats()].}
+\item{q}{An integer to specify a quantile calculated via \code{\link[=calcReadStats]{calcReadStats()}}.}
 
 \item{lwd}{A numeric value to specify the line width in plots.}
 
-\item{binwidth}{An integer to specify bin width of the histogram. This argument only work with `stats = "marker"` and is passed to the ggplot function.}
+\item{binwidth}{An integer to specify bin width of the histogram. This argument only work with \code{stats = "marker"} and is passed to the ggplot function.}
 
-\item{color}{A strings vector named "Marker", "Ref", "Het", "Alt" to specify line colors. `stats = "geno` only requires "Ref", "Het" and "Alt", while others uses the value named "Marker".}
+\item{color}{A strings vector named "Marker", "Ref", "Het", "Alt" to specify line colors. \verb{stats = "geno} only requires "Ref", "Het" and "Alt", while others uses the value named "Marker".}
 
 \item{ggargs}{An expression to be internally passed to a ggplot object to be drawn.}
 }
@@ -64,25 +64,24 @@ the following values:
 \item{"baseqranksum"}{"Alt Vs. Ref base qualities"},
 }
 
-To draw line plots for "missing", "het", "raf", you need to run [countGenotype()]
+To draw line plots for "missing", "het", "raf", you need to run \code{\link[=countGenotype]{countGenotype()}}
 first to obtain statistics. Similary, "dp", "ad_ref", "ad_alt", "rrf" requires
-values obtained via [countRead()]. [calcReadStats()] should be executed before
+values obtained via \code{\link[=countRead]{countRead()}}. \code{\link[=calcReadStats]{calcReadStats()}} should be executed before
 drawing line plots of "mean_ref", "sd_ref", "qtile_ref", "mean_alt", "sd_alt",
 and "qtile_alt". "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
-and "baseqranksum" only work with `target = "snp"`, if your data contains those
-values supplied via SNP calling tools like [GATK](https://gatk.broadinstitute.org/hc/en-us).
+and "baseqranksum" only work with \code{target = "snp"}, if your data contains those
+values supplied via SNP calling tools like \href{https://gatk.broadinstitute.org/hc/en-us}{GATK}.
 }
 \examples{
-\dontrun{
 # Draw line plots of missing rate, heterozygosity, proportion of genotype calls per SNP.
-gdata <- loadGDS("/path/to/GDS.gds")
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
 gdata <- countGenotype(gdata)
-plot(gdata, stats = c("missing", "het", "raf", "geno"))
+plotGBSR(gdata, stats = c("missing", "het", "raf", "geno"))
 
 # Draw line plots of 90 percentile values of reference read counts and
 # alternative read counts per SNP and per sample.
 gdata <- calcReadStats(gdata, q = 0.9)
-plot(gdata, stats = c("qtile_ref", "qtile_alt"), q = 0.9)
-}
+plotGBSR(gdata, stats = c("qtile_ref", "qtile_alt"), q = 0.9)
 
 }

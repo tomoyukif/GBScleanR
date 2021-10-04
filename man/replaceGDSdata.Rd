@@ -26,10 +26,10 @@ Replace the original data with the filtered data or replace sample IDs in the GD
 to an input GbsrGenotypeData object.
 }
 \details{
-If `target = "genotype"`, replace the data stored in the "genotype" node with the
-data in the "filt.genotype" node for genotype call data. If `target = "ad`,
+If \code{target = "genotype"}, replace the data stored in the "genotype" node with the
+data in the "filt.genotype" node for genotype call data. If \verb{target = "ad},
 The data stored in the "data" node is also replaced with the data in the
-"filt.data" node for read count data. `target = "sample.id"` makes this function to
+"filt.data" node for read count data. \code{target = "sample.id"} makes this function to
 replace data in the "sample.id" node with the sample IDs stored in the
 ScanAnnotationDataSet slot of the input GbsrGenotypeData object.
 }

@@ -3,7 +3,7 @@
 \name{resetCallFilters}
 \alias{resetCallFilters}
 \alias{resetCallFilters,GbsrGenotypeData-method}
-\title{Reset the filter made by [setCallFiler()]}
+\title{Reset the filter made by \code{\link[=setCallFiler]{setCallFiler()}}}
 \usage{
 resetCallFilters(object, ...)
 
@@ -19,5 +19,5 @@ A GbsrGenotypeData object.
 }
 \description{
 Return genotype calls and read count data to the original data which are same with
-those data before running [setCallFilter()].
+those data before running \code{\link[=setCallFilter]{setCallFilter()}}.
 }

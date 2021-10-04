@@ -77,14 +77,14 @@ A GbsrGenotypeData object.
 \description{
 Perform filtering of each genotype call, neither markers nor samples. Each genotype call
 is supported by its read counts for the reference allele and the alternative allele of
-a marker of a sample. `setCallFilter()` set missing to the genotype calls which are
+a marker of a sample. \code{setCallFilter()} set missing to the genotype calls which are
 not reliable enough and set zero to reference and alternative read counts of
 the genotype calls.
 }
 \details{
-`norm_dp_count`, `norm_ref_count`, and `norm_alt_count` use normalized read counts which
+\code{norm_dp_count}, \code{norm_ref_count}, and \code{norm_alt_count} use normalized read counts which
 are obtained by dividing each read count by the total read count of each sample.
-`scan_dp_qtile`, `scan_ref_qtile`, and `scan_alt_qtile` work similarly but use quantile
+\code{scan_dp_qtile}, \code{scan_ref_qtile}, and \code{scan_alt_qtile} work similarly but use quantile
 values of read counts of each sample to decide the lower and upper limit of read counts.
 This function generate two new nodes in the GDS file linked with the given GbsrGenotypeData
 object. The new nodes "filt.data" in the AD node and "filt.genotype" contains read count
@@ -92,16 +92,17 @@ data and genotype data after filtering, respectively.
 }
 \examples{
 
-\dontrun{
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+
 # Filter out genotype calls supported by less than 5 reads.
-gds <- setCallFilter(gds, dp_count = c(5, Inf))
+gdata <- setCallFilter(gdata, dp_count = c(5, Inf))
 
 # Filter out genotype calls supported by reads less than 
 # the 20 percentile of read counts per marker in each sample.
-gds <- setCallFilter(gds, scan_dp_qtile = c(0.2, 1))
+gdata <- setCallFilter(gdata, scan_dp_qtile = c(0.2, 1))
 
 # Filter out all reference homozygote genotype calls.
-gds <- setCallFilter(gds, omit_geno = "ref")
-}
+gdata <- setCallFilter(gdata, omit_geno = "ref")
 
 }

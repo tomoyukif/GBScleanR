@@ -31,63 +31,61 @@ A GbsrScheme object.
 GBScleanR uses breeding scheme information to set the expected
 number of cross overs in a chromosome which is a required parameter
 for the genotype error correction with the Hidden Markov model
-implemented in the "clean" function. This function build the object storing
+implemented in the \code{estGeno()} function. This function build the object storing
 type crosses performed at each generation of breeding and population sizes.
 }
 \details{
 A scheme object is just a data.frame indicating a population size and
 a type of cross applied to each generation of the breeding process
-to generate the population which you are going to subject to the "clean" function.
-The `crosstype` can take either of "selfing", "sibling", "pairing", and "random".
-When you set `crosstype = "random"`, you need to specify `pop_size` to indicate how many
+to generate the population which you are going to subject to the \code{\link[=estGeno]{estGeno()}} function.
+The \code{crosstype} can take either of "selfing", "sibling", "pairing", and "random".
+When you set \code{crosstype = "random"}, you need to specify \code{pop_size} to indicate how many
 individuals were crossed in the random mating.
-You also need to specify a matrix indicating combinations of `mating`, in which
+You also need to specify a matrix indicating combinations of \code{mating}, in which
 each column shows a pair of member IDs indicating parental samples of the cross.
 Member IDs are serial numbers starts from 1 and automatically assigned by
-[initScheme()] and [addScheme()]. To check the member IDs, run [showScheme()].
-Please see the examples section for more details of specifying a `mating` matrix.
-The created GbsrScheme object is set in the `scheme` slot of the GbsrGenotypeData object.
+\code{\link[=initScheme]{initScheme()}} and \code{\link[=addScheme]{addScheme()}}. To check the member IDs, run \code{\link[=showScheme]{showScheme()}}.
+Please see the examples section for more details of specifying a \code{mating} matrix.
+The created GbsrScheme object is set in the \code{scheme} slot of the GbsrGenotypeData object.
 }
 \examples{
-\dontrun{
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+
 # Biparental F2 population.
-gds <- loadGDS("/path/to/GDS.gds")
-gds <- setParents(gds, parents = c("parent1", "parent2"))
-# setParents gave member ID 1 and 2 to parent1 and parent2, respectively.
-gds <- initScheme(gds, crosstype = "pair", mating = matrix(1:2, nrow = 1, ncol = 2))
+gdata <- setParents(gdata, parents = c("Founder1", "Founder2"))
+# setParents gave member ID 1 and 2 to Founder1 and Founder2, respectively.
+gdata <- initScheme(gdata, crosstype = "pair", mating = cbind(c(1:2)))
 # Now the progenies of the cross above have member ID 3.
 # If `crosstype = "selfing"` or `"sibling"`, you can omit a `mating` matrix.
-gds <- addScheme(gds, crosstype = "self")
+gdata <- addScheme(gdata, crosstype = "self")
 
 # 8-way RILs with sibling mating.
-gds <- loadGDS("/path/to/GDS.gds")
-gds <- setParents(gds, parents = paste("parent", 1:8, sep = ""))
-# setParents set member ID 1 to 8 to parent1 to parent8, respectively.
+# Our example data only have two foudners. Thus, we set first eight samples as parents as example.
+gdata <- setParents(gdata, parents = getScanID(gdata)[1:8])
 
-# If you made crosses of parent1 x parent2, parent3 x parent4, 
-# parent5 x parent6, and parent7 x parent8, run the following.
-gds <- initScheme(gds, crosstype = "pair", mating = matrix(1:8, nrow = 4, ncol = 2))
+# If you made crosses of Founder1 x Founder2, Founder3 x Founder4,
+# Founder5 x Founder6, and Founder7 x Founder8, run the following.
+gdata <- initScheme(gdata, crosstype = "pair", mating = cbind(c(1:2), c(3:4), c(5:6), c(7:8)))
 
 # Now the progenies of the crosses above have member ID 9, 10, 11, 
 # and 12 for each combination of mating.You can check IDs with showScheme().
-showScheme(gds)
+showScheme(gdata)
 
 # Then, produce 4-way crosses.
-gds <- addScheme(gds, crosstype = "pair", mating = matrix(9:12, nrow = 2, ncol = 2))
+gdata <- addScheme(gdata, crosstype = "pair", mating = cbind(c(9:10), c(11:12)))
 # 8-way crosses.
-gds <- addScheme(gds, crosstype = "pair", mating = matrix(13:14, nrow = 1, ncol = 2))
+gdata <- addScheme(gdata, crosstype = "pair", mating = cbind(c(13:14)))
 # Inbreeding by 4 times selfing.
-gds <- addScheme(gds, crosstype = "self")
-gds <- addScheme(gds, crosstype = "self")
-gds <- addScheme(gds, crosstype = "self")
-gds <- addScheme(gds, crosstype = "self")
+gdata <- addScheme(gdata, crosstype = "self")
+gdata <- addScheme(gdata, crosstype = "self")
+gdata <- addScheme(gdata, crosstype = "self")
+gdata <- addScheme(gdata, crosstype = "self")
 
 # Execute error correction
-gds <- estGeno(gds)
-
-}
+gdata <- estGeno(gdata)
 
 }
 \seealso{
-[addScheme()] and [showScheme()]
+\code{\link[=addScheme]{addScheme()}} and \code{\link[=showScheme]{showScheme()}}
 }

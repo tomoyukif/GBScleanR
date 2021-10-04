@@ -650,6 +650,7 @@ setMethod("estGeno",
                              n_f = param_list$n_parents,
                              n_o = param_list$n_samples,
                              n_m = param_list$n_snp,
+                             nohet = param_list$het_parent,
                              possiblehap = param_list$pat$possiblehap - 1,
                              possiblegeno = param_list$pat$possiblegeno - 1,
                              p_geno_fix = param_list$p_geno_fix - 1)
@@ -847,14 +848,14 @@ setMethod("estGeno",
     best_hap_f <- .pat2hap(best_pat_f, param_list)
     p_geno_f <- .parentPat2Geno(best_pat_f, param_list)
     best_geno_f <- .hap2geno(best_hap_f, p_geno_f, param_list)
-    param_list$p_geno_fix <- best_pat_f$p_geno[param_list$n_snp]
+    param_list$p_geno_fix <- -1
     
   } else {
     best_pat_r <- .getBestSeq(.flipParam(param_list), outprob)
     best_hap_r <- .pat2hap(best_pat_r, param_list)
     p_geno_r <- .parentPat2Geno(best_pat_r, param_list)
     best_geno_r <- .hap2geno(best_hap_r, p_geno_r, param_list)
-    param_list$p_geno_fix <- best_pat_r$p_geno[param_list$n_snp]
+    param_list$p_geno_fix <- -1
   }
   
   if(!outprob){
@@ -940,7 +941,33 @@ setMethod("estGeno",
   return(out_list)
 }
 
-
+  # setting <- paste0("_ad0-", 0.9)
+  # #######################
+  # gds_fn <- paste0("~/02_gbscleanr/data/gbs_nbolf2", setting, ".gds")
+  # gbsrVCF2GDS(vcf_fn = "~/02_gbscleanr/data/gbs_nbolf2.vcf.gz", # Path to the input VCF file.
+  #             out_fn = gds_fn,
+  #             force = TRUE) # Path to the output GDS file.
+  # gdata <- loadGDS(gds_fn)
+  # p1 <- grep("01_NB", getScanID(gdata), value = TRUE)
+  # p2 <- grep("02_OL", getScanID(gdata), value = TRUE)
+  # gdata <- setParents(object = gdata, parents = c(p1, p2), flip = T, mono = T, bi = T)
+  # nsnp(gdata)
+  # gdata <- countGenotype(gdata)
+  # gdata <- thinMarker(gdata, 75)
+  # gdata <- setCallFilter(gdata,
+  #                        scan_ref_qtile = c(0, i),
+  #                        scan_alt_qtile = c(0, i))
+  # gdata <- initScheme(gdata, "pair", matrix(1:2, 2))
+  # gdata <- addScheme(gdata, "self")
+  # object = gdata
+  # recomb_rate = 0.04
+  # call_threshold = 0.9
+  # error_rate = 0.0025
+  # iter = 4
+  # het_parent = FALSE
+  # optim = TRUE
+  
+  
 # # dir <- "~/02_gbscleanr/ForManuscript/simpop_8way_RIL_noADbias_homoParents"
 # # dir <- "~/02_gbscleanr/ForManuscript/simpop_2way_F2_noADbias_homoParents"
 # dir <- "~/02_gbscleanr/ForManuscript/simpop_2way_F2_noADbias_hetParents_sibling/"
@@ -991,7 +1018,7 @@ setMethod("estGeno",
 #                          het_parent)
 # 
 # param_list <- .checkPread(param_list)
-# 
+# # 
 # # param_list <- .flipParam(param_list)
 # 
 # param_list$trans_prob <- matrix(param_list$trans_prob,

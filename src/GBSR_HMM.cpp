@@ -165,7 +165,8 @@ NumericVector calcPemit(NumericMatrix p_ref,
                         IntegerVector possiblegeno,
                         int m,
                         int n_f,
-                        int n_p
+                        int n_p,
+                        LogicalVector het
 ){
   double neg_inf = -std::numeric_limits<double>::infinity();
   double p_prob;
@@ -173,6 +174,7 @@ NumericVector calcPemit(NumericMatrix p_ref,
   std::vector<double> ref_multiplier = {eseq[0], w1[m], eseq[1]};
   std::vector<double> alt_multiplier = {eseq[1], w2[m], eseq[0]};
   NumericVector p_emit(n_p, 1.0);
+  
   
   for(int i=0; i<n_f; ++i){
     // Calculate genotype probabilies
@@ -182,37 +184,42 @@ NumericVector calcPemit(NumericMatrix p_ref,
     for(int g=0; g<3;++g){
       prob_i[g] = ref_i[m]* ref_multiplier[g] + alt_i[m] * alt_multiplier[g];
     }
+    if(is_false(all(het))){
+      prob_i[1] = neg_inf;
+    }
     lognorm_vec(prob_i);
     
     for(int g=0; g<3;++g){
       prob_i[g] = pow10(prob_i[g]);
     }
     
-    // Calculate mismap accounted genotype probabilities
-    std::vector<double> v1 = {1 - mismap1[m], mismap1[m], 0};
-    std::vector<double> v2 = {0, 1, 0};
-    std::vector<double> v3 = {0, mismap2[m], 1 - mismap2[m]};
-    double sum_v1 = 0.0;
-    double sum_v2 = 0.0;
-    double sum_v3 = 0.0;
-    double sum_v;
-    for(int g=0; g<3;++g){
-      sum_v1 += v1[g] * prob_i[g];
-      sum_v2 += v2[g] * prob_i[g];
-      sum_v3 += v3[g] * prob_i[g];
-    }
-    sum_v = sum_v1 + sum_v2 + sum_v3;
-    prob_i[0] = sum_v1 / sum_v;
-    prob_i[1] = sum_v2 / sum_v;
-    prob_i[2] = sum_v3 / sum_v;
+    // // Calculate mismap accounted genotype probabilities
+    // std::vector<double> v1 = {1 - mismap1[m], mismap1[m], 0};
+    // std::vector<double> v2 = {0, 1, 0};
+    // std::vector<double> v3 = {0, mismap2[m], 1 - mismap2[m]};
+    // double sum_v1 = 0.0;
+    // double sum_v2 = 0.0;
+    // double sum_v3 = 0.0;
+    // double sum_v;
+    // for(int g=0; g<3;++g){
+    //   sum_v1 += v1[g] * prob_i[g];
+    //   sum_v2 += v2[g] * prob_i[g];
+    //   sum_v3 += v3[g] * prob_i[g];
+    // }
+    // sum_v = sum_v1 + sum_v2 + sum_v3;
+    // prob_i[0] = sum_v1 / sum_v;
+    // prob_i[1] = sum_v2 / sum_v;
+    // prob_i[2] = sum_v3 / sum_v;
     
     for(int j=0; j<n_p; ++j){
       col_i = j * n_f + i;
       p_prob = prob_i[possiblegeno[col_i]];
+      
       if(p_prob < 0.01){
         p_prob = 0;
       }
       p_emit[j] = p_emit[j] * p_prob;
+      
     }
   }
   
@@ -224,14 +231,12 @@ NumericVector calcPemit(NumericMatrix p_ref,
     }
   }
   p_emit = lognorm(p_emit);
+  
   return p_emit;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Functions for the Viterbi algorithm
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Run Viterbi algorithm for founder genotype and offspring genotype separately
 
 // Initialize Viterbi scores
@@ -844,6 +849,7 @@ List run_viterbi(NumericMatrix p_ref,
                   int & n_o,
                   int & n_f,
                   int & n_m,
+                  LogicalVector nohet,
                   IntegerVector possiblehap,
                   IntegerVector possiblegeno,
                   IntegerVector p_geno_fix
@@ -891,7 +897,8 @@ List run_viterbi(NumericMatrix p_ref,
                       possiblegeno,
                       m,
                       n_f,
-                      n_p);
+                      n_p,
+                      nohet);
   
   int int_fix_p = p_geno_fix[0];
   if(int_fix_p >= 0){
@@ -954,7 +961,8 @@ List run_viterbi(NumericMatrix p_ref,
                         possiblegeno,
                         m,
                         n_f,
-                        n_p);
+                        n_p,
+                        nohet);
     
     R_xlen_t fix_p_len = p_geno_fix.size();
     if(fix_p_len > m){

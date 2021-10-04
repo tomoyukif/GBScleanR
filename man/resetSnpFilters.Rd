@@ -3,7 +3,7 @@
 \name{resetSnpFilters}
 \alias{resetSnpFilters}
 \alias{resetSnpFilters,GbsrGenotypeData-method}
-\title{Reset the filter made by [setSnpFiler()]}
+\title{Reset the filter made by \code{\link[=setSnpFiler]{setSnpFiler()}}}
 \usage{
 resetSnpFilters(object, ...)
 

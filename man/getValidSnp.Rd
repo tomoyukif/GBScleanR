@@ -18,5 +18,5 @@ getValidSnp(object, ...)
 Return a logical vector indicating which are valid SNP markers.
 }
 \seealso{
-[setValidSnp()]
+\code{\link[=setValidSnp]{setValidSnp()}}
 }

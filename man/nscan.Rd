@@ -21,11 +21,11 @@ This function returns the number of samples recorded in the GDS file
 connected to the given GbsrGenotypeData object.
 }
 \details{
-If `valid = TRUE`, the number of samples which are labeled `TRUE`
+If \code{valid = TRUE}, the number of samples which are labeled \code{TRUE}
 in the ScanAnnotationDataSet slot will be returned. You need
-the number of over all samples, set `valid = FALSE`.
-[getValidSnp()] tells you which samples are valid.
+the number of over all samples, set \code{valid = FALSE}.
+\code{\link[=getValidSnp]{getValidSnp()}} tells you which samples are valid.
 }
 \seealso{
-[getValidSnp()]
+\code{\link[=getValidSnp]{getValidSnp()}}
 }

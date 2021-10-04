@@ -25,23 +25,18 @@ Print the information of each generation in a GbsrScheme object in the scheme
 slot of a GbsrGenotypeData object.
 A GbsrScheme object stores information of a population size, mating combinations and
 a type of cross applied to each generation of the breeding process
-to generate the population which you are going to subject to the "clean" function.
+to generate the population which you are going to subject to the \code{estGeno()} function.
 }
 \examples{
-\dontrun{
-gds <- loadGDS("/path/to/GDS.gds")
-gds <- setParents(gds, parents = paste("parent", 1:8, sep = ""))
-# setParents set member ID 1 to 8 to parent1 to parent8, respectively.
-# If you made crosses of parent1 x parent2, parent3 x parent4, 
-# parent5 x parent6, and parent7 x parent8, run the following.
-gds <- initScheme(gds, crosstype = "pair", mating = matrix(1:8, nrow = 4, ncol = 2))
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
 
-# Now the progenies of the crosses above have member ID 9, 10, 11,
-# and 12 for each combination of mating. You can check IDs with showScheme().
-showScheme(gds)
-}
+gdata <- setParents(gdata, parents = c("Founder1", "Founder2"))
+gdata <- initScheme(gdata, crosstype = "pair", mating = cbind(c(1:2)))
+gdata <- addScheme(gdata, crosstype = "self")
+showScheme(gdata)
 
 }
 \seealso{
-[initScheme()] and [addScheme()]
+\code{\link[=initScheme]{initScheme()}} and \code{\link[=addScheme]{addScheme()}}
 }

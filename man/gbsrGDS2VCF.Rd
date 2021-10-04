@@ -38,10 +38,10 @@ stored in a GDS file. The output VCF file contains only the GT filed,
 while other annotations, AD, DP and other information will be omitted.
 }
 \examples{
-\dontrun{
-gdata <- loadGDS("/path/to/GDS.gds")
-gdata <- clean(gdata)
-gbsrGDS2VCF(gdata, "/path/to/output.vcf", node = "cor")
-}
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+gdata <- estGeno(gdata)
+vcfout_fn <- system.file("extdata", "simpop_out.vcf", package = "GBScleanR")
+gbsrGDS2VCF(gdata, vcfout_fn, node = "cor")
 
 }

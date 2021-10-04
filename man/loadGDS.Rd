@@ -23,12 +23,14 @@ GBScleanR handles only one class GbsrGenotypeData and
 conducts all data manipulation via class methods for it.
 }
 \examples{
-\dontrun{
-gds_fn <- gbsrVCF2GDS(vcf_fn = "/path/to/vcf.vcf", out_fn = "/path/to/gds.gds/", force = TRUE)
-gdata <- loadGDS(gds_fn = gds_fn, non_autosomes = NULL)
+vcf_fn <- system.file("extdata", "simpop.vcf", package = "GBScleanR")
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+
+gbsrVCF2GDS(vcf_fn = vcf_fn, # Path to the input VCF file.
+            out_fn = gds_fn) # Path to the output GDS file.
+gdata <- loadGDS(gds_fn = gds_fn)
 
 # If you would like to reload a GDS file.
 gdata <- loadGDS(genotypeData = gdata)
-}
 
 }

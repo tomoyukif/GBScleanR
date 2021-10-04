@@ -16,15 +16,15 @@ getParents(object, ...)
 }
 \description{
 This function returns scan IDs, member IDs and indexes of parental samples
-set via [setParents()]. Scan IDs are IDs given by user or obtained from the
-original VCF file. Member IDs are serial numbers assigned by [setParents()].
+set via \code{\link[=setParents]{setParents()}}. Scan IDs are IDs given by user or obtained from the
+original VCF file. Member IDs are serial numbers assigned by \code{\link[=setParents]{setParents()}}.
 }
 \examples{
-\dontrun{
-gds <- loadGDS("/path/to/GDS.gds")
-gds <- setParents(gds, parents = c("parent1", "parent2"))
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds <- loadGDS(gds_fn)
+parents <- grep("Founder", getScanID(gds), value = TRUE)
+gds <- setParents(gds, parents = parents)
 getParents(gds)
-}
 
 
 }

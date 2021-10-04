@@ -24,9 +24,9 @@ GbsrGenotypeData object.
 }
 \details{
 Haplotype call data can be obtained from the "estimated.haplotype" node of
-the GDS file which can be generated via the [clean()] function. Thus, this function
-is valid only after having executed [clean()].
+the GDS file which can be generated via the \code{\link[=estGeno]{estGeno()}} function. Thus, this function
+is valid only after having executed \code{\link[=estGeno]{estGeno()}}.
 }
 \seealso{
-[clean()]
+\code{\link[=estGeno]{estGeno()}}
 }

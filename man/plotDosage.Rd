@@ -22,7 +22,7 @@ plotDosage(
 
 \item{ind}{A vector of indexes to specify samples to be drawn.}
 
-\item{valid_only}{A logical value whether to draw a plot only for valid markers and samples. You can get validity with `getValidSnp()` and `getValidScan`.}
+\item{valid_only}{A logical value whether to draw a plot only for valid markers and samples. You can get validity with \code{getValidSnp()} and \code{getValidScan}.}
 
 \item{dot_fill}{A string to indicate the dot color in a plot.}
 }

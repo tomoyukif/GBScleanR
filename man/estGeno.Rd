@@ -15,7 +15,6 @@ estGeno(
   optim = TRUE,
   iter = 2,
   n_threads = NULL,
-  sep_vit,
   ...
 )
 
@@ -28,8 +27,7 @@ estGeno(
   het_parent,
   optim,
   iter,
-  n_threads,
-  sep_vit
+  n_threads
 )
 }
 \arguments{
@@ -50,9 +48,7 @@ error correction.}
 
 \item{iter}{An integer value to specify the number of iterative parameter updates.}
 
-\item{n_threads}{An integer value to specify the number of threads used for the calculation. The default is `n_threads = NULL` and automatically set half the number of available threads on the computer.}
-
-\item{sep_vit}{A logical value. If TRUE, estimation of founder genotype will be done first and then offspring genotype. The separate estimation of founder and offspring genotypes uses less RAM.}
+\item{n_threads}{An integer value to specify the number of threads used for the calculation. The default is \code{n_threads = NULL} and automatically set half the number of available threads on the computer.}
 
 \item{...}{Unused.}
 }
@@ -63,13 +59,12 @@ A GbsrGenotypeData object.
 Clean up genotype data by error correction based on genotype estimation using a hidden Markov model.
 }
 \examples{
-\dontrun{
-gds <- loadGDS("/path/to/GDS.gds")
-gds <- setParents(gds, parents = getScanID(gds)[1:4])
-gds <- initScheme(gds, crosstype = "pairing", mating = matrix(1:4, 2))
-gds <- addScheme(gds, "pairing", mating = matrix(5:6, 2))
-gds <- addScheme(gds, "selfing")
-gds <- estGeno(gds, recomb_rate = 0.03, het_parent = FALSE, iter = 3)
-}
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadgdata(gdata_fn)
+gdata <- setParents(gdata, parents = getScanID(gdata)[1:4])
+gdata <- initScheme(gdata, crosstype = "pairing", mating = matrix(1:4, 2))
+gdata <- addScheme(gdata, "pairing", mating = matrix(5:6, 2))
+gdata <- addScheme(gdata, "selfing")
+gdata <- estGeno(gdata, recomb_rate = 0.03, het_parent = FALSE, iter = 3)
 
 }

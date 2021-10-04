@@ -41,11 +41,11 @@ setSnpFilter(
 \arguments{
 \item{object}{A GbsrGenotypeData object.}
 
-\item{id}{A vector of strings match with scan ID which can be retrieve by `getScanID()`.}
+\item{id}{A vector of strings match with scan ID which can be retrieve by \code{getScanID()}.}
 
-\item{missing}{A numeric value [0-1] to specify the maximum missing genotype call rate per marker}
+\item{missing}{A numeric value \link{0-1} to specify the maximum missing genotype call rate per marker}
 
-\item{het}{A numeric value [0-1] to specify the maximum heterozygous genotype call rate per marker}
+\item{het}{A numeric value \link{0-1} to specify the maximum heterozygous genotype call rate per marker}
 
 \item{mac}{A integer value to specify the minimum minor allele count per marker}
 
@@ -74,18 +74,17 @@ A GbsrGenotypeData object.
 Search markers which do not meet the criteria and label them as "invalid".
 }
 \details{
-For `mean_ref`, `mean_alt`, `sd_ref`, and `sd_alt`, this function calculate mean and
+For \code{mean_ref}, \code{mean_alt}, \code{sd_ref}, and \code{sd_alt}, this function calculate mean and
 standard deviation of reads obtained for samples at each SNP marker. If a mean read counts
 of a marker was smaller than the specified lower limit or larger than the upper limit,
-this function labels the marker as "invalid". In the case of `sd_ref` and `sd_alt`,
+this function labels the marker as "invalid". In the case of \code{sd_ref} and \code{sd_alt},
 standard deviations of read counts of each marker are checked and the markers having a
 larger standard deviation will be labeled as "invalid". To check valid and invalid
-markers, run [getValidSnp()].
+markers, run \code{\link[=getValidSnp]{getValidSnp()}}.
 }
 \examples{
-\dontrun{
-gds <- loadGDS("/path/to/GDS.gds")
-gds <- setSnpFilter(gds, id = getSnpID(gds)[1:1000], missing = 0.2, dp = c(5, Inf))
-}
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+gdata <- setSnpFilter(gdata, id = getSnpID(gdata)[1:100], missing = 0.2, dp = c(5, Inf))
 
 }

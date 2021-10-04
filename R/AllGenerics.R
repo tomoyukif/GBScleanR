@@ -106,11 +106,11 @@ setGeneric("loadScanAnnot", function(object, ...)
 #' @importFrom SeqArray seqSNP2GDS seqGDS2VCF
 #'
 #' @examples
-#' \dontrun{
-#' gdata <- loadGDS("/path/to/GDS.gds")
-#' gdata <- clean(gdata)
-#' gbsrGDS2VCF(gdata, "/path/to/output.vcf", node = "cor")
-#' }
+#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gdata <- loadGDS(gds_fn)
+#' gdata <- estGeno(gdata)
+#' vcfout_fn <- system.file("extdata", "simpop_out.vcf", package = "GBScleanR")
+#' gbsrGDS2VCF(gdata, vcfout_fn, node = "cor")
 #'
 setGeneric("gbsrGDS2VCF", function(object, out_fn, node = "raw", valid = TRUE,
                                    out_fmt = NULL, out_info = NULL, ...)
@@ -336,12 +336,12 @@ setGeneric("flipData", function(object, ...)
 #' @details
 #' Genotype call data can be obtained from the "genotype" node, the "filt.genotype"
 #' node, or the "corrected.genotype" node of the GDS file with `node = "raw"`,
-#' `node = "filt"`, or `node = "raw"`, respectively. If `node = "parents`, the data in the "parents.genotype" node will be returned. The "parents.genotype" node stores phased parental genotypes estimated by the [clean()] function.
+#' `node = "filt"`, or `node = "raw"`, respectively. If `node = "parents`, the data in the "parents.genotype" node will be returned. The "parents.genotype" node stores phased parental genotypes estimated by the [estGeno()] function.
 #' The [setCallFilter()] function generate filtered genotype call data in the
 #' "filt.genotype" node which can be accessed as mentioned above. On the other hand, the
-#' "corrected.genotype" node can be generated via the [clean()] function.
+#' "corrected.genotype" node can be generated via the [estGeno()] function.
 #'
-#' @seealso [setCallFilter()] and [clean()]
+#' @seealso [setCallFilter()] and [estGeno()]
 #'
 #' @export
 #'
@@ -365,10 +365,10 @@ setGeneric("getGenotype", function(object,
 #' 
 #' @details
 #' Haplotype call data can be obtained from the "estimated.haplotype" node of
-#' the GDS file which can be generated via the [clean()] function. Thus, this function
-#' is valid only after having executed [clean()].
+#' the GDS file which can be generated via the [estGeno()] function. Thus, this function
+#' is valid only after having executed [estGeno()].
 #'
-#' @seealso [clean()]
+#' @seealso [estGeno()]
 #'
 #' @export
 #'
@@ -1032,16 +1032,15 @@ setGeneric("getMAC", function(object,
 #' `node = "filt"`, or `node = "raw"`, respectively.
 #' The [setCallFilter()] function generate filtered genotype call data in the
 #' "filt.genotype" node which can be accessed as mentioned above. On the other hand, the
-#' "corrected.genotype" node can be generated via the [clean()] function.
+#' "corrected.genotype" node can be generated via the [estGeno()] function.
 #'
 #' @examples
-#' \dontrun{
-#' gdata <- loadGDS("/path/to/GDS.gds")
+#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gdata <- loadGDS(gds_fn)
 #' gdata <- countGenotype(gdata)
 #' sample_missing_rate <- getCountGenoMissing(gdata, target = "scan", prop = TRUE)
 #' marker_minor_allele_freq <- getMAF(gdata, target = "snp")
-#' hist(gdata, stats = "missing")
-#' }
+#' histGBSR(gdata, stats = "missing")
 #'
 #' @export
 #'
@@ -1072,13 +1071,12 @@ setGeneric("countGenotype", function(object,
 #' mentioned above.
 #'
 #' @examples
-#' \dontrun{
-#' gdata <- loadGDS("/path/to/GDS.gds")
+#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gdata <- loadGDS(gds_fn)
 #' gdata <- countRead(gdata)
 #' read_depth_per_marker <- getCountRead(gdata, target = "snp")
 #' reference_read_freq <- getCountReadRef(gdata, target = "snp", prop = TRUE)
-#' hist(gdata, stats = "ad_ref")
-#' }
+#' histGBSR(gdata, stats = "ad_ref")
 #'
 #' @export
 #'
@@ -1111,14 +1109,13 @@ setGeneric("countRead", function(object,
 #' @importFrom stats sd quantile
 #' 
 #' @examples
-#' \dontrun{
-#' gdata <- loadGDS("/path/to/GDS.gds")
+#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gdata <- loadGDS(gds_fn)
 #' gdata <- calcReadStats(gdata, q = 0.5)
 #' mean_reference_read_depth <- getMeanReadRef(gdata, target = "snp")
 #' median_reference_read_depth <- getQtileReadAlt(gdata, target = "snp", q = 0.5)
-#' hist(gdata, stats = "mean_ref")
-#' hist(gdata, stats = "qtile_alt", q = 0.5)
-#' }
+#' histGBSR(gdata, stats = "mean_ref")
+#' histGBSR(gdata, stats = "qtile_alt", q = 0.5)
 #' 
 #' @export
 #'
@@ -1161,12 +1158,11 @@ setGeneric("calcReadStats", function(object,
 #' @return A GbsrGenotypeData object.
 #'
 #' @examples
-#' \dontrun{
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' parents <- grep("parent", getScanID(gds), value = TRUE)
-#' gds <- setParents(gds, parents = parents, mono = TRUE, bi = TRUE, flip = TRUE)
-#' gds <- clean(gds)
-#' }
+#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gdata <- loadGDS(gds_fn)
+#' parents <- grep("Founder", getScanID(gdata), value = TRUE)
+#' gdata <- setParents(gdata, parents = parents)
+#' gdata <- estGeno(gdata)
 #'
 #' @export
 #'
@@ -1191,65 +1187,16 @@ setGeneric("setParents", function(object,
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' gds <- setParents(gds, parents = c("parent1", "parent2"))
+#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds <- loadGDS(gds_fn)
+#' parents <- grep("Founder", getScanID(gds), value = TRUE)
+#' gds <- setParents(gds, parents = parents)
 #' getParents(gds)
-#' }
 #' 
 #'
 setGeneric("getParents", function(object,
                                   ...)
   standardGeneric("getParents"))
-
-
-#' Swap the alleles recorded in a GDS file linked to the given GbsrGenotypeData object.
-#'
-#' The alleles of each marker are automatically obtained to match with those
-#' recorded in an input VCF file when it was converted to a GDS file. This function swap
-#' those alleles.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param allele A vector or matrix of characters each of which is either of "A", "T", "G", and "C". The length and the number of rows should be same with the number of "valid" markers. See details.
-#' @param ... Unused.
-#' 
-#' @details
-#' The `allele` argument can take a vector or a two-column matrix of characters
-#' indicating reference alleles or both alleles. If A vector was given, this
-#' function check the current reference and alternative allele of each marker is
-#' same with the specified allele for each marker in the vector.
-#' If a marker showed that the current alternative allele matched with the allele
-#' in the vector, the reference allele and the alternative allele will be swapped
-#' each other. In the case of a matrix, the alleles specified in the first column are
-#' supposed to be reference alleles while the second column is for alternative alleles.
-#' This function compares both alleles between the current record and the specified in
-#' the matrix. If a marker showed one of the alleles specified in the allele matrix
-#' do not exist in the current allele of the marker, this marker will be labeled as "invalid"
-#' marker. In the case of that both of the specified alleles exist but swapped
-#' in the current record, the current alleles will be swapped to match with those specified in
-#' the allele matrix.
-#'
-#' @return A GbsrGenotypeData object.
-#'
-#' @examples
-#' \dontrun{
-#' # In the case of that you have a reference genome data but it was not used 
-#' # for the SNP call, or reference alleles in the genotype data do not match 
-#' # with the alleles in the reference genome, e.g. TASSEL-GBS do.
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' ref_genome <- Biostrings::readDNAStringSet("/path/to/genome.fasta")
-#' chr_names <- getChromosome(object, name = TRUE)
-#' snp_pos <- GenomicRanges::GRanges(seqnames = chr_names,
-#'                                   ranges = IRanges::IRanges(start = getPosition(object),
-#'                                                             width = 1))
-#' ref_allele <- as.character(genome[snp_pos])
-#' gds <- swapAlleles(gds, allele = ref_allele)
-#' }
-#'
-#' @export
-#'
-setGeneric("swapAlleles", function(object, allele, ...)
-  standardGeneric("swapAlleles"))
 
 
 #' Filter out each genotype call meeting criteria
@@ -1289,17 +1236,18 @@ setGeneric("swapAlleles", function(object, allele, ...)
 #'
 #' @examples
 #' 
-#' \dontrun{
+#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gdata <- loadGDS(gds_fn)
+#' 
 #' # Filter out genotype calls supported by less than 5 reads.
-#' gds <- setCallFilter(gds, dp_count = c(5, Inf))
+#' gdata <- setCallFilter(gdata, dp_count = c(5, Inf))
 #'
 #' # Filter out genotype calls supported by reads less than 
 #' # the 20 percentile of read counts per marker in each sample.
-#' gds <- setCallFilter(gds, scan_dp_qtile = c(0.2, 1))
+#' gdata <- setCallFilter(gdata, scan_dp_qtile = c(0.2, 1))
 #'
 #' # Filter out all reference homozygote genotype calls.
-#' gds <- setCallFilter(gds, omit_geno = "ref")
-#' }
+#' gdata <- setCallFilter(gdata, omit_geno = "ref")
 #' 
 #' @export
 #'
@@ -1352,10 +1300,9 @@ setGeneric("setCallFilter", function(object,
 #' @return A GbsrGenotypeData object.
 #'
 #' @examples
-#' \dontrun{
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' gds <- setScanFilter(gds, id = getScanID(gds)[1:10], missing = 0.2, dp = c(5, Inf))
-#' }
+#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gdata <- loadGDS(gds_fn)
+#' gdata <- setScanFilter(gdata, id = getScanID(gds)[1:10], missing = 0.2, dp = c(5, Inf))
 #' 
 #' @export
 #'
@@ -1407,10 +1354,9 @@ setGeneric("setScanFilter", function(object,
 #' @return A GbsrGenotypeData object.
 #'
 #' @examples
-#' \dontrun{
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' gds <- setSnpFilter(gds, id = getSnpID(gds)[1:1000], missing = 0.2, dp = c(5, Inf))
-#' }
+#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gdata <- loadGDS(gds_fn)
+#' gdata <- setSnpFilter(gdata, id = getSnpID(gdata)[1:100], missing = 0.2, dp = c(5, Inf))
 #'
 #' @export
 #'
@@ -1453,10 +1399,9 @@ setGeneric("setSnpFilter", function(object,
 #' @return A GbsrGenotypeData object.
 #'
 #' @examples
-#' \dontrun{
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' gds <- setInfoFilter(gds, mq = 40, qd = 20)
-#' }
+#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gdata <- loadGDS(gds_fn)
+#' gdata <- setInfoFilter(gdata, mq = 40, qd = 20)
 #' 
 #' @export
 #'
@@ -1557,10 +1502,9 @@ setGeneric("resetFilters", function(object, ...)
 #' @return A GbsrGenotypeData object.
 #'
 #' @examples
-#' \dontrun{
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' gds <- thinMarker(gds, range = 150)
-#' }
+#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gdata <- loadGDS(gds_fn)
+#' gdata <- thinMarker(gdata, range = 150)
 #' 
 #' @export
 #'
@@ -1588,11 +1532,12 @@ setGeneric("thinMarker", function(object, range = 150, ...)
 #' @return A GbsrGenotypeData object linking to the new GDS file storing subset data.
 #'
 #' @examples
-#' \dontrun{
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' gds <- setSnpFilter(gds, missing = 0.2, het = c(0.1, 0.9), maf = 0.05)
-#' new_gds <- subsetGDS(gds, out_fn = "/path/to/newGDS.gds")
-#' }
+#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gdata <- loadGDS(gds_fn)
+#' gdata <- setSnpFilter(gdata, missing = 0.2, het = c(0.1, 0.9), maf = 0.05)
+#' 
+#' subsetgds_fn <- system.file("extdata", "simpop_subset.gds", package = "GBScleanR")
+#' subset_gdata <- subsetGDS(gdata, out_fn = subsetgds_fn)
 #'
 #' @export
 #'
@@ -1711,14 +1656,13 @@ setGeneric("replaceGDSdata", function(object,
 #' @importFrom stats cor
 #'
 #' @examples
-#' \dontrun{
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' gds <- setParents(gds, parents = getScanID(gds)[1:4])
-#' gds <- initScheme(gds, crosstype = "pairing", mating = matrix(1:4, 2))
-#' gds <- addScheme(gds, "pairing", mating = matrix(5:6, 2))
-#' gds <- addScheme(gds, "selfing")
-#' gds <- estGeno(gds, recomb_rate = 0.03, het_parent = FALSE, iter = 3)
-#' }
+#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gdata <- loadgdata(gdata_fn)
+#' gdata <- setParents(gdata, parents = getScanID(gdata)[1:4])
+#' gdata <- initScheme(gdata, crosstype = "pairing", mating = matrix(1:4, 2))
+#' gdata <- addScheme(gdata, "pairing", mating = matrix(5:6, 2))
+#' gdata <- addScheme(gdata, "selfing")
+#' gdata <- estGeno(gdata, recomb_rate = 0.03, het_parent = FALSE, iter = 3)
 #' 
 #' @export
 #'
@@ -1740,7 +1684,7 @@ setGeneric("estGeno", function(object,
 #' GBScleanR uses breeding scheme information to set the expected
 #' number of cross overs in a chromosome which is a required parameter
 #' for the genotype error correction with the Hidden Markov model
-#' implemented in the "clean" function. This function build the object storing
+#' implemented in the [estGeno()] function. This function build the object storing
 #' type crosses performed at each generation of breeding and population sizes.
 #'
 #' @param object A GbsrGenotypeData object.
@@ -1753,15 +1697,15 @@ setGeneric("estGeno", function(object,
 #' @details
 #' A GbsrScheme object stores information of a population size, mating combinations and
 #' a type of cross applied to each generation of the breeding process
-#' to generate the population which you are going to subject to the "clean" function.
+#' to generate the population which you are going to subject to the [estGeno()] function.
 #' The first generation should be parents of the population. It is supposed that
 #' [setParents()] has been already executed and parents are labeled in the
 #' GbsrGenotypeData object. The number of parents are automatically recognized.
 #' The "crosstype" of the first generation can be "pairing" or "random" with
 #' `pop_size = N`, where N is the number of parents.
 #' You need to specify a matrix indicating combinations of `mating`, in which each column shows
-#' a pair of parental samples. For example, if you have only two parents, the `mating` matirix
-#' should be `mating = matrix(1:2, nrow = 1, ncol = 2)`. The indices used in the matrix
+#' a pair of parental samples. For example, if you have only two parents, the `mating` matrix
+#' is `mating = cbind(c(1:2))`. The indices used in the matrix
 #' should match with the IDs labeled to parental samples by [setParents()].
 #' The created GbsrScheme object is set in the `scheme` slot of the GbsrGenotypeData object.
 #'
@@ -1770,42 +1714,41 @@ setGeneric("estGeno", function(object,
 #' @seealso [addScheme()] and [showScheme()]
 #'
 #' @examples
-#' \dontrun{
+#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gdata <- loadGDS(gds_fn)
+#' 
 #' # Biparental F2 population.
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' gds <- setParents(gds, parents = c("parent1", "parent2"))
-#' # setParents gave member ID 1 and 2 to parent1 and parent2, respectively.
-#' gds <- initScheme(gds, crosstype = "pair", mating = matrix(1:2, nrow = 1, ncol = 2))
+#' gdata <- setParents(gdata, parents = c("Founder1", "Founder2"))
+#' # setParents gave member ID 1 and 2 to Founder1 and Founder2, respectively.
+#' gdata <- initScheme(gdata, crosstype = "pair", mating = cbind(c(1:2)))
 #' # Now the progenies of the cross above have member ID 3.
 #' # If `crosstype = "selfing"` or `"sibling"`, you can omit a `mating` matrix.
-#' gds <- addScheme(gds, crosstype = "self")
+#' gdata <- addScheme(gdata, crosstype = "self")
 #'
 #' # 8-way RILs with sibling mating.
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' gds <- setParents(gds, parents = paste("parent", 1:8, sep = ""))
-#' # setParents set member ID 1 to 8 to parent1 to parent8, respectively.
+#' # Our example data only have two foudners. Thus, we set first eight samples as parents as example.
+#' gdata <- setParents(gdata, parents = getScanID(gdata)[1:8])
 #'
-#' # If you made crosses of parent1 x parent2, parent3 x parent4,
-#' # parent5 x parent6, and parent7 x parent8, run the following.
-#' gds <- initScheme(gds, crosstype = "pair", mating = matrix(1:8, nrow = 4, ncol = 2))
+#' # If you made crosses of Founder1 x Founder2, Founder3 x Founder4,
+#' # Founder5 x Founder6, and Founder7 x Founder8, run the following.
+#' gdata <- initScheme(gdata, crosstype = "pair", mating = cbind(c(1:2), c(3:4), c(5:6), c(7:8)))
 #'
 #' # Now the progenies of the crosses above have member ID 9, 10, 11, 
 #' # and 12 for each combination of mating.You can check IDs with showScheme().
-#' showScheme(gds)
+#' showScheme(gdata)
 #'
 #' # Then, produce 4-way crosses.
-#' gds <- addScheme(gds, crosstype = "pair", mating = matrix(9:12, nrow = 2, ncol = 2))
+#' gdata <- addScheme(gdata, crosstype = "pair", mating = cbind(c(9:10), c(11:12)))
 #' # 8-way crosses.
-#' gds <- addScheme(gds, crosstype = "pair", mating = matrix(13:14, nrow = 1, ncol = 2))
+#' gdata <- addScheme(gdata, crosstype = "pair", mating = cbind(c(13:14)))
 #' # Inbreeding by 4 times selfing.
-#' gds <- addScheme(gds, crosstype = "self")
-#' gds <- addScheme(gds, crosstype = "self")
-#' gds <- addScheme(gds, crosstype = "self")
-#' gds <- addScheme(gds, crosstype = "self")
+#' gdata <- addScheme(gdata, crosstype = "self")
+#' gdata <- addScheme(gdata, crosstype = "self")
+#' gdata <- addScheme(gdata, crosstype = "self")
+#' gdata <- addScheme(gdata, crosstype = "self")
 #'
 #' # Execute error correction
-#' gds <- clean(gds)
-#' }
+#' gdata <- estGeno(gdata)
 #'
 setGeneric("initScheme", function(object, crosstype, mating, ...)
   standardGeneric("initScheme"))
@@ -1816,7 +1759,7 @@ setGeneric("initScheme", function(object, crosstype, mating, ...)
 #' GBScleanR uses breeding scheme information to set the expected
 #' number of cross overs in a chromosome which is a required parameter
 #' for the genotype error correction with the Hidden Markov model
-#' implemented in the "clean" function. This function build the object storing
+#' implemented in the `estGeno()` function. This function build the object storing
 #' type crosses performed at each generation of breeding and population sizes.
 #'
 #' @param object A GbsrGenotypeData object.
@@ -1830,7 +1773,7 @@ setGeneric("initScheme", function(object, crosstype, mating, ...)
 #' @details
 #' A scheme object is just a data.frame indicating a population size and
 #' a type of cross applied to each generation of the breeding process
-#' to generate the population which you are going to subject to the "clean" function.
+#' to generate the population which you are going to subject to the [estGeno()] function.
 #' The `crosstype` can take either of "selfing", "sibling", "pairing", and "random".
 #' When you set `crosstype = "random"`, you need to specify `pop_size` to indicate how many
 #' individuals were crossed in the random mating.
@@ -1846,43 +1789,41 @@ setGeneric("initScheme", function(object, crosstype, mating, ...)
 #' @seealso [addScheme()] and [showScheme()]
 #'
 #' @examples
-#' \dontrun{
+#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gdata <- loadGDS(gds_fn)
+#' 
 #' # Biparental F2 population.
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' gds <- setParents(gds, parents = c("parent1", "parent2"))
-#' # setParents gave member ID 1 and 2 to parent1 and parent2, respectively.
-#' gds <- initScheme(gds, crosstype = "pair", mating = matrix(1:2, nrow = 1, ncol = 2))
+#' gdata <- setParents(gdata, parents = c("Founder1", "Founder2"))
+#' # setParents gave member ID 1 and 2 to Founder1 and Founder2, respectively.
+#' gdata <- initScheme(gdata, crosstype = "pair", mating = cbind(c(1:2)))
 #' # Now the progenies of the cross above have member ID 3.
 #' # If `crosstype = "selfing"` or `"sibling"`, you can omit a `mating` matrix.
-#' gds <- addScheme(gds, crosstype = "self")
+#' gdata <- addScheme(gdata, crosstype = "self")
 #'
 #' # 8-way RILs with sibling mating.
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' gds <- setParents(gds, parents = paste("parent", 1:8, sep = ""))
-#' # setParents set member ID 1 to 8 to parent1 to parent8, respectively.
+#' # Our example data only have two foudners. Thus, we set first eight samples as parents as example.
+#' gdata <- setParents(gdata, parents = getScanID(gdata)[1:8])
 #'
-#' # If you made crosses of parent1 x parent2, parent3 x parent4, 
-#' # parent5 x parent6, and parent7 x parent8, run the following.
-#' gds <- initScheme(gds, crosstype = "pair", mating = matrix(1:8, nrow = 4, ncol = 2))
+#' # If you made crosses of Founder1 x Founder2, Founder3 x Founder4,
+#' # Founder5 x Founder6, and Founder7 x Founder8, run the following.
+#' gdata <- initScheme(gdata, crosstype = "pair", mating = cbind(c(1:2), c(3:4), c(5:6), c(7:8)))
 #'
 #' # Now the progenies of the crosses above have member ID 9, 10, 11, 
 #' # and 12 for each combination of mating.You can check IDs with showScheme().
-#' showScheme(gds)
+#' showScheme(gdata)
 #'
 #' # Then, produce 4-way crosses.
-#' gds <- addScheme(gds, crosstype = "pair", mating = matrix(9:12, nrow = 2, ncol = 2))
+#' gdata <- addScheme(gdata, crosstype = "pair", mating = cbind(c(9:10), c(11:12)))
 #' # 8-way crosses.
-#' gds <- addScheme(gds, crosstype = "pair", mating = matrix(13:14, nrow = 1, ncol = 2))
+#' gdata <- addScheme(gdata, crosstype = "pair", mating = cbind(c(13:14)))
 #' # Inbreeding by 4 times selfing.
-#' gds <- addScheme(gds, crosstype = "self")
-#' gds <- addScheme(gds, crosstype = "self")
-#' gds <- addScheme(gds, crosstype = "self")
-#' gds <- addScheme(gds, crosstype = "self")
+#' gdata <- addScheme(gdata, crosstype = "self")
+#' gdata <- addScheme(gdata, crosstype = "self")
+#' gdata <- addScheme(gdata, crosstype = "self")
+#' gdata <- addScheme(gdata, crosstype = "self")
 #'
 #' # Execute error correction
-#' gds <- estGeno(gds)
-#'
-#'}
+#' gdata <- estGeno(gdata)
 #'
 setGeneric("addScheme", function(object, crosstype, mating, pop_size, ...)
   standardGeneric("addScheme"))
@@ -1894,7 +1835,7 @@ setGeneric("addScheme", function(object, crosstype, mating, pop_size, ...)
 #' slot of a GbsrGenotypeData object.
 #' A GbsrScheme object stores information of a population size, mating combinations and
 #' a type of cross applied to each generation of the breeding process
-#' to generate the population which you are going to subject to the "clean" function.
+#' to generate the population which you are going to subject to the `estGeno()` function.
 #'
 #' @param object A GbsrGenotypeData object.
 #' @param ... Unused.
@@ -1904,18 +1845,13 @@ setGeneric("addScheme", function(object, crosstype, mating, pop_size, ...)
 #' @seealso [initScheme()] and [addScheme()]
 #'
 #' @examples
-#' \dontrun{
-#' gds <- loadGDS("/path/to/GDS.gds")
-#' gds <- setParents(gds, parents = paste("parent", 1:8, sep = ""))
-#' # setParents set member ID 1 to 8 to parent1 to parent8, respectively.
-#' # If you made crosses of parent1 x parent2, parent3 x parent4, 
-#' # parent5 x parent6, and parent7 x parent8, run the following.
-#' gds <- initScheme(gds, crosstype = "pair", mating = matrix(1:8, nrow = 4, ncol = 2))
-#'
-#' # Now the progenies of the crosses above have member ID 9, 10, 11,
-#' # and 12 for each combination of mating. You can check IDs with showScheme().
-#' showScheme(gds)
-#' }
+#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gdata <- loadGDS(gds_fn)
+#' 
+#' gdata <- setParents(gdata, parents = c("Founder1", "Founder2"))
+#' gdata <- initScheme(gdata, crosstype = "pair", mating = cbind(c(1:2)))
+#' gdata <- addScheme(gdata, crosstype = "self")
+#' showScheme(gdata)
 #'
 setGeneric("showScheme", function(object, ...)
   standardGeneric("showScheme"))

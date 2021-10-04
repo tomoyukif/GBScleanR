@@ -23,12 +23,12 @@ If you need manually set valid and invalid SNP markers, you can do it via this f
 e.g in the case you conducted a filtering on SNP markers manually by your self.
 }
 \details{
-To over write the current validity information, give a logical vector to `new`.
-On the other hand, a logical vector specified to `update` will be used to
+To over write the current validity information, give a logical vector to \code{new}.
+On the other hand, a logical vector specified to \code{update} will be used to
 update validity information of the currently valid SNP markers. If you gave
-a vector for both argument, only the vector passed to `new` will be used to
+a vector for both argument, only the vector passed to \code{new} will be used to
 over write the validity information.
 }
 \seealso{
-[setSnpFilter()] to filter out SNP markers based on some summary statistics.
+\code{\link[=setSnpFilter]{setSnpFilter()}} to filter out SNP markers based on some summary statistics.
 }

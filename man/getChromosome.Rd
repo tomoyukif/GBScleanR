@@ -27,9 +27,9 @@ set of unique chromosome names.
 \details{
 A GDS file created via GBScleanR stores chromosome names as sequential integers
 from 1 to N, where N is the number of chromosomes. This function returns those
-indexes as default. If you need actual names of the chromosomes, set `name = TRUE`.
-`levels = TRUE` gives you only unique chromosome names with length N.
-If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
+indexes as default. If you need actual names of the chromosomes, set \code{name = TRUE}.
+\code{levels = TRUE} gives you only unique chromosome names with length N.
+If \code{valid = TRUE}, the chromosome information of markers which are labeled \code{TRUE}
+in the ScanAnnotationDataSet slot will be returned. \code{\link[=getValidSnp]{getValidSnp()}} tells you
 which samples are valid.
 }

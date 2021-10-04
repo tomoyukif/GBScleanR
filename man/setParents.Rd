@@ -12,7 +12,7 @@ setParents(object, parents, flip = FALSE, mono = FALSE, bi = TRUE, ...)
 \arguments{
 \item{object}{A GbsrGenotypeData object.}
 
-\item{parents}{A vector of strings with at least length two. The specified strings should match with the samples ID available via [getScanID()].}
+\item{parents}{A vector of strings with at least length two. The specified strings should match with the samples ID available via \code{\link[=getScanID]{getScanID()}}.}
 
 \item{flip}{A logical value to indicate whether markers should be checked for "flip". See details.}
 
@@ -29,29 +29,28 @@ A GbsrGenotypeData object.
 Specify two or more samples in the dataset as parents of the population. Markers will be filtered out up on your specification.
 }
 \details{
-The `clean` function of `GBScleanR` uses read count information of samples and
+The \code{clean} function of \code{GBScleanR} uses read count information of samples and
 their parents separately to estimate most probable genotype calls of them.
 Therefore, you must specify proper samples as parents via this function.
 If you would like to remove SNP markers which are not biallelic and/or
-not monomorphic in each parent, set `mono = TRUE` and `bi = TRUE`.
-`flip = TRUE` flips alleles of markers where the alleles expected as reference
+not monomorphic in each parent, set \code{mono = TRUE} and \code{bi = TRUE}.
+\code{flip = TRUE} flips alleles of markers where the alleles expected as reference
 allele are called as alternative allele. The alleles found in the parent specified as
-the first element to the `parents` argument are supposed as reference alleles
+the first element to the \code{parents} argument are supposed as reference alleles
 of the markers. If the "expected" reference alleles are not actually called
 as reference alleles but alternative alleles in the given data. setParents()
 will automatically labels those markers "flipped".
 The SnpAnnotatoinDataSet slot sores this information and accessible
-via [getFlipped()] which gives you a logical vector
-indicating which markers are labeled as flipped `TRUE` or not flipped `FALSE`.
-[haveFlipped()] just tells you whether the SnpAnnotatoinDataSet slot has
+via \code{\link[=getFlipped]{getFlipped()}} which gives you a logical vector
+indicating which markers are labeled as flipped \code{TRUE} or not flipped \code{FALSE}.
+\code{\link[=haveFlipped]{haveFlipped()}} just tells you whether the SnpAnnotatoinDataSet slot has
 the information of flipped markers or not.
 }
 \examples{
-\dontrun{
-gds <- loadGDS("/path/to/GDS.gds")
-parents <- grep("parent", getScanID(gds), value = TRUE)
-gds <- setParents(gds, parents = parents, mono = TRUE, bi = TRUE, flip = TRUE)
-gds <- clean(gds)
-}
+gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+parents <- grep("Founder", getScanID(gdata), value = TRUE)
+gdata <- setParents(gdata, parents = parents)
+gdata <- estGeno(gdata)
 
 }

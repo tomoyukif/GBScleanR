@@ -14,7 +14,7 @@ getQtileReadRef(object, target = "snp", q = 0.5, valid = TRUE, ...)
 
 \item{target}{Either of "snp" and "scan".}
 
-\item{q}{A numeric value [0-1] to indicate quantile to obtain.}
+\item{q}{A numeric value \link{0-1} to indicate quantile to obtain.}
 
 \item{valid}{A logical value. See details.}
 
@@ -24,9 +24,9 @@ getQtileReadRef(object, target = "snp", q = 0.5, valid = TRUE, ...)
 Obtain quantile values of total reference read counts per SNP or per scan (sample)
 }
 \details{
-You need to execute [calcReadStats()] to calculate sumaary statisticsto be
+You need to execute \code{\link[=calcReadStats]{calcReadStats()}} to calculate sumaary statisticsto be
 obtained via this function.
-If `valid = TRUE`, the chromosome information of markers which are labeled `TRUE`
-in the ScanAnnotationDataSet slot will be returned. [getValidSnp()] tells you
+If \code{valid = TRUE}, the chromosome information of markers which are labeled \code{TRUE}
+in the ScanAnnotationDataSet slot will be returned. \code{\link[=getValidSnp]{getValidSnp()}} tells you
 which samples are valid.
 }

@@ -16,6 +16,6 @@ loadSnpAnnot(object, ...)
 }
 \description{
 All the data stored in the SnpAnnotatoinDataSet slot of the GbsrGenotypeData
-object can be saved in the GDS file linked to the given GbsrGenotypeData object via [saveSnpAnnot()].
+object can be saved in the GDS file linked to the given GbsrGenotypeData object via \code{\link[=saveSnpAnnot]{saveSnpAnnot()}}.
 You can load the saved data using this function.
 }

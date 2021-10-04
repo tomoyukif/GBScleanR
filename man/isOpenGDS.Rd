@@ -15,7 +15,7 @@ isOpenGDS(object, ...)
 \item{...}{Unused.}
 }
 \value{
-`TRUE` if the GDS file linked to the input GbsrGenotypeData object has been opened, while `FALSE` if closed.
+\code{TRUE} if the GDS file linked to the input GbsrGenotypeData object has been opened, while \code{FALSE} if closed.
 }
 \description{
 Check if a GDS file has been opened or not.
