@@ -358,9 +358,9 @@ setMethod("gbsrGDS2VCF",
             tmp_gds@snpAnnot <- object@snpAnnot
             tmp_gds@scanAnnot <- object@scanAnnot
             
-            # if (haveFlipped(object)) {
-            #   tmp_gds <- .flipData(tmp_gds)
-            # }
+            if (haveFlipped(object)) {
+              tmp_gds <- .flipData(tmp_gds)
+            }
             if (node %in% c("filt", "cor")) {
               suppressWarnings(.replaceGDSdata(tmp_gds, "genotype", node))
               suppressWarnings(.replaceGDSdata(tmp_gds, "ad", "filt"))

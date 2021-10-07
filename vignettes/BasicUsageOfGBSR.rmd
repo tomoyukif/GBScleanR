@@ -70,7 +70,7 @@ gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 ```
 
 
-As mentioned above, the `gbsrGenotypeData` class requires genotype data in the `gds.class` object which enable us quick access to the genotype data without loading the whole data on RAM. At the beginning of the processing, we need to convert data format of our genotype data from VCF to GDS. This conversion can be achieved using `gbsrVCF2GDS` as shown below. A compressed VCF file (.vcf.gz) also can be the input. Our sample dataset contains genotype information of 100 samples with 1000 markeres on only one chromosome.
+As mentioned above, the `gbsrGenotypeData` class requires genotype data in the `gds.class` object which enable us quick access to the genotype data without loading the whole data on RAM. At the beginning of the processing, we need to convert data format of our genotype data from VCF to GDS. This conversion can be achieved using `gbsrVCF2GDS` as shown below. A compressed VCF file (.vcf.gz) also can be the input. 
 ```{r warning=FALSE, message=FALSE}
 gbsrVCF2GDS(vcf_fn = vcf_fn, 
             out_fn = gds_fn,
