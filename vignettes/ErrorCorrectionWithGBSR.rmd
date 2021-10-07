@@ -67,15 +67,19 @@ The main class of the `GBScleanR` package is `gbsrGenotypData` which inherits th
 
 GBScleanR only support a VCF file as input. As an example data, we use simulated genotype data for a simulated biparental F2 population derived from inbred founders.
 ```{r}
-vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
-gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+# vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
+# gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+
+vcf_fn <- "../inst/extdata/sample.vcf"
+gds_fn <- "../inst/extdata/sample.gds"
 ```
 
 
 As mentioned above, the `gbsrGenotypeData` class requires genotype data in the `gds.class` object which enable us quick access to the genotype data without loading the whole data on RAM. At the beginning of the processing, we need to convert data format of our genotype data from VCF to GDS. This conversion can be achieved using `gbsrVCF2GDS` as shown below. A compressed VCF file (.vcf.gz) also can be the input. Our sample dataset contains genotype information of 100 samples with 1000 markeres on only one chromosome.
 ```{r eval=FALSE}
 gbsrVCF2GDS(vcf_fn = vcf_fn, # Path to the input VCF file.
-            out_fn = gds_fn) # Path to the output GDS file.
+            out_fn = gds_fn,
+            force = T) # Path to the output GDS file.
 ```
 \  
 
@@ -178,7 +182,7 @@ histGBSR(gdata, stats = "raf")
 \  
 We can still see the markers showing distortion in allele frequency, while the expected allele frequency is 0.5 in a F2 population. To investigate that those markers having distorted allele frequency were derived from truly distorted regions or just error prone markers, we must check if there are regions where the markers with distorted allele frequency are clustered.
 ```{r}
-plotGBSR(gdata, stats = "raf", coord = c(6, 2))
+plotGBSR(gdata, stats = "raf")
 ```
 \  
 No region seem to have severe distortion. Based on the histogram of reference allele frequency, we can roughly cut off the markers with frequency more than 0.9 or less than 0.1, in other words, less than 0.1 minor allele frequency.
@@ -202,10 +206,10 @@ histGBSR(gdata, stats = "raf")
 At the end of filtering, check marker density and genotype ratio per marker along chromosomes.
 ```{r}
 # Marker density
-plotGBSR(gdata, stats = "marker", coord = c(6, 2))
+plotGBSR(gdata, stats = "marker")
 ```
 ```{r}
-plotGBSR(gdata, stats = "geno", coord = c(6, 2))
+plotGBSR(gdata, stats = "geno")
 ```
 The `coord` argument controls the number of rows and columns of the facets in the plot.
 \  
@@ -222,7 +226,7 @@ closeGDS(gdata)
 
 Once we made a new GDS file of the subset data, we restart analysis with the subset anytime.
 ```{r eval = FALSE}
-gdata <- loadGDS("sample_subset.gds")
+gdata <- loadGDS(subset_fn)
 ```
 If you have already loaded the GDS file in the current R session, the command above will return an error. In that case, please close the connection first and then load again.
 ```{r}

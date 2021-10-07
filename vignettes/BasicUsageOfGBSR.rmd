@@ -31,10 +31,10 @@ The `GBScleanR` package has been mainly developed to conduct error correction on
 This package internally uses the following packages.  
 - `ggplot2`  
 - `dplyr`  
-- `tidyr`
-- `expm`
-- `gdsfmt`
-- `biobase`
+- `tidyr`  
+- `expm`  
+- `gdsfmt`  
+- `biobase`  
 - [`GWASTools`](https://bioconductor.org/packages/release/bioc/html/GWASTools.html)  
 - [`SeqArray`](https://bioconductor.org/packages/release/bioc/html/SeqArray.html)  
 \  
@@ -404,13 +404,13 @@ gdata <- setSnpFilter(gdata, missing = 0.1)
 In addition to those statistics based filtering functions, `GBScleanR` provides filtering function based on relative marker positions. Markers locating too close each other usually have redundant information, especially if those markers are closer each other than the read length, in which case the markers are supported by completely (or almost) the same set of reads. To select only one marker from those markers, we can sue `thinMarker`. This function selects one marker having the least missing rate from each stretch with the specified length. If some markers have the least missing rate, select the first marker in the stretch.
 
 ```{r}
-thinMarker(gdata, range = 150) # Here we select only one marker from each 150 bp stretch.
+gdata <- thinMarker(gdata, range = 150) # Here we select only one marker from each 150 bp stretch.
 ```
 \  
 
 
 We can obtain the summary statistics using `countGenotype()`, `countRead()`, and `calcReadStats()` for only the SNPs and samples retained after filtering with the same codes we used before.
-```{r eval= FALSE}
+```{r}
 gdata <- countGenotype(gdata)
 gdata <- countRead(gdata)
 gdata <- calcReadStats(gdata)
@@ -433,8 +433,16 @@ nsnp(gdata, valid = FALSE)
 ```
 \  
 
+To save the filtered data, we can create the subset GDS file containing only the retained data.
+```{r}
+subset_fn <- system.file("extdata", "sample_subset.gds", package = "GBScleanR")
+subset_gdata <- subsetGDS(gdata,
+                          out_fn = subset_fn)
+```
+`out_fn` is the file path of the output GDS file storing the subset data. Users need to specify, for `snp_incl` and `scan_incl`, a logical vector indicating which markers and samples should be included in the subset. The functions `getValidSnp()` and `getValidScan` return a logical vector indicating which markers and samples are retained by `setSnpFilter()` and `setScanFilter()`. `subsetGDS` returns a new `gbsrGenotypeData` object for the subset.  
+
 We can reset filtering as following.
-```{r eval=FALSE}
+```{r}
 gdata <- resetSnpFilters(gdata) # Reset the filter on markers
 gdata <- resetScanFilters(gdata) # Reset the filter on samples
 gdata <- setRawGenotype(gdata) # Reset the filter on calls
@@ -442,18 +450,9 @@ gdata <- resetFilters(gdata) # Reset all filters
 ```
 \  
 
-To save the filtered data, we can create the subset GDS file containing only the retained data.
-```{r eval=FALSE}
-subset_fn <- system.file("extdata", "sample_subset.gds", package = "GBScleanR")
-subset_gdata <- subsetGDS(gdata,
-                          out_fn = subset_fn, 
-                          snp_incl = getValidSnp(gdata),
-                          scan_incl = getValidScan(gdata))
-```
-`out_fn` is the file path of the output GDS file storing the subset data. Users need to specify, for `snp_incl` and `scan_incl`, a logical vector indicating which markers and samples should be included in the subset. The functions `getValidSnp()` and `getValidScan` return a logical vector indicating which markers and samples are retained by `setSnpFilter()` and `setScanFilter()`. `subsetGDS` returns a new `gbsrGenotypeData` object for the subset.  
-
 ```{r}
 closeGDS(gdata)
+closeGDS(subset_gdata)
 ```
 
 \section{Session information}

@@ -1,0 +1,15 @@
+The GBScleanR package includes a sample data in the 'inst/extdata' directory.
+Files are listed below.
+
+sample.gds
+sample.vcf
+sample_out.vcf
+sample_subset.gds
+
+All files contains sample genotype data of a rice F2 population in the GDS format and the VCF format.
+The genotype data was obtained as follwoing.
+The genotype data of a rice F2 population derived from across between O. sativa and O. longistaminata, which potentially includes a large number of error prone markers with mismap and allele read biases, described in our previous paper (ref.1). In brief, the F2 population was produced byself-pollination of F1 plants derived from a cross between O.sativa ssp. japonica cv. Nipponbare and O. longistaminata acc.IRGC110404. GBS with aKpnI-MspI restriction enzyme pair was performed using MiSeq with 75 bp paired-end sequencing. Sequencing runs of nine 96-multiplex libraries generated 134,447±50, 788 reads per sample on average. We obtained 2,539,459 and 3,481,218 reads for O. sativa and O. longistaminata in total from the several independent runs to determine parental genotypes precisely. The obtained reads were then processed via TASSEL-GBS pipeline v2 by following the manual with the default parameters (https://bitbucket.org/tasseladmin/tassel-5-source/wiki/Tassel5GBSv2Pipeline)(Glaubitzet al.2014). Obtained SNP markers were filtered to retain only markers which are homozygous in each parent and biallelic between parents. Only the first SNP was selected if there were multiple SNPs within a 75bp stretch. Considering the distant cross to obtain the F2 population, our genotype data might include mismap-prone markers due to repetitive sequences in the two sets of genome. Mismapping pattern can be different between samples having different genome composition descent from the parents with different recombination patterns. Therefore, to filter out erroneous genotype calls caused by mismapping of reads at repetitive sequences, we set both reference and alternative allele read counts to 0 for the genotype calls which have either of reference and alternative allele reads more than the 90th percentile of those per genotype call in each sample, respectively.  The resulting genotype data has 5,032 SNP markers on 12 chromsomes for 814 F2 individualswith the average read depth at 0.85×.
+To create the sample data, we extracted the genotype data of 100 offspring and 2 parents with markers with missing rate less than 0.3, minor allele frequency more than 0.1, and heterozygosity 0.1-0.9 only in chromosome 1.
+The files sample.vcf and sample.gds contains the extracted genotype data.
+The file sample_subset.gds is the subset of sample.gds created via scripts shown in the vignette "BasicUsageOfGBSR".
+The file sample_out.vcf is the file created via sample codes shown in the help page of "gbsrGDS2VCF".

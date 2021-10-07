@@ -79,7 +79,9 @@ gbsrVCF2GDS <- function(vcf_fn,
   
   # Create GDS file formatted in the SeqArray style.
   out <- SeqArray::seqVCF2GDS(vcf.fn = vcf_fn,
-                              out.fn = sub("\\.gds", ".tmp.gds", out_fn))
+                              out.fn = sub("\\.gds", ".tmp.gds", out_fn),
+                              fmt.import = "AD",
+                              storage.option = SeqArray::seqStorageOption(mode = c('annotation/format/AD' = "int16")))
   out <- .convertGDS(gds_fn = out)
   return(out)
 }
@@ -108,6 +110,19 @@ gbsrVCF2GDS <- function(vcf_fn,
     source = gdsfmt::index.gdsn(node = old_gds, path =
                                   "annotation/info")
   )
+  ls_info <- grep("info/", gdsfmt::ls.gdsn(node = new_ano, 
+                                                      recursive = TRUE, 
+                                                      include.dirs = FALSE), 
+                  value = TRUE)
+  for(node_i in ls_info){
+    i_gdsn <- gdsfmt::index.gdsn(new_ano, node_i)
+    check <- any(gdsfmt::objdesp.gdsn(i_gdsn)$dim == 0)
+    if(check){
+      gdsfmt::compression.gdsn(i_gdsn, "")
+      gdsfmt::delete.gdsn(i_gdsn)
+    }
+  }
+  
   ls_format <- try(gdsfmt::ls.gdsn(node = old_gds,
                                    recursive = TRUE,
                                    include.dirs = TRUE),

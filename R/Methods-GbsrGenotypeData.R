@@ -232,8 +232,9 @@ setMethod("show",
 # alternative allele.
 .flipGeno <- function(object, var) {
   flipped <- getFlipped(object, valid = FALSE)
-  gt <-
-    gdsfmt::read.gdsn(gdsfmt::index.gdsn(object@data@handler, var))
+  gt_node <- gdsfmt::index.gdsn(object@data@handler, var)
+  gt <- gdsfmt::read.gdsn(gt_node)
+  gdsfmt::compression.gdsn(gt_node, "")
   flip_gt <- gt[, flipped]
   flip_0 <- flip_gt == 0
   flip_2 <- flip_gt == 2
@@ -255,7 +256,7 @@ setMethod("show",
                             val = gt_attr[[i]])
     }
   }
-  gdsfmt::readmode.gdsn(gdsfmt::index.gdsn(object@data@handler, var))
+  gdsfmt::readmode.gdsn(gt_node)
 }
 
 # Internally used function to flip AD data based on the flipped marker information.
@@ -266,6 +267,7 @@ setMethod("show",
   ad <-
     gdsfmt::index.gdsn(object@data@handler, "annotation/format/AD")
   data <- gdsfmt::read.gdsn(gdsfmt::index.gdsn(ad, var))
+  gdsfmt::compression.gdsn(data, "")
   ref <- data[, c(TRUE, FALSE)]
   alt <- data[, c(FALSE, TRUE)]
   tmp <- ref[, flipped]
@@ -277,7 +279,7 @@ setMethod("show",
     node = ad,
     name = var,
     val = data,
-    storage = "vl_int",
+    storage = "int16",
     compress = "LZMA_RA",
     replace = TRUE
   )
@@ -300,6 +302,8 @@ setMethod("show",
   allele <- paste(getAlleleA(object, valid = FALSE),
                   getAlleleB(object, valid = FALSE),
                   sep = "/")
+  allele_node <- gdsfmt::index.gdsn(object@data@handler, "snp.allele")
+  gdsfmt::compression.gdsn(allele_node, "")
   gdsfmt::add.gdsn(
     node = object@data@handler,
     name = "snp.allele",
@@ -308,7 +312,7 @@ setMethod("show",
     compress = "LZMA_RA",
     replace = TRUE
   )
-  gdsfmt::readmode.gdsn(gdsfmt::index.gdsn(object@data@handler, "snp.allele"))
+  gdsfmt::readmode.gdsn(allele_node)
   
   # Allele reads
   .flipAD(object, "data")
@@ -354,9 +358,9 @@ setMethod("gbsrGDS2VCF",
             tmp_gds@snpAnnot <- object@snpAnnot
             tmp_gds@scanAnnot <- object@scanAnnot
             
-            # if (haveFlipped(object)) {
-            #   tmp_gds <- .flipData(tmp_gds)
-            # }
+            if (haveFlipped(object)) {
+              tmp_gds <- .flipData(tmp_gds)
+            }
             if (node %in% c("filt", "cor")) {
               suppressWarnings(.replaceGDSdata(tmp_gds, "genotype", node))
               suppressWarnings(.replaceGDSdata(tmp_gds, "ad", "filt"))
@@ -400,11 +404,6 @@ setMethod("gbsrGDS2VCF",
               in_gds <- gdsfmt::openfn.gds(gds_file)
               .insertHaplotype(out_gds, in_gds)
               gdsfmt::closefn.gds(in_gds)
-              info_var <- "PGT"
-              fmt_var <- "HAP"
-            } else {
-              info_var <- character(0)
-              fmt_var <- character(0)
             }
             
             in_gds <- gdsfmt::openfn.gds(tmp_gds_file)
@@ -414,8 +413,6 @@ setMethod("gbsrGDS2VCF",
             
             SeqArray::seqGDS2VCF(gdsfile = out_fn_tmp,
                                  vcf.fn = out_fn,
-                                 info.var = info_var,
-                                 fmt.var = fmt_var,
                                  verbose = FALSE)
             on.exit({
               if (valid) {
@@ -2996,190 +2993,64 @@ setMethod("subsetGDS",
             }
             
             oldgds <- object@data@handler
-            newgds <- gdsfmt::createfn.gds(filename = out_fn)
-            attr_old <- gdsfmt::get.attr.gdsn(oldgds$root)
-            for (i in seq_along(attr_old)) {
-              gdsfmt::put.attr.gdsn(node = newgds$root,
-                                    name = names(attr_old)[i],
-                                    val = attr_old[[i]])
-            }
+            file.copy(object@data@filename, out_fn, overwrite = T)
+            newgds <- gdsfmt::openfn.gds(filename = out_fn, readonly = FALSE)
             
-            ls_node <- gdsfmt::ls.gdsn(oldgds, include.dirs = FALSE)
+            ls_node <- gdsfmt::ls.gdsn(newgds, recursive = T, include.dirs = F)
             for (i_node in ls_node) {
-              oldgds_i_node <- gdsfmt::index.gdsn(node = oldgds, path = i_node)
-              i_desc <- gdsfmt::objdesp.gdsn(oldgds_i_node)
-              newgds_i_node <- gdsfmt::add.gdsn(
-                node = newgds,
-                name = i_node,
-                storage = i_desc$storage,
-                compress = "LZMA_RA",
-                replace = TRUE
-              )
+              if(grepl("annotation/format", i_node)){
+                if(!grepl("data", i_node)){
+                  next
+                }
+              }
+              newgds_i_node <- gdsfmt::index.gdsn(node = newgds, path = i_node)
+              gdsfmt::compression.gdsn(newgds_i_node, "")
+              i_desc <- gdsfmt::objdesp.gdsn(newgds_i_node)
+              if(any(i_desc$dim == 0)){
+                next
+              }
               
               if (length(i_desc$dim) == 1) {
                 check <- sum(which(c(n_scan, n_snp) %in% i_desc$dim))
                 if (check == 1) {
                   gdsfmt::assign.gdsn(
                     node = newgds_i_node,
-                    src.node = oldgds_i_node,
-                    seldim = list(scan_incl)
+                    seldim = list(which(scan_incl))
                   )
+                  
                 } else if (check == 2) {
                   gdsfmt::assign.gdsn(
                     node = newgds_i_node,
-                    src.node = oldgds_i_node,
-                    seldim = list(snp_incl)
+                    seldim = list(which(snp_incl))
                   )
                 }
+                
               } else if (length(i_desc$dim) == 2) {
                 if (i_desc$name == "parents.genotype") {
-                  panrets_index <- rep(TRUE, i_desc$dim[1])
+                  times <- i_desc$dim[2] / n_snp
+                  panrets_index <- seq_len(i_desc$dim[1])
                   gdsfmt::assign.gdsn(
                     node = newgds_i_node,
-                    src.node = oldgds_i_node,
                     seldim = list(panrets_index,
-                                  rep(snp_incl, each = times))
+                                  which(rep(snp_incl, each = times)))
                   )
                 } else {
                   times <- i_desc$dim[2] / n_snp
                   gdsfmt::assign.gdsn(
                     node = newgds_i_node,
-                    src.node = oldgds_i_node,
-                    seldim = list(scan_incl,
-                                  rep(snp_incl, each = times))
+                    seldim = list(which(scan_incl),
+                                  which(rep(snp_incl, each = times)))
                   )
                 }
-              } else {
-                gdsfmt::delete.gdsn(newgds_i_node)
-                next
-              }
-              newgds_i_attr <-
-                gdsfmt::get.attr.gdsn(node = oldgds_i_node)
-              if (!is.null(newgds_i_attr)) {
-                for (attr_i in seq_along(newgds_i_attr)) {
-                  gdsfmt::put.attr.gdsn(
-                    node = newgds_i_node,
-                    name = names(newgds_i_attr)[attr_i],
-                    val = newgds_i_attr[[attr_i]]
-                  )
-                }
-              }
-            }
-            
-            newgds_anno <-
-              gdsfmt::addfolder.gdsn(node = newgds,
-                                     name = "annotation",
-                                     replace = TRUE)
-            newgds_format <-
-              gdsfmt::addfolder.gdsn(node = newgds_anno,
-                                     name = "format",
-                                     replace = TRUE)
-            newgds_info <-
-              gdsfmt::addfolder.gdsn(node = newgds_anno,
-                                     name = "info",
-                                     replace = TRUE)
-            oldgds_info <-
-              gdsfmt::index.gdsn(node = oldgds, path = "annotation/info")
-            ls_node <-
-              gdsfmt::ls.gdsn(oldgds_info, include.dirs = FALSE)
-            for (i_node in ls_node) {
-              oldgds_i_node <- gdsfmt::index.gdsn(node = oldgds_info, path = i_node)
-              i_desc <- gdsfmt::objdesp.gdsn(oldgds_i_node)
-              if (i_desc$dim[1] == 0) {
-                next
-              }
-              newgds_i_node <- gdsfmt::add.gdsn(
-                node = newgds_info,
-                name = i_node,
-                storage = i_desc$storage,
-                compress = "LZMA_RA",
-                replace = TRUE
-              )
-              gdsfmt::assign.gdsn(node = newgds_i_node,
-                                  src.node = oldgds_i_node,
-                                  seldim = list(snp_incl))
-              newgds_i_attr <-
-                gdsfmt::get.attr.gdsn(node = oldgds_i_node)
-              if (!is.null(newgds_i_attr)) {
-                for (attr_i in seq_along(newgds_i_attr)) {
-                  gdsfmt::put.attr.gdsn(
-                    node = newgds_i_node,
-                    name = names(newgds_i_attr)[attr_i],
-                    val = newgds_i_attr[[attr_i]]
-                  )
-                }
-              }
-            }
-            
-            newgds_format <-
-              gdsfmt::addfolder.gdsn(node = newgds_anno,
-                                     name = "format",
-                                     replace = TRUE)
-            oldgds_format <-
-              gdsfmt::index.gdsn(node = oldgds, path = "annotation/format")
-            ls_node <- gdsfmt::ls.gdsn(oldgds_format)
-            for (i_node in ls_node) {
-              oldgds_i_node <- gdsfmt::index.gdsn(node = oldgds_format, path = i_node)
-              newgds_i_node <-
-                gdsfmt::addfolder.gdsn(node = newgds_format,
-                                       name = i_node,
-                                       replace = TRUE)
-              
-              old_attr <- gdsfmt::get.attr.gdsn(oldgds_i_node)
-              if (!is.null(old_attr)) {
-                for (i in seq_along(old_attr))
-                  gdsfmt::put.attr.gdsn(newgds_i_node,
-                                        name = names(old_attr)[i],
-                                        val = old_attr[[i]])
               }
               
-              ls_oldgds_i_node <- gdsfmt::ls.gdsn(oldgds_i_node)
-              for (i_node_i in ls_oldgds_i_node) {
-                if(!grepl("data", i_node_i)){
-                  next
-                }
-                oldgds_i_node_i <-
-                  gdsfmt::index.gdsn(node = oldgds_i_node, path = i_node_i)
-                i_desc <- gdsfmt::objdesp.gdsn(oldgds_i_node_i)
-                newgds_i_node_i <-
-                  gdsfmt::add.gdsn(
-                    node = newgds_i_node,
-                    name = i_node_i,
-                    storage = i_desc$storage,
-                    compress = "LZMA_RA",
-                    replace = TRUE
-                  )
-                check <- which(i_desc$dim %in% n_scan)
-                if (length(check) == 0) {
-                  next
-                }
-                if (check == 1) {
-                  each <- i_desc$dim[2] / n_snp
-                  seldim <-
-                    list(scan_incl, rep(snp_incl, each = each))
-                } else {
-                  each <- i_desc$dim[1] / n_snp
-                  seldim <-
-                    list(rep(snp_incl, each = each), scan_incl)
-                }
-                gdsfmt::assign.gdsn(node = newgds_i_node_i,
-                                    src.node = oldgds_i_node_i,
-                                    seldim = seldim)
-                newgds_i_attr <-
-                  gdsfmt::get.attr.gdsn(node = oldgds_i_node_i)
-                if (!is.null(newgds_i_attr)) {
-                  for (attr_i in seq_along(newgds_i_attr)) {
-                    gdsfmt::put.attr.gdsn(
-                      node = newgds_i_node_i,
-                      name = names(newgds_i_attr)[attr_i],
-                      val = newgds_i_attr[[attr_i]]
-                    )
-                  }
-                }
-              }
+              gdsfmt::compression.gdsn(newgds_i_node, "LZMA_RA")
+              gdsfmt::readmode.gdsn(newgds_i_node)
             }
+            
             gdsfmt::closefn.gds(newgds)
             gdsfmt::cleanup.gds(newgds$filename, verbose = FALSE)
+            
             output <- loadGDS(gds_fn = newgds$filename)
             if (object@data@genotypeVar == "filt.genotype") {
               output <- setFiltGenotype(output)
