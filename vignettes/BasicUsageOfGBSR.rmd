@@ -206,12 +206,10 @@ histGBSR(gdata, stats = "qtile_ref", q = 0.5) # Histgrams of quantile of read de
 
 `plot()` and `pairs()` provide other ways to visualize statistics. `plot()` draws a line plot of a specified statistics per marker along each chromosome. `pairs()` give us a two-dimensional scatter plot to visualize relationship between statistics.
 ```{r}
-plotGBSR(gdata, stats = "missing", coord = c(6, 2))
-# coord controls the number of rows and columns of facets.
+plotGBSR(gdata, stats = "missing")
 ```
 ```{r}
-plotGBSR(gdata, stats = "geno", coord = c(6, 2))
-# coord controls the number of rows and columns of facets.
+plotGBSR(gdata, stats = "geno")
 ```
 ```{r}
 pairsGBSR(gdata, stats1 = "missing", stats2 = "dp")
