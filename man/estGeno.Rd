@@ -71,12 +71,13 @@ Clean up genotype data by error correction based on
 genotype estimation using a hidden Markov model.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
-gdata <- loadgdata(gdata_fn)
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
 gdata <- setParents(gdata, parents = getScanID(gdata)[1:4])
 gdata <- initScheme(gdata, crosstype = "pairing", mating = matrix(1:4, 2))
 gdata <- addScheme(gdata, "pairing", mating = matrix(5:6, 2))
 gdata <- addScheme(gdata, "selfing")
 gdata <- estGeno(gdata, recomb_rate = 0.03, het_parent = FALSE, iter = 3)
 
+closeGDS(gdata) # Close the connection to the GDS file
 }

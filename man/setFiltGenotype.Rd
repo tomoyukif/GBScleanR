@@ -35,25 +35,26 @@ filtered genotype calls and read counts in a GDS file
 and change the primary nodes to
 "filt.genotype" and "filt.data" for genotype and
 read count data, respectively.
-\code{\link[=SetRawGenotype]{SetRawGenotype()}} set back the nodes to the original,
+\code{\link[=setRawGenotype]{setRawGenotype()}} set back the nodes to the original,
 those are "genotype" and "data" for
 genotype and read count data, respectively.
-You can set the filtered data again by \code{SetFiltGenotype()}.
+You can set the filtered data again by \code{\link[=setFiltGenotype]{setFiltGenotype()}}.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 gdata <- setCallFilter(gdata, dp_count = c(5, Inf))
 # Now any functions of GBScleanR reference the genotype data
 # stored in the "filt.genotype" node.
 
 closeGDS(gdata)
-gdata <- loadGDS(gdata)
+gdata <- loadGDS(genotypeData = gdata)
 # If the connection was closed once and re-loaded,
 # raw genotype data is referenced by the functions.
 # To set the "filt.genotype" node as genotype data again,
 # run the setFiltGenotype().
 gdata <- setFiltGenotype(gdata)
 
+closeGDS(gdata) # Close the connection to the GDS file
 
 }

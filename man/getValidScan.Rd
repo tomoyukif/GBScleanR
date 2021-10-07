@@ -26,9 +26,10 @@ with the number of total samples.
 Return a logical vector indicating which are valid scans (samples).
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 getValidScan(gdata)
+closeGDS(gdata) # Close the connection to the GDS file
 
 }
 \seealso{

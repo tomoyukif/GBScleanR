@@ -64,13 +64,15 @@ The created GbsrScheme object is set
 in the \code{scheme} slot of the GbsrGenotypeData object.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 
 # Biparental F2 population.
 gdata <- setParents(gdata, parents = c("Founder1", "Founder2"))
+
 # setParents gave member ID 1 and 2 to Founder1 and Founder2, respectively.
 gdata <- initScheme(gdata, crosstype = "pair", mating = cbind(c(1:2)))
+
 # Now the progenies of the cross above have member ID 3.
 # If `crosstype = "selfing"` or `"sibling"`, you can omit a `mating` matrix.
 gdata <- addScheme(gdata, crosstype = "self")
@@ -78,6 +80,7 @@ gdata <- addScheme(gdata, crosstype = "self")
 # 8-way RILs with sibling mating.
 # Our example data only have two foudners. Thus, we set first
 # eight samples as parents as example.
+gdata <- resetFilters(gdata)
 gdata <- setParents(gdata, parents = getScanID(gdata)[1:8])
 
 # If you made crosses of Founder1 x Founder2, Founder3 x Founder4,
@@ -92,17 +95,17 @@ showScheme(gdata)
 # Then, produce 4-way crosses.
 gdata <- addScheme(gdata, crosstype = "pair",
 mating = cbind(c(9:10), c(11:12)))
+
 # 8-way crosses.
 gdata <- addScheme(gdata, crosstype = "pair", mating = cbind(c(13:14)))
+
 # Inbreeding by 4 times selfing.
 gdata <- addScheme(gdata, crosstype = "self")
 gdata <- addScheme(gdata, crosstype = "self")
 gdata <- addScheme(gdata, crosstype = "self")
 gdata <- addScheme(gdata, crosstype = "self")
 
-# Execute error correction
-gdata <- estGeno(gdata)
-
+closeGDS(gdata) # Close the connection to the GDS file
 }
 \seealso{
 \code{\link[=addScheme]{addScheme()}} and \code{\link[=showScheme]{showScheme()}}

@@ -24,11 +24,12 @@ set via \code{\link[=setParents]{setParents()}}. Scan IDs are IDs given by user 
 original VCF file. Member IDs are serial numbers assigned by \code{\link[=setParents]{setParents()}}.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
-gds <- loadGDS(gds_fn)
-parents <- grep("Founder", getScanID(gds), value = TRUE)
-gds <- setParents(gds, parents = parents)
-getParents(gds)
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+parents <- grep("Founder", getScanID(gdata), value = TRUE)
+gdata <- setParents(gdata, parents = parents)
+getParents(gdata)
+closeGDS(gdata) # Close the connection to the GDS file
 
 
 }

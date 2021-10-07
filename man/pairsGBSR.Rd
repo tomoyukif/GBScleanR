@@ -84,9 +84,10 @@ values supplied via SNP calling tools like \href{https://gatk.broadinstitute.org
 }
 \examples{
 # Draw scatter plots of missing rate vs heterozygosity.
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 gdata <- countGenotype(gdata)
-plotGBSR(gdata, stats1 = "missing", stats2 = "het")
+pairsGBSR(gdata, stats1 = "missing", stats2 = "het")
 
+closeGDS(gdata) # Close the connection to the GDS file
 }

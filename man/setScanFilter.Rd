@@ -44,10 +44,10 @@ setScanFilter(
 \item{id}{A vector of strings match with scan ID which can
 be retrieve by \code{getScanID()}.}
 
-\item{missing}{A numeric value \link{0-1} to specify the maximum
+\item{missing}{A numeric value [0-1] to specify the maximum
 missing genotype call rate per sample.}
 
-\item{het}{A numeric value \link{0-1} to specify the maximum
+\item{het}{A numeric value [0-1] to specify the maximum
 heterozygous genotype call rate per sample.}
 
 \item{mac}{A integer value to specify the minimum minor
@@ -97,11 +97,12 @@ a larger standard deviation will be labeled as "invalid".
 To check valid and invalid samples, run \code{\link[=getValidScan]{getValidScan()}}.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 gdata <- setScanFilter(gdata,
-id = getScanID(gds)[1:10],
+id = getScanID(gdata)[1:10],
 missing = 0.2,
 dp = c(5, Inf))
 
+closeGDS(gdata) # Close the connection to the GDS file
 }

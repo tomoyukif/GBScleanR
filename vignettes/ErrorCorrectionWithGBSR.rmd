@@ -1,7 +1,7 @@
 ---
 title: "Error correction of GBS data using GBScleanR"
 author: "Tomoyuki Furuta"
-date: "September 30, 2021"
+date: "October 5, 2021"
 output: 
   pdf_document:
     toc: yes
@@ -24,7 +24,7 @@ knitr::opts_chunk$set(fig.pos = 'H', fig.align = "center", warning = FALSE, mess
 \newpage
 
 \section{Introduction}
-The `GBScleanR` package has been mainly developed to conduct error correction on genotype data obtained via NGS-base genotyping methods such as RAD-seq and GBS. Nevertheless, several quality check procedure and data filtering are highly encouraged to improve correction acculacy. Therefore, this package also provide the functions for data quality check and filtering with some data visualization functions to help filtering procedure. In this document, we walk through an error correction procedure for GBS data of a biparental population. Introduction of basic utility functions can be found in another vignette "BasicUsageOfGBSR.pdf".
+The `GBScleanR` package has been mainly developed to conduct error correction on genotype data obtained via NGS-base genotyping methods such as RAD-seq and GBS. Nevertheless, several quality check procedure and data filtering are highly encouraged to improve correction accuracy. Therefore, this package also provide the functions for data quality check and filtering with some data visualization functions to help filtering procedure. In this document, we walk through an error correction procedure for GBS data of a biparental population. Introduction of basic utility functions can be found in another vignette "BasicUsageOfGBSR.pdf".
 
 \section{Prerequisites}
 This package internally uses the following packages.  
@@ -67,8 +67,8 @@ The main class of the `GBScleanR` package is `gbsrGenotypData` which inherits th
 
 GBScleanR only support a VCF file as input. As an example data, we use simulated genotype data for a simulated biparental F2 population derived from inbred founders.
 ```{r}
-vcf_fn <- system.file("extdata", "simpop.vcf", package = "GBScleanR")
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 ```
 
 
@@ -146,7 +146,7 @@ gdata <- setScanFilter(gdata, missing = 0.9, het = 0.05, maf = 0.05)
 As the next step of marker filtering, we can conduct filtering on each genotype call based on read depth. The error correction via `GBScleanR` is robust against low coverage calls, while genotype calls messed up by mismapping might lead less reliable error correction. Therefore, filtering for low coverage calls are not necessary. However, if the given dataset is super low coverage, e.g. < 1x in average, filtering out genotype calls supported by only one read may be helpful. Heterozygote is never be able to be called as heterozygote with only read. Filtering on each genotype call takes several tens of minutes. Please wait for a while with a cup of coffee with some sweets, if your data has a many markers and samples.
 ```{r}
 # Filter out genotype calls supported by reads less than 2 reads.
-gdata <- setCallFilter(gdata, dp_count = c(2, Inf))
+gdata <- setCallFilter(gdata, dp_count = c(1, Inf))
 ```
 \  
 
@@ -212,8 +212,9 @@ The `coord` argument controls the number of rows and columns of the facets in th
 
 To save the filtered data, we can create the subset GDS file containing only the retained data.
 ```{r}
+subset_fn <- system.file("extdata", "sample_subset.gds", package = "GBScleanR")
 subset_gdata <- subsetGDS(gdata,
-                          out_fn = "sim_pop_subset.gds")
+                          out_fn = subset_fn)
 
 closeGDS(gdata)
 ```
@@ -221,7 +222,7 @@ closeGDS(gdata)
 
 Once we made a new GDS file of the subset data, we restart analysis with the subset anytime.
 ```{r eval = FALSE}
-gdata <- loadGDS("sim_pop_subset.gds")
+gdata <- loadGDS("sample_subset.gds")
 ```
 If you have already loaded the GDS file in the current R session, the command above will return an error. In that case, please close the connection first and then load again.
 ```{r}
@@ -293,7 +294,7 @@ est_hap <- getHaplotype(gdata)
 
 The function `gbsrGDS2VCF` generate a VCF file containig the estimated genotype data and haplotype information. The estimated haplotypes are indicated in the FORMAT field with the HAP tag. The founder genotypes correspond to each haplotype are indicated in the INFO field with the PGT tag. HAP shows the pair of haplotype for each marker of each sample, while PGT shows the allele of each haplotype.
 ```{r eval=FALSE}
-gbsrGDS2VCF(gdata, "simpop_est.vcf.gz")
+gbsrGDS2VCF(gdata, "sample_est.vcf.gz")
 ```
 
 

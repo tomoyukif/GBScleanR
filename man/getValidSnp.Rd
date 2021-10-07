@@ -22,9 +22,10 @@ the number of total SNP markers
 Return a logical vector indicating which are valid SNP markers.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 getValidSnp(gdata)
+closeGDS(gdata) # Close the connection to the GDS file
 
 }
 \seealso{

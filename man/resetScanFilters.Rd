@@ -3,7 +3,7 @@
 \name{resetScanFilters}
 \alias{resetScanFilters}
 \alias{resetScanFilters,GbsrGenotypeData-method}
-\title{Reset the filter made by \code{\link[=setScanFiler]{setScanFiler()}}}
+\title{Reset the filter made by \code{\link[=setScanFilter]{setScanFilter()}}}
 \usage{
 resetScanFilters(object, ...)
 
@@ -22,15 +22,16 @@ all filters on scan(samples).
 Remove "invalid" labels put on samples and make all samples valid.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 gdata <- setScanFilter(gdata,
-id = getScanID(gds)[1:10],
+id = getScanID(gdata)[1:10],
 missing = 0.2,
 dp = c(5, Inf))
 
 # Reset all filters applied above.
 gdata <- resetScanFilters(gdata)
 
+closeGDS(gdata) # Close the connection to the GDS file
 
 }

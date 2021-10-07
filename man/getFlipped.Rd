@@ -41,11 +41,12 @@ whether the SnpAnnotatoinDataSet slot has the information of
 flipped markers or not.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 parents <- grep("Founder", getScanID(gdata), value = TRUE)
 gdata <- setParents(gdata, parents = parents, flip = TRUE)
 getFlipped(gdata)
+closeGDS(gdata) # Close the connection to the GDS file
 
 }
 \seealso{

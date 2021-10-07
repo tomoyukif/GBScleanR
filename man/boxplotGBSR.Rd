@@ -74,7 +74,7 @@ values supplied via SNP calling tools like \href{https://gatk.broadinstitute.org
 \examples{
 # Draw boxplots of missing rate, heterozygosity, and reference
 # allele frequency per SNP and per sample.
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 gdata <- countGenotype(gdata)
 boxplotGBSR(gdata, stats = c("missing", "het", "raf"))
@@ -84,4 +84,5 @@ boxplotGBSR(gdata, stats = c("missing", "het", "raf"))
 gdata <- calcReadStats(gdata, q = 0.9)
 boxplotGBSR(gdata, stats = c("qtile_ref", "qtile_alt"), q = 0.9)
 
+closeGDS(gdata) # Close the connection to the GDS file
 }

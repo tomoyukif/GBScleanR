@@ -35,9 +35,10 @@ labeled \code{TRUE} in the ScanAnnotationDataSet slot will be returned.
 \code{\link[=getValidSnp]{getValidSnp()}} tells you which samples are valid.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 gdata <- countGenotype(gdata)
 getCountAlleleAlt(gdata)
+closeGDS(gdata) # Close the connection to the GDS file
 
 }

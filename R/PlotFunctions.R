@@ -54,7 +54,7 @@
 #' @examples
 #' # Draw histograms of missing rate, heterozygosity, and reference
 #' # allele frequency per SNP and per sample.
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- countGenotype(gdata)
 #' histGBSR(gdata, stats = c("missing", "het", "raf"))
@@ -64,6 +64,7 @@
 #' gdata <- calcReadStats(gdata, q = 0.9)
 #' histGBSR(gdata, stats = c("qtile_ref", "qtile_alt"), q = 0.9)
 #'
+#' closeGDS(gdata) # Close the connection to the GDS file
 histGBSR  <- function(x,
                       stats = c("dp", "missing", "het"),
                       target = c("snp", "scan"),
@@ -212,7 +213,7 @@ histGBSR  <- function(x,
 #' @examples
 #' # Draw boxplots of missing rate, heterozygosity, and reference
 #' # allele frequency per SNP and per sample.
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- countGenotype(gdata)
 #' boxplotGBSR(gdata, stats = c("missing", "het", "raf"))
@@ -222,6 +223,7 @@ histGBSR  <- function(x,
 #' gdata <- calcReadStats(gdata, q = 0.9)
 #' boxplotGBSR(gdata, stats = c("qtile_ref", "qtile_alt"), q = 0.9)
 #'
+#' closeGDS(gdata) # Close the connection to the GDS file
 boxplotGBSR <- function(x,
                         stats = "missing",
                         target = c("snp", "scan"),
@@ -364,7 +366,7 @@ boxplotGBSR <- function(x,
 #'
 #' @examples
 #' # Draw line plots of missing rate, heterozygosity, proportion of genotype calls per SNP.
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- countGenotype(gdata)
 #' plotGBSR(gdata, stats = c("missing", "het", "raf", "geno"))
@@ -374,6 +376,7 @@ boxplotGBSR <- function(x,
 #' gdata <- calcReadStats(gdata, q = 0.9)
 #' plotGBSR(gdata, stats = c("qtile_ref", "qtile_alt"), q = 0.9)
 #'
+#' closeGDS(gdata) # Close the connection to the GDS file
 plotGBSR  <- function(x,
                       stats = c("dp", "missing", "het"),
                       coord = NULL,
@@ -537,11 +540,12 @@ plotGBSR  <- function(x,
 #'
 #' @examples
 #' # Draw scatter plots of missing rate vs heterozygosity.
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- countGenotype(gdata)
-#' plotGBSR(gdata, stats1 = "missing", stats2 = "het")
+#' pairsGBSR(gdata, stats1 = "missing", stats2 = "het")
 #'
+#' closeGDS(gdata) # Close the connection to the GDS file
 pairsGBSR  <- function(x,
                        stats1 = "dp",
                        stats2 = "missing",
@@ -931,11 +935,12 @@ pairsGBSR  <- function(x,
 #' @param dot_fill A string to indicate the dot color in a plot.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- countGenotype(gdata)
 #' plotDosage(gdata, ind = 1)
 #'
+#' closeGDS(gdata) # Close the connection to the GDS file
 #' @return NULL.
 #' @export
 #' @import ggplot2
@@ -1029,11 +1034,12 @@ plotDosage <- function(x,
 #'
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- countGenotype(gdata)
 #' plotReadRatio(gdata, ind = 1)
 #'
+#' closeGDS(gdata) # Close the connection to the GDS file
 #' @return NULL.
 #' @export
 #' @import ggplot2

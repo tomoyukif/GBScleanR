@@ -15,7 +15,7 @@ getQtileReadRef(object, target = "snp", q = 0.5, valid = TRUE, ...)
 
 \item{target}{Either of "snp" and "scan".}
 
-\item{q}{A numeric value \link{0-1} to indicate quantile to obtain.}
+\item{q}{A numeric value [0-1] to indicate quantile to obtain.}
 
 \item{valid}{A logical value. See details.}
 
@@ -37,9 +37,10 @@ labeled \code{TRUE} in the ScanAnnotationDataSet slot will be returned.
 \code{\link[=getValidSnp]{getValidSnp()}} tells you which samples are valid.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 gdata <- calcReadStats(gdata)
 getQtileReadRef(gdata)
+closeGDS(gdata) # Close the connection to the GDS file
 
 }

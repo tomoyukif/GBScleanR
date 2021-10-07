@@ -40,9 +40,10 @@ in the "annotation/format/AD/filt.data" node which can be accessed as
 mentioned above.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 read <- getRead(gdata)
+closeGDS(gdata) # Close the connection to the GDS file
 
 }
 \seealso{

@@ -22,8 +22,8 @@ double logsum(std::vector<double> & v){
   if(v.size() == 1){
     return v[0];
   }
-  double log_sum;
-  std::vector<double>::size_type count;
+  double log_sum = 0;
+  std::vector<double>::size_type count = 0;
   double neg_inf = -std::numeric_limits<double>::infinity();
   double v_max = *std::max_element(v.begin(), v.end());
   if(std::isinf(v_max)){
@@ -50,8 +50,8 @@ double logsum(std::vector<double> & v){
 
 // Normalize log probabilities
 NumericVector lognorm(NumericVector v){
-  double log_sum;
-  std::vector<double>::size_type count;
+  double log_sum = 0;
+  std::vector<double>::size_type count = 0;
   double v_max = *std::max_element(v.begin(), v.end());
   if(std::isinf(v_max)){
     double even = 1 / (double)v.size();
@@ -80,8 +80,8 @@ NumericVector lognorm(NumericVector v){
 }
 
 void lognorm_vec(vector<double> & v){
-  double log_sum;
-  std::vector<double>::size_type count;
+  double log_sum = 0;
+  std::vector<double>::size_type count = 0;
   double v_max = *std::max_element(v.begin(), v.end());
   
   if(std::isinf(v_max)){
@@ -235,6 +235,62 @@ NumericVector calcPemit(NumericMatrix p_ref,
   return p_emit;
 }
 
+
+
+std::vector<double> calcOemit(RMatrix<double> ref,
+                              RMatrix<double> alt,
+                              RVector<double> eseq,
+                              RVector<double> w1,
+                              RVector<double> w2,
+                              RVector<double> mismap1,
+                              RVector<double> mismap2,
+                              int m,
+                              int sample_i
+){
+  std::vector<double> prob_i(3);
+  std::vector<double> ref_multiplier = {eseq[0], w1[m], eseq[1]};
+  std::vector<double> alt_multiplier = {eseq[1], w2[m], eseq[0]};
+  
+  std::vector<double> v1;
+  std::vector<double> v2;
+  std::vector<double> v3;
+  double sum_v1 = 0.0;
+  double sum_v2 = 0.0;
+  double sum_v3 = 0.0;
+  double sum_v;
+  
+  
+  // Calculate genotype probabilies
+  RMatrix<double>::Row ref_i = ref.row(sample_i);
+  RMatrix<double>::Row alt_i = alt.row(sample_i);
+  
+  for(int g=0; g<3;++g){
+    prob_i[g] = ref_i[m] * ref_multiplier[g] + alt_i[m] * alt_multiplier[g];
+  }
+  lognorm_vec(prob_i);
+  for(int g=0; g<3;++g){
+    prob_i[g] = pow10(prob_i[g]);
+  }
+  
+  // Calculate mismap accounted genotype probabilities
+  v1 = {1 - mismap1[m], mismap1[m], 0};
+  v2 = {0, 1, 0};
+  v3 = {0, mismap2[m], 1 - mismap2[m]};
+  
+  for(int g=0; g<3;++g){
+    sum_v1 += v1[g] * prob_i[g];
+    sum_v2 += v2[g] * prob_i[g];
+    sum_v3 += v3[g] * prob_i[g];
+  }
+  
+  sum_v = sum_v1 + sum_v2 + sum_v3;
+  prob_i[0] = sum_v1 / sum_v;
+  prob_i[1] = sum_v2 / sum_v;
+  prob_i[2] = sum_v3 / sum_v;
+  
+  return prob_i;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Functions for the Viterbi algorithm
 // Run Viterbi algorithm for founder genotype and offspring genotype separately
@@ -291,37 +347,8 @@ struct ParInitVit : public Worker {
       RMatrix<double>::Row vit_i = vit_score.row(sample_i);
       
       // Calculate genotype probabilies
-      std::vector<double> prob_i(3);
-      std::vector<double> ref_multiplier = {eseq[0], w1[0], eseq[1]};
-      std::vector<double> alt_multiplier = {eseq[1], w2[0], eseq[0]};
-      RMatrix<double>::Row ref_i = ref.row(sample_i);
-      RMatrix<double>::Row alt_i = alt.row(sample_i);
-      for(int g=0; g<3;++g){
-        prob_i[g] = ref_i[0]* ref_multiplier[g] + alt_i[0] * alt_multiplier[g];
-      }
-      lognorm_vec(prob_i);
-      for(int g=0; g<3;++g){
-        prob_i[g] = pow10(prob_i[g]);
-      }
-      
-      // Calculate mismap accounted genotype probabilities
-      std::vector<double> v1 = {1 - mismap1[0], mismap1[0], 0};
-      std::vector<double> v2 = {0, 1, 0};
-      std::vector<double> v3 = {0, mismap2[0], 1 - mismap2[0]};
-      double sum_v1 = 0.0;
-      double sum_v2 = 0.0;
-      double sum_v3 = 0.0;
-      double sum_v = 0.0;
-      
-      for(std::size_t g=0; g<3;++g){
-        sum_v1 += v1[g] * prob_i[g];
-        sum_v2 += v2[g] * prob_i[g];
-        sum_v3 += v3[g] * prob_i[g];
-      }
-      sum_v = sum_v1 + sum_v2 + sum_v3;
-      prob_i[0] = sum_v1 / sum_v;
-      prob_i[1] = sum_v2 / sum_v;
-      prob_i[2] = sum_v3 / sum_v;
+      std::vector<double> prob_i = calcOemit(ref, alt, eseq, w1, w2, mismap1, mismap2, 0, sample_i);
+                  
       double hap_prob = 0.0;
       std::size_t col_i;
       std::size_t n_h = dim[4];
@@ -460,20 +487,13 @@ struct ParCalcPathFounder : public Worker {
       
       std::size_t j2 = std::distance(iter_p_pat.begin(), i);
       double neg_inf = -std::numeric_limits<double>::infinity();
-      std::vector<double> prob_i(3);
       double hap_prob;
       std::size_t n_o = dim[2];
       std::size_t n_p = dim[3];
       std::size_t n_h = dim[4];
       std::size_t col_i;
-      std::vector<double> ref_multiplier;
-      std::vector<double> alt_multiplier;
-      std::vector<double> v1;
-      std::vector<double> v2;
-      std::vector<double> v3;
       std::vector<double> score_j(n_p);
       std::vector<double> score_ijk(n_h);
-      double sum_v;
       std::size_t max_j;
       std::size_t col_in;
       
@@ -486,37 +506,8 @@ struct ParCalcPathFounder : public Worker {
           RMatrix<double>::Row in_i = in_score.row(sample_i);
           
           // Calculate genotype probabilies
-          ref_multiplier = {eseq[0], w1[m[0]], eseq[1]};
-          alt_multiplier = {eseq[1], w2[m[0]], eseq[0]};
-          RMatrix<double>::Row ref_i = ref.row(sample_i);
-          RMatrix<double>::Row alt_i = alt.row(sample_i);
           
-          for(int g=0; g<3;++g){
-            prob_i[g] = ref_i[m[0]] * ref_multiplier[g] + alt_i[m[0]] * alt_multiplier[g];
-          }
-          lognorm_vec(prob_i);
-          for(int g=0; g<3;++g){
-            prob_i[g] = pow10(prob_i[g]);
-          }
-          
-          // Calculate mismap accounted genotype probabilities
-          v1 = {1 - mismap1[m[0]], mismap1[m[0]], 0};
-          v2 = {0, 1, 0};
-          v3 = {0, mismap2[m[0]], 1 - mismap2[m[0]]};
-          double sum_v1 = 0.0;
-          double sum_v2 = 0.0;
-          double sum_v3 = 0.0;
-          
-          for(int g=0; g<3;++g){
-            sum_v1 += v1[g] * prob_i[g];
-            sum_v2 += v2[g] * prob_i[g];
-            sum_v3 += v3[g] * prob_i[g];
-          }
-          
-          sum_v = sum_v1 + sum_v2 + sum_v3;
-          prob_i[0] = sum_v1 / sum_v;
-          prob_i[1] = sum_v2 / sum_v;
-          prob_i[2] = sum_v3 / sum_v;
+          std::vector<double> prob_i = calcOemit(ref, alt, eseq, w1, w2, mismap1, mismap2, m[0], sample_i);
           
           for(std::size_t j1=0; j1<n_p; ++j1){
             if(std::isinf(p_emit1[j1])){
@@ -573,37 +564,8 @@ struct ParCalcPathFounder : public Worker {
           RMatrix<double>::Row in_i = in_score.row(sample_i);
           
           // Calculate genotype probabilies
-          ref_multiplier = {eseq[0], w1[m[0]], eseq[1]};
-          alt_multiplier = {eseq[1], w2[m[0]], eseq[0]};
-          RMatrix<double>::Row ref_i = ref.row(sample_i);
-          RMatrix<double>::Row alt_i = alt.row(sample_i);
           
-          for(int g=0; g<3;++g){
-            prob_i[g] = ref_i[m[0]] * ref_multiplier[g] + alt_i[m[0]] * alt_multiplier[g];
-          }
-          lognorm_vec(prob_i);
-          for(int g=0; g<3;++g){
-            prob_i[g] = pow10(prob_i[g]);
-          }
-          
-          // Calculate mismap accounted genotype probabilities
-          v1 = {1 - mismap1[m[0]], mismap1[m[0]], 0};
-          v2 = {0, 1, 0};
-          v3 = {0, mismap2[m[0]], 1 - mismap2[m[0]]};
-          double sum_v1 = 0.0;
-          double sum_v2 = 0.0;
-          double sum_v3 = 0.0;
-          
-          for(int g=0; g<3;++g){
-            sum_v1 += v1[g] * prob_i[g];
-            sum_v2 += v2[g] * prob_i[g];
-            sum_v3 += v3[g] * prob_i[g];
-          }
-          
-          sum_v = sum_v1 + sum_v2 + sum_v3;
-          prob_i[0] = sum_v1 / sum_v;
-          prob_i[1] = sum_v2 / sum_v;
-          prob_i[2] = sum_v3 / sum_v;
+          std::vector<double> prob_i = calcOemit(ref, alt, eseq, w1, w2, mismap1, mismap2, m[0], sample_i);
           
           for(std::size_t k=0; k<n_h; ++k){
             col_i = j2 * n_h + k;
@@ -636,10 +598,10 @@ void last_vit_founder(IntegerVector f_seq,
   IntegerMatrix tmp_argmax(n_o, valid_p_indices.size());
   std::vector<double> score_ijk(n_h);
   std::vector<double> score_j(n_p);
+  std::size_t valid_j1 = 0;
   
   for(std::size_t i=0; i<n_o; ++i){
     for(std::size_t j1=0; j1<n_p; ++j1){
-      std::size_t valid_j1;
       for(R_xlen_t j=0;j<valid_p_indices.size();++j){
         valid_j1 = valid_p_indices[j];
         if(j1 == valid_j1){
@@ -737,8 +699,6 @@ struct ParVitOffspring : public Worker {
     for(RVector<int>::const_iterator i=iter_sample.begin() + begin; i<iter_sample.begin() + end; ++i){
       std::size_t sample_i = std::distance(iter_sample.begin(), i);
       RMatrix<int>::Column o_seq_i = o_seq.column(sample_i);
-      RMatrix<double>::Row ref_i = ref.row(sample_i);
-      RMatrix<double>::Row alt_i = alt.row(sample_i);
       std::size_t n_m = dim[0];
       std::size_t n_h = dim[4];
       std::vector<std::vector<unsigned short>> o_path(n_m,
@@ -746,11 +706,6 @@ struct ParVitOffspring : public Worker {
       std::size_t col_i;
       double hap_prob = 0.0;
       std::vector<double> vit(n_h);
-      std::vector<double> prob_i(3);
-      double sum_v1 = 0.0;
-      double sum_v2 = 0.0;
-      double sum_v3 = 0.0;
-      double sum_v = 0.0;
       double trans_kk;
       std::size_t max_i;
       std::vector<double> score_jkk(n_h);
@@ -760,33 +715,8 @@ struct ParVitOffspring : public Worker {
       // Viterbi path
       for(std::size_t m=0; m<n_m; ++m){
         // Calculate genotype probabilies
-        std::vector<double> ref_multiplier = {eseq[0], w1[m], eseq[1]};
-        std::vector<double> alt_multiplier = {eseq[1], w2[m], eseq[0]};
-        for(int g=0; g<3;++g){
-          prob_i[g] = ref_i[m]* ref_multiplier[g] + alt_i[m] * alt_multiplier[g];
-        }
-        lognorm_vec(prob_i);
-        for(int g=0; g<3;++g){
-          prob_i[g] = pow10(prob_i[g]);
-        }
         
-        // Calculate mismap accounted genotype probabilities
-        std::vector<double> v1 = {1 - mismap1[m], mismap1[m], 0};
-        std::vector<double> v2 = {0, 1, 0};
-        std::vector<double> v3 = {0, mismap2[m], 1 - mismap2[m]};
-        
-        sum_v1 = 0.0;
-        sum_v2 = 0.0;
-        sum_v3 = 0.0;
-        for(std::size_t g=0; g<3;++g){
-          sum_v1 += v1[g] * prob_i[g];
-          sum_v2 += v2[g] * prob_i[g];
-          sum_v3 += v3[g] * prob_i[g];
-        }
-        sum_v = sum_v1 + sum_v2 + sum_v3;
-        prob_i[0] = sum_v1 / sum_v;
-        prob_i[1] = sum_v2 / sum_v;
-        prob_i[2] = sum_v3 / sum_v;
+        std::vector<double> prob_i = calcOemit(ref, alt, eseq, w1, w2, mismap1, mismap2, m, sample_i);
         
         std::size_t f_geno = f_seq[m];
         std::size_t trans_prob_col;
@@ -1113,14 +1043,7 @@ struct ParFB : public Worker {
                                             std::vector<double>(n_h));
       std::vector<double> beta(n_h, 1);
       
-      std::vector<double> ref_multiplier(3);
-      std::vector<double> alt_multiplier(3);
-      std::vector<double> v1;
-      std::vector<double> v2;
-      std::vector<double> v3;
-      vector<double> prob_i(3);
       vector<double> score_k(n_h);
-      double sum_v;
       double hap_prob;
       double trans_kk;
       double sum_k;
@@ -1130,34 +1053,8 @@ struct ParFB : public Worker {
       for(std::size_t m=0; m<n_m; ++m){
         if(m == 0){
           // Calculate genotype probabilies
-          ref_multiplier = {eseq[0], w1[0], eseq[1]};
-          alt_multiplier = {eseq[1], w2[0], eseq[0]};
-          RMatrix<double>::Row ref_i = ref.row(sample_i);
-          RMatrix<double>::Row alt_i = alt.row(sample_i);
-          for(int g=0; g<3;++g){
-            prob_i[g] = ref_i[0]* ref_multiplier[g] + alt_i[0] * alt_multiplier[g];
-          }
-          lognorm_vec(prob_i);
-          for(int g=0; g<3;++g){
-            prob_i[g] = pow10(prob_i[g]);
-          }
           
-          // Calculate mismap accounted genotype probabilities
-          v1 = {1 - mismap1[0], mismap1[0], 0};
-          v2 = {0, 1, 0};
-          v3 = {0, mismap2[0], 1 - mismap2[0]};
-          double sum_v1 = 0.0;
-          double sum_v2 = 0.0;
-          double sum_v3 = 0.0;
-          for(int g=0; g<3;++g){
-            sum_v1 += v1[g] * prob_i[g];
-            sum_v2 += v2[g] * prob_i[g];
-            sum_v3 += v3[g] * prob_i[g];
-          }
-          sum_v = sum_v1 + sum_v2 + sum_v3;
-          prob_i[0] = sum_v1 / sum_v;
-          prob_i[1] = sum_v2 / sum_v;
-          prob_i[2] = sum_v3 / sum_v;
+          std::vector<double> prob_i = calcOemit(ref, alt, eseq, w1, w2, mismap1, mismap2, m, sample_i);
           
           j = p_geno[0];
           for(std::size_t k=0; k<n_h; ++k){
@@ -1169,34 +1066,8 @@ struct ParFB : public Worker {
           
         } else {
           // Calculate genotype probabilies
-          ref_multiplier = {eseq[0], w1[m], eseq[1]};
-          alt_multiplier = {eseq[1], w2[m], eseq[0]};
-          RMatrix<double>::Row ref_i = ref.row(sample_i);
-          RMatrix<double>::Row alt_i = alt.row(sample_i);
-          for(int g=0; g<3;++g){
-            prob_i[g] = ref_i[m]* ref_multiplier[g] + alt_i[m] * alt_multiplier[g];
-          }
-          lognorm_vec(prob_i);
-          for(int g=0; g<3;++g){
-            prob_i[g] = pow10(prob_i[g]);
-          }
           
-          // Calculate mismap accounted genotype probabilities
-          v1 = {1 - mismap1[m], mismap1[m], 0};
-          v2 = {0, 1, 0};
-          v3 = {0, mismap2[m], 1 - mismap2[m]};
-          double sum_v1 = 0.0;
-          double sum_v2 = 0.0;
-          double sum_v3 = 0.0;
-          for(int g=0; g<3;++g){
-            sum_v1 += v1[g] * prob_i[g];
-            sum_v2 += v2[g] * prob_i[g];
-            sum_v3 += v3[g] * prob_i[g];
-          }
-          sum_v = sum_v1 + sum_v2 + sum_v3;
-          prob_i[0] = sum_v1 / sum_v;
-          prob_i[1] = sum_v2 / sum_v;
-          prob_i[2] = sum_v3 / sum_v;
+          std::vector<double> prob_i = calcOemit(ref, alt, eseq, w1, w2, mismap1, mismap2, m, sample_i);
           
           std::size_t j = p_geno[m];
           

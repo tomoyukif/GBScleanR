@@ -39,6 +39,7 @@ the annotation/info node should be output.}
 }
 \value{
 Create a VCF file at location specified by out_fn.
+The connection to the GDS file in the input GbsrGenotypeData object will be automatically closed.
 }
 \description{
 Write out a VCF file with raw, filtered, or corrected genotype data
@@ -46,10 +47,10 @@ stored in a GDS file. The output VCF file contains only the GT filed,
 while other annotations, AD, DP and other information will be omitted.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+out_fn <- system.file("extdata", "sample_out.vcf", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
-gdata <- estGeno(gdata)
-vcfout_fn <- system.file("extdata", "simpop_out.vcf", package = "GBScleanR")
-gbsrGDS2VCF(gdata, vcfout_fn, node = "cor")
+gbsrGDS2VCF(gdata, out_fn)
+# gbsrGDS2VCF() closes the connection to the GDS file of the gdata object.
 
 }

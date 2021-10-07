@@ -39,7 +39,7 @@ On the other hand, the "corrected.genotype" node can be generated
 via the \code{\link[=estGeno]{estGeno()}} function.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 gdata <- countGenotype(gdata)
 sample_missing_rate <- getCountGenoMissing(gdata,
@@ -47,5 +47,6 @@ target = "scan",
 prop = TRUE)
 marker_minor_allele_freq <- getMAF(gdata, target = "snp")
 histGBSR(gdata, stats = "missing")
+closeGDS(gdata) # Close the connection to the GDS file
 
 }

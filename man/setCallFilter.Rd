@@ -106,10 +106,11 @@ This function generate two new nodes in the GDS file linked with
 the given GbsrGenotypeData object. The new nodes "filt.data" in the AD node
 and "filt.genotype" contains read count data and genotype data
 after filtering, respectively.
+To reset the filter applied by setCallFilter(), run \code{\link[=setRawGenotype]{setRawGenotype()}}.
 }
 \examples{
 
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 
 # Filter out genotype calls supported by less than 5 reads.
@@ -119,7 +120,9 @@ gdata <- setCallFilter(gdata, dp_count = c(5, Inf))
 # the 20 percentile of read counts per marker in each sample.
 gdata <- setCallFilter(gdata, scan_dp_qtile = c(0.2, 1))
 
-# Filter out all reference homozygote genotype calls.
-gdata <- setCallFilter(gdata, omit_geno = "ref")
+# Reset the filter
+gdata <- setRawGenotype(gdata)
+
+closeGDS(gdata) # Close the connection to the GDS file
 
 }

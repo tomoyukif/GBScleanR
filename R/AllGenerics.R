@@ -11,9 +11,10 @@ setGeneric("openGDS", function(object, ...)
 #'  has been opened, while `FALSE` if closed.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' isOpenGDS(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #'@export
 #'
@@ -32,9 +33,9 @@ setGeneric("isOpenGDS", function(object, ...)
 #' @return NULL.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
-#' closeGDS(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #'@export
 #'
@@ -51,12 +52,13 @@ setGeneric("closeGDS", function(object, ...)
 #' @param object A GbsrGenotypeData object
 #' @param ... Unused.
 #'
-#' @return NULL.
+#' @return A GbsrGenotypeData object.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
-#' saveSnpAnnot(gdata)
+#' gdata <- saveSnpAnnot(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -74,12 +76,13 @@ setGeneric("saveSnpAnnot", function(object, ...)
 #' @param object A GbsrGenotypeData object
 #' @param ... Unused.
 #'
-#' @return NULL.
+#' @return NA GbsrGenotypeData object.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
-#' saveScanAnnot(gdata)
+#' gdata <- saveScanAnnot(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -97,12 +100,13 @@ setGeneric("saveScanAnnot", function(object, ...)
 #' @param object A GbsrGenotypeData object
 #' @param ... Unused.
 #'
-#' @return NULL.
+#' @return A GbsrGenotypeData object.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
-#' loadSnpAnnot(gdata)
+#' gdata <- loadSnpAnnot(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #'
 #' @export
@@ -121,12 +125,13 @@ setGeneric("loadSnpAnnot", function(object, ...)
 #' @param object A GbsrGenotypeData object
 #' @param ... Unused.
 #'
-#' @return NULL.
+#' @return A GbsrGenotypeData object.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
-#' loadScanAnnot(gdata)
+#' gdata <- loadScanAnnot(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -154,15 +159,16 @@ setGeneric("loadScanAnnot", function(object, ...)
 #' @export
 #'
 #' @return Create a VCF file at location specified by out_fn.
+#' The connection to the GDS file in the input GbsrGenotypeData object will be automatically closed.
 #'
 #' @importFrom SeqArray seqSNP2GDS seqGDS2VCF
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+#' out_fn <- system.file("extdata", "sample_out.vcf", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
-#' gdata <- estGeno(gdata)
-#' vcfout_fn <- system.file("extdata", "simpop_out.vcf", package = "GBScleanR")
-#' gbsrGDS2VCF(gdata, vcfout_fn, node = "cor")
+#' gbsrGDS2VCF(gdata, out_fn)
+#' # gbsrGDS2VCF() closes the connection to the GDS file of the gdata object.
 #'
 setGeneric("gbsrGDS2VCF", function(object,
                                    out_fn,
@@ -192,9 +198,10 @@ setGeneric("gbsrGDS2VCF", function(object,
 #' @return An integer value to indicate the number of SNP markers.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' nsnp(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @seealso [getValidSnp()]
 #'
@@ -222,9 +229,10 @@ setGeneric("nsnp", function(object, valid = TRUE, ...)
 #' @return An integer value to indicate the number of samples.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' nscan(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @seealso [getValidScan()]
 #'
@@ -243,9 +251,10 @@ setGeneric("nscan", function(object, valid = TRUE, ...)
 #' the number of total SNP markers
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' getValidSnp(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @seealso [setValidSnp()]
 #'
@@ -267,9 +276,10 @@ setGeneric("getValidSnp", function(object, ...)
 #' with the number of total samples.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' getValidScan(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @seealso [setValidScan()]
 #'
@@ -305,11 +315,15 @@ setGeneric("getValidScan", function(object, parents = FALSE, ...)
 #' over write the validity information.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #'
 #' # Randomly remove SNP markers
-#' gdata <- setValidSnp(gdata, update = sample(c(TRUE, FALSE), nsnp(gdata)))
+#' gdata <- setValidSnp(gdata, update = sample(c(TRUE, FALSE),
+#' nsnp(gdata), 
+#' replace = TRUE))
+#' 
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @seealso [setSnpFilter()] to filter out SNP markers based on
 #' some summary statistics.
@@ -346,12 +360,15 @@ setGeneric("setValidSnp", function(object, new, update, ...)
 #' scan(sample) validity information.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #'
 #' # Randomly remove samples
-#' gdata <- setValidScan(gdata, update = sample(c(TRUE, FALSE), nscan(gdata)))
+#' gdata <- setValidScan(gdata, update = sample(c(TRUE, FALSE), 
+#' nscan(gdata), 
+#' replace = TRUE))
 #'
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @seealso [setScanFilter()] to filter out samples based on
 #' some summary statistics
@@ -389,11 +406,12 @@ setGeneric("setValidScan", function(object, new, update, ...)
 #' @return A logical vector indicating which markers of alleles were flipped.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' parents <- grep("Founder", getScanID(gdata), value = TRUE)
 #' gdata <- setParents(gdata, parents = parents, flip = TRUE)
 #' getFlipped(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @seealso [setParents()] and [haveFlipped()].
 #'
@@ -428,11 +446,12 @@ setGeneric("getFlipped", function(object, valid = TRUE, ...)
 #' contains markers at which alleles were flipped.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' parents <- grep("Founder", getScanID(gdata), value = TRUE)
 #' gdata <- setParents(gdata, parents = parents, flip = TRUE)
 #' haveFlipped(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #'
 #' @seealso [setParents()] and [getFlipped()].
@@ -441,50 +460,6 @@ setGeneric("getFlipped", function(object, valid = TRUE, ...)
 #'
 setGeneric("haveFlipped", function(object, ...)
   standardGeneric("haveFlipped"))
-
-
-#' Flip genotype, allele information, and allele
-#' read counts of the flipped SNP markers.
-#'
-#' Replace genotype data, allele information, and allele read counts
-#' to be the expected reference allele as actually reference allele,
-#' in other wards, "flipped data" created via [setParents()].
-#' This function overwrite the data in the GDS file and this
-#' modification cannot be undone.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param ... Unused.
-#'
-#' @details
-#' Flipped markers are markers where the alleles expected as reference
-#' allele are called as alternative allele. If you specify two parents
-#' in the `parents` argument of [setParents()] with `flip = TRUE`,
-#' `bi = TRUE`, and `homo = TRUE`, the alleles found in the parent
-#' specified as the first element to the `parents` argument are supposed as
-#' reference alleles of the markers. If the "expected" reference alleles
-#' are not actually called as reference alleles but alternative alleles
-#' in the given data. [setParents()] will automatically labels those
-#' markers "flipped". The SnpAnnotatoinDataSet slot sores this
-#' information and accessible via [getFlipped()] which gives you
-#' a logical vector indicating which markers are labeled as flipped `TRUE`
-#' or not flipped `FALSE`. [haveFlipped()] just tells you whether
-#' the SnpAnnotatoinDataSet slot has the information of flipped markers or not.
-#'
-#' @return A GbsrGenotypeData object linked to the GDS file
-#' in which data was modified.
-#' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
-#' gdata <- loadGDS(gds_fn)
-#' parents <- grep("Founder", getScanID(gdata), value = TRUE)
-#' gdata <- setParents(gdata, parents = parents, flip = TRUE)
-#' gdata <- flipData(gdata)
-#'
-#' @seealso [setParents()], [getFlipped()], and [haveFlipped()].
-#'
-#' @export
-#'
-setGeneric("flipData", function(object, ...)
-  standardGeneric("flipData"))
 
 
 #' Get genotype call data.
@@ -516,9 +491,10 @@ setGeneric("flipData", function(object, ...)
 #' via the [estGeno()] function.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' geno <- getGenotype(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #'
 #' @seealso [setCallFilter()] and [estGeno()]
@@ -560,12 +536,15 @@ setGeneric("getGenotype", function(object,
 #' second haplotype in founder 2.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' parents <- grep("Founder", getScanID(gdata), value = TRUE)
 #' gdata <- setParents(gdata, parents = parents, flip = TRUE)
+#' gdata <- initScheme(gdata, crosstype = "pair", mating = cbind(c(1:2)))
+#' gdata <- addScheme(gdata, crosstype = "self")
 #' gdata <- estGeno(gdata)
 #' hap <- getHaplotype(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @seealso [estGeno()]
 #'
@@ -604,9 +583,10 @@ setGeneric("getHaplotype", function(object,
 #' mentioned above.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' read <- getRead(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @seealso [setCallFilter()]
 #'
@@ -644,9 +624,10 @@ setGeneric("getRead", function(object,
 #' [getValidSnp()] tells you which samples are valid.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' getChromosome(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -675,9 +656,10 @@ setGeneric("getChromosome", function(object,
 #' [getValidSnp()] tells you which samples are valid.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' getPosition(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -701,9 +683,10 @@ setGeneric("getPosition", function(object, valid = TRUE, ...)
 #' returned. [getValidSnp()] tells you which samples are valid.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' getAlleleA(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -728,9 +711,10 @@ setGeneric("getAlleleA", function(object, valid = TRUE, ...)
 #' [getValidSnp()] tells you which samples are valid.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' getAlleleB(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -754,9 +738,10 @@ setGeneric("getAlleleB", function(object, valid = TRUE, ...)
 #' [getValidSnp()] tells you which samples are valid.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' getSnpID(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -780,9 +765,10 @@ setGeneric("getSnpID", function(object, valid = TRUE, ...)
 #' [getValidSnp()] tells you which samples are valid.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' getScanID(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -808,9 +794,10 @@ setGeneric("getScanID", function(object, valid = TRUE, ...)
 #' [getValidSnp()] tells you which samples are valid.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' getPloidy(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -836,12 +823,13 @@ setGeneric("getPloidy", function(object, valid = TRUE, ...)
 #' [getValidSnp()] tells you which samples are valid.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #'
 #' # Get mapping qualities (MQ) of markers.
-#' getInfo(gdata, "MQ")
+#' mq <- getInfo(gdata, "MQ")
 #'
+#' closeGDS(gdata) # Close the connection to the GDS file
 #' @export
 #'
 setGeneric("getInfo", function(object, var, valid = TRUE, ...)
@@ -868,9 +856,10 @@ setGeneric("getInfo", function(object, var, valid = TRUE, ...)
 #' [getValidSnp()] tells you which samples are valid.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' getCountReadRef(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -902,9 +891,10 @@ setGeneric("getCountReadRef", function(object,
 #' [getValidSnp()] tells you which samples are valid.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' getCountReadAlt(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -934,9 +924,10 @@ setGeneric("getCountReadAlt", function(object,
 #' (reference allele reads + alternative allele reads) per marker.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' getCountRead(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -967,10 +958,11 @@ setGeneric("getCountRead", function(object,
 #' @return A numeric vector of (proportion of) homozygous reference
 #' genotype calls per marker.
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- countGenotype(gdata)
 #' getCountGenoRef(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -1001,10 +993,11 @@ setGeneric("getCountGenoRef", function(object,
 #' @return A numeric vector of (proportion of) heterozugous
 #' genotype calls per marker.
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- countGenotype(gdata)
 #' getCountGenoHet(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -1036,10 +1029,11 @@ setGeneric("getCountGenoHet", function(object,
 #' @return A numeric vector of (proportion of) homozygous alternative
 #' genotype calls per marker.
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- countGenotype(gdata)
 #' getCountGenoAlt(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -1070,10 +1064,11 @@ setGeneric("getCountGenoAlt", function(object,
 #' @return A numeric vector of (proportion of)
 #' missing genotype calls per marker.
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- countGenotype(gdata)
 #' getCountGenoMissing(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -1103,10 +1098,11 @@ setGeneric("getCountGenoMissing", function(object,
 #'
 #' @return A numeric vector of (proportion of) reference alleles per marker.
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- countGenotype(gdata)
 #' getCountAlleleRef(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -1136,10 +1132,11 @@ setGeneric("getCountAlleleRef", function(object,
 #'
 #' @return A numeric vector of (proportion of) alternative alleles per marker.
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- countGenotype(gdata)
 #' getCountAlleleAlt(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -1169,10 +1166,11 @@ setGeneric("getCountAlleleAlt", function(object,
 #'
 #' @return A numeric vector of (proportion of) missing alleles per marker.
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- countGenotype(gdata)
 #' getCountAlleleMissing(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -1202,10 +1200,11 @@ setGeneric("getCountAlleleMissing", function(object,
 #' @return A numeric vector of the mean values of
 #' reference allele reads per marker.
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- calcReadStats(gdata)
 #' getMeanReadRef(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -1234,10 +1233,11 @@ setGeneric("getMeanReadRef", function(object,
 #' @return A numeric vector of the mean values of
 #' alternative allele reads per marker.
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- calcReadStats(gdata)
 #' getMeanReadAlt(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -1267,10 +1267,11 @@ setGeneric("getMeanReadAlt", function(object,
 #' @return A numeric vector of the standard deviations of
 #' reference allele reads per marker.
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- calcReadStats(gdata)
 #' getSDReadRef(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -1299,10 +1300,11 @@ setGeneric("getSDReadRef", function(object,
 #' @return A numeric vector of the standard deviations of
 #' alternative allele reads per marker.
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- calcReadStats(gdata)
 #' getSDReadAlt(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -1318,7 +1320,7 @@ setGeneric("getSDReadAlt", function(object,
 #'
 #' @param object A GbsrGenotypeData object.
 #' @param target Either of "snp" and "scan".
-#' @param q A numeric value [0-1] to indicate quantile to obtain.
+#' @param q A numeric value \[0-1\] to indicate quantile to obtain.
 #' @param valid A logical value. See details.
 #' @param ... Unused.
 #'
@@ -1332,10 +1334,11 @@ setGeneric("getSDReadAlt", function(object,
 #' @return A numeric vector of the quantile values of
 #' alternative allele reads per marker.
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- calcReadStats(gdata)
 #' getQtileReadRef(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -1352,7 +1355,7 @@ setGeneric("getQtileReadRef", function(object,
 #'
 #' @param object A GbsrGenotypeData object.
 #' @param target Either of "snp" and "scan".
-#' @param q A numeric value [0-1] to indicate quantile to obtain.
+#' @param q A numeric value \[0-1\] to indicate quantile to obtain.
 #' @param valid A logical value. See details.
 #' @param ... Unused.
 #'
@@ -1366,10 +1369,11 @@ setGeneric("getQtileReadRef", function(object,
 #' @return A numeric vector of the quantile values of
 #' alternative allele reads per marker.
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- calcReadStats(gdata)
 #' getQtileReadAlt(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -1397,10 +1401,11 @@ setGeneric("getQtileReadAlt", function(object,
 #'
 #' @return A numeric vector of the minor allele frequencies per marker.
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- countGenotype(gdata)
 #' getMAF(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -1427,10 +1432,11 @@ setGeneric("getMAF", function(object,
 #'
 #' @return A numeric vector of the minor allele counts per marker.
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- countGenotype(gdata)
 #' getMAC(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -1467,7 +1473,7 @@ setGeneric("getMAC", function(object,
 #' @return A GbsrGenotypeData object with genotype count information.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- countGenotype(gdata)
 #' sample_missing_rate <- getCountGenoMissing(gdata,
@@ -1475,6 +1481,7 @@ setGeneric("getMAC", function(object,
 #' prop = TRUE)
 #' marker_minor_allele_freq <- getMAF(gdata, target = "snp")
 #' histGBSR(gdata, stats = "missing")
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -1509,12 +1516,13 @@ setGeneric("countGenotype", function(object,
 #' @return A GbsrGenotypeData object with read count information.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- countRead(gdata)
 #' read_depth_per_marker <- getCountRead(gdata, target = "snp")
 #' reference_read_freq <- getCountReadRef(gdata, target = "snp", prop = TRUE)
 #' histGBSR(gdata, stats = "ad_ref")
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -1536,7 +1544,7 @@ setGeneric("countRead", function(object,
 #'
 #' @param object A GbsrGenotypeData object.
 #' @param target Either of "snp" and "scan".
-#' @param q A numeric value [0-1] to indicate quantile to obtain.
+#' @param q A numeric value \[0-1\] to indicate quantile to obtain.
 #' @param ... Unused.
 #'
 #' @details
@@ -1552,7 +1560,7 @@ setGeneric("countRead", function(object,
 #' @return A GbsrGenotypeData object with read statistics information.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- calcReadStats(gdata, q = 0.5)
 #' mean_reference_read_depth <- getMeanReadRef(gdata, target = "snp")
@@ -1561,6 +1569,7 @@ setGeneric("countRead", function(object,
 #' q = 0.5)
 #' histGBSR(gdata, stats = "mean_ref")
 #' histGBSR(gdata, stats = "qtile_alt", q = 0.5)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -1612,11 +1621,14 @@ setGeneric("calcReadStats", function(object,
 #' @return A GbsrGenotypeData object with parents information.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' parents <- grep("Founder", getScanID(gdata), value = TRUE)
 #' gdata <- setParents(gdata, parents = parents)
+#' gdata <- initScheme(gdata, crosstype = "pair", mating = cbind(c(1:2)))
+#' gdata <- addScheme(gdata, crosstype = "self")
 #' gdata <- estGeno(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -1624,7 +1636,7 @@ setGeneric("setParents", function(object,
                                   parents,
                                   flip = FALSE,
                                   mono = FALSE,
-                                  bi = TRUE,
+                                  bi = FALSE,
                                   ...)
   standardGeneric("setParents"))
 
@@ -1644,11 +1656,12 @@ setGeneric("setParents", function(object,
 #' and indexes of parental lines assigned via [setParents()].
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
-#' gds <- loadGDS(gds_fn)
-#' parents <- grep("Founder", getScanID(gds), value = TRUE)
-#' gds <- setParents(gds, parents = parents)
-#' getParents(gds)
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+#' gdata <- loadGDS(gds_fn)
+#' parents <- grep("Founder", getScanID(gdata), value = TRUE)
+#' gdata <- setParents(gdata, parents = parents)
+#' getParents(gdata)
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #'
 setGeneric("getParents", function(object,
@@ -1705,12 +1718,13 @@ setGeneric("getParents", function(object,
 #' the given GbsrGenotypeData object. The new nodes "filt.data" in the AD node
 #' and "filt.genotype" contains read count data and genotype data
 #' after filtering, respectively.
+#' To reset the filter applied by setCallFilter(), run [setRawGenotype()].
 #'
 #' @return A GbsrGenotypeData object with filters on genotype calls.
 #'
 #' @examples
 #'
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #'
 #' # Filter out genotype calls supported by less than 5 reads.
@@ -1719,9 +1733,11 @@ setGeneric("getParents", function(object,
 #' # Filter out genotype calls supported by reads less than
 #' # the 20 percentile of read counts per marker in each sample.
 #' gdata <- setCallFilter(gdata, scan_dp_qtile = c(0.2, 1))
-#'
-#' # Filter out all reference homozygote genotype calls.
-#' gdata <- setCallFilter(gdata, omit_geno = "ref")
+#' 
+#' # Reset the filter
+#' gdata <- setRawGenotype(gdata)
+#' 
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -1750,9 +1766,9 @@ setGeneric("setCallFilter", function(object,
 #' @param object A GbsrGenotypeData object.
 #' @param id A vector of strings match with scan ID which can
 #' be retrieve by `getScanID()`.
-#' @param missing A numeric value [0-1] to specify the maximum
+#' @param missing A numeric value \[0-1\] to specify the maximum
 #' missing genotype call rate per sample.
-#' @param het A numeric value [0-1] to specify the maximum
+#' @param het A numeric value \[0-1\] to specify the maximum
 #' heterozygous genotype call rate per sample.
 #' @param mac A integer value to specify the minimum minor
 #' allele count per sample.
@@ -1788,13 +1804,14 @@ setGeneric("setCallFilter", function(object,
 #' @return A GbsrGenotypeData object with filters on scan(samples).
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- setScanFilter(gdata,
-#' id = getScanID(gds)[1:10],
+#' id = getScanID(gdata)[1:10],
 #' missing = 0.2,
 #' dp = c(5, Inf))
 #'
+#' closeGDS(gdata) # Close the connection to the GDS file
 #' @export
 #'
 setGeneric("setScanFilter", function(object,
@@ -1821,9 +1838,9 @@ setGeneric("setScanFilter", function(object,
 #' @param object A GbsrGenotypeData object.
 #' @param id A vector of strings match with scan ID which can
 #' be retrieve by `getScanID()`.
-#' @param missing A numeric value [0-1] to specify
+#' @param missing A numeric value \[0-1\] to specify
 #' the maximum missing genotype call rate per marker
-#' @param het A numeric value [0-1] to specify
+#' @param het A numeric value \[0-1\] to specify
 #' the maximum heterozygous genotype call rate per marker
 #' @param mac A integer value to specify the minimum minor allele
 #' count per marker
@@ -1859,13 +1876,14 @@ setGeneric("setScanFilter", function(object,
 #' @return A GbsrGenotypeData object with filters on markers.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- setSnpFilter(gdata,
 #' id = getSnpID(gdata)[1:100],
 #'  missing = 0.2,
 #'  dp = c(5, Inf))
 #'
+#' closeGDS(gdata) # Close the connection to the GDS file
 #' @export
 #'
 setGeneric("setSnpFilter", function(object,
@@ -1920,10 +1938,11 @@ setGeneric("setSnpFilter", function(object,
 #' @return A GbsrGenotypeData object with filters on markers.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- setInfoFilter(gdata, mq = 40, qd = 20)
 #'
+#' closeGDS(gdata) # Close the connection to the GDS file
 #' @export
 #'
 setGeneric("setInfoFilter", function(object,
@@ -1938,39 +1957,7 @@ setGeneric("setInfoFilter", function(object,
   standardGeneric("setInfoFilter"))
 
 
-#' Reset the filter made by [setCallFiler()]
-#'
-#' Return genotype calls and read count data to
-#' the original data which are same with
-#' those data before running [setCallFilter()].
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param ... Unused.
-#'
-#' @return A GbsrGenotypeData object after removing
-#' all filters on genotype calls.
-#'
-#' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
-#' gdata <- loadGDS(gds_fn)
-#'
-#' # Filter out genotype calls supported by less than 5 reads.
-#' gdata <- setCallFilter(gdata, dp_count = c(5, Inf))
-#'
-#' # Filter out genotype calls supported by reads less than
-#' # the 20 percentile of read counts per marker in each sample.
-#' gdata <- setCallFilter(gdata, scan_dp_qtile = c(0.2, 1))
-#'
-#' # Reset all filters applied above.
-#' gdata <- resetCallFilters(gdata)
-#'
-#' @export
-#'
-setGeneric("resetCallFilters", function(object, ...)
-  standardGeneric("resetCallFilters"))
-
-
-#' Reset the filter made by [setScanFiler()]
+#' Reset the filter made by [setScanFilter()]
 #'
 #' Remove "invalid" labels put on samples and make all samples valid.
 #'
@@ -1981,16 +1968,17 @@ setGeneric("resetCallFilters", function(object, ...)
 #' all filters on scan(samples).
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- setScanFilter(gdata,
-#' id = getScanID(gds)[1:10],
+#' id = getScanID(gdata)[1:10],
 #' missing = 0.2,
 #' dp = c(5, Inf))
 #'
 #' # Reset all filters applied above.
 #' gdata <- resetScanFilters(gdata)
 #'
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -1998,7 +1986,7 @@ setGeneric("resetScanFilters", function(object, ...)
   standardGeneric("resetScanFilters"))
 
 
-#' Reset the filter made by [setSnpFiler()]
+#' Reset the filter made by [setSnpFilter()]
 #'
 #' Remove "invalid" labels put on markers and make all markers valid.
 #'
@@ -2008,7 +1996,7 @@ setGeneric("resetScanFilters", function(object, ...)
 #' @return A GbsrGenotypeData object after removing all filters on markers.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- setSnpFilter(gdata,
 #'  id = getSnpID(gdata)[1:100],
@@ -2018,14 +2006,15 @@ setGeneric("resetScanFilters", function(object, ...)
 #' # Reset all filters applied above.
 #' gdata <- resetSnpFilters(gdata)
 #'
+#' closeGDS(gdata) # Close the connection to the GDS file
 #' @export
 #'
 setGeneric("resetSnpFilters", function(object, ...)
   standardGeneric("resetSnpFilters"))
 
 
-#' Reset all filters made by [setScanFiler()], [setSnpFiler()],
-#' and [setCallFiler()].
+#' Reset all filters made by [setScanFilter()], [setSnpFilter()],
+#' and [setCallFilter()].
 #'
 #' Return all data intact.
 #'
@@ -2038,11 +2027,10 @@ setGeneric("resetSnpFilters", function(object, ...)
 #' @return A GbsrGenotypeData object after removing all filters on markers.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
-#' gdata <- setCallFilter(gdata, dp_count = c(5, Inf))
 #' gdata <- setScanFilter(gdata,
-#' id = getScanID(gds)[1:10],
+#' id = getScanID(gdata)[1:10],
 #' missing = 0.2,
 #' dp = c(5, Inf))
 #' gdata <- setSnpFilter(gdata,
@@ -2054,6 +2042,7 @@ setGeneric("resetSnpFilters", function(object, ...)
 #' # Reset all filters applied above.
 #' gdata <- resetFilters(gdata)
 #'
+#' closeGDS(gdata) # Close the connection to the GDS file
 #' @export
 #'
 setGeneric("resetFilters", function(object, ...)
@@ -2095,10 +2084,12 @@ setGeneric("resetFilters", function(object, ...)
 #' @return A GbsrGenotypeData object with filters on markers.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
+#' gdata <- countGenotype(gdata)
 #' gdata <- thinMarker(gdata, range = 150)
 #'
+#' closeGDS(gdata) # Close the connection to the GDS file
 #' @export
 #'
 setGeneric("thinMarker", function(object, range = 150, ...)
@@ -2135,15 +2126,18 @@ setGeneric("thinMarker", function(object, range = 150, ...)
 #' the new GDS file storing subset data.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
+#' gdata <- countGenotype(gdata)
 #' gdata <- setSnpFilter(gdata, missing = 0.2, het = c(0.1, 0.9), maf = 0.05)
 #'
 #' subsetgds_fn <- system.file("extdata",
-#' "simpop_subset.gds",
+#' "sample_subset.gds",
 #' package = "GBScleanR")
 #' subset_gdata <- subsetGDS(gdata, out_fn = subsetgds_fn)
 #'
+#' closeGDS(subset_gdata) # Close the connection to the GDS file
+#' closeGDS(gdata) # Close the connection to the GDS file
 #' @export
 #'
 setGeneric("subsetGDS", function(object,
@@ -2177,28 +2171,29 @@ setGeneric("subsetGDS", function(object,
 #' and change the primary nodes to
 #' "filt.genotype" and "filt.data" for genotype and
 #' read count data, respectively.
-#' [SetRawGenotype()] set back the nodes to the original,
+#' [setRawGenotype()] set back the nodes to the original,
 #' those are "genotype" and "data" for
 #' genotype and read count data, respectively.
-#' You can set the filtered data again by `SetFiltGenotype()`.
+#' You can set the filtered data again by [setFiltGenotype()].
 #'
 #' @return A GbsrGenotypeData object.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- setCallFilter(gdata, dp_count = c(5, Inf))
 #' # Now any functions of GBScleanR reference the genotype data
 #' # stored in the "filt.genotype" node.
 #'
 #' closeGDS(gdata)
-#' gdata <- loadGDS(gdata)
+#' gdata <- loadGDS(genotypeData = gdata)
 #' # If the connection was closed once and re-loaded,
 #' # raw genotype data is referenced by the functions.
 #' # To set the "filt.genotype" node as genotype data again,
 #' # run the setFiltGenotype().
 #' gdata <- setFiltGenotype(gdata)
 #'
+#' closeGDS(gdata) # Close the connection to the GDS file
 #'
 #' @export
 #'
@@ -2228,15 +2223,15 @@ setGeneric("setFiltGenotype", function(object, ...)
 #' a GDS file and change the primary nodes to
 #' "filt.genotype" and "filt.data" for genotype and
 #' read count data, respectively.
-#' `SetRawGenotype()` set back the nodes to
+#' [setRawGenotype()] set back the nodes to
 #' the original, those are "genotype" and "data" for
 #' genotype and read count data, respectively.
-#' You can set the filtered data again by [SetFiltGenotype()].
+#' You can set the filtered data again by [setFiltGenotype()].
 #'
 #' @return A GbsrGenotypeData object.
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #' gdata <- setCallFilter(gdata, dp_count = c(5, Inf))
 #' # Now any functions of GBScleanR reference the genotype data
@@ -2247,59 +2242,11 @@ setGeneric("setFiltGenotype", function(object, ...)
 #' # run the following.
 #' gdata <- setRawGenotype(gdata)
 #'
+#' closeGDS(gdata) # Close the connection to the GDS file
 #' @export
 #'
 setGeneric("setRawGenotype", function(object, ...)
   standardGeneric("setRawGenotype"))
-
-
-#' Replace data stored in the GDS file
-#'
-#' Replace the original data with the filtered data or
-#' replace sample IDs in the GDS file linked
-#' to an input GbsrGenotypeData object.
-#'
-#' @param object A GbsrGenotypeData object.
-#' @param target A vector of combinations of "sample.id", "genotype", and "ad".
-#' @param node Either one of "filt" and "cor" to replace
-#' raw genotype data with filtered genotype data or
-#' corrected genotype data, respectively.
-#' @param ... Unused.
-#'
-#' @details
-#' If `target = "genotype"`, replace the data stored
-#' in the "genotype" node with the
-#' data in the "filt.genotype" node for genotype call data.
-#' If `target = "ad`, The data stored in the "data" node is
-#' also replaced with the data in the
-#' "filt.data" node for read count data. `target = "sample.id"`
-#' makes this function to
-#' replace data in the "sample.id" node
-#' with the sample IDs stored in the
-#' ScanAnnotationDataSet slot of the input GbsrGenotypeData object.
-#'
-#' @return A GbsrGenotypeData object.
-#'
-#' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
-#' gdata <- loadGDS(gds_fn)
-#' gdata <- setCallFilter(gdata, dp_count = c(5, Inf))
-#' # Now any functions of GBScleanR reference the genotype data
-#' # stored in the "filt.genotype" node.
-#'
-#' gdata <- replaceGDSdata(gdata, target = "genotype", node = "filt")
-#' # the data stored in the "genotype" node was replaced with the data stored
-#' # in the "filt.genotype" node. The raw genotype data in the GDS file was
-#' # overwitten by the data which was in the "filt.genotype" node.
-#'
-#'
-#' @export
-#'
-setGeneric("replaceGDSdata", function(object,
-                                      target,
-                                      node = "filt",
-                                      ...)
-  standardGeneric("replaceGDSdata"))
 
 
 #' Genotype estimation using a hiden Morkov model
@@ -2337,14 +2284,15 @@ setGeneric("replaceGDSdata", function(object,
 #' @importFrom stats cor
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
-#' gdata <- loadgdata(gdata_fn)
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+#' gdata <- loadGDS(gds_fn)
 #' gdata <- setParents(gdata, parents = getScanID(gdata)[1:4])
 #' gdata <- initScheme(gdata, crosstype = "pairing", mating = matrix(1:4, 2))
 #' gdata <- addScheme(gdata, "pairing", mating = matrix(5:6, 2))
 #' gdata <- addScheme(gdata, "selfing")
 #' gdata <- estGeno(gdata, recomb_rate = 0.03, het_parent = FALSE, iter = 3)
 #'
+#' closeGDS(gdata) # Close the connection to the GDS file
 #' @export
 #'
 setGeneric("estGeno", function(object,
@@ -2409,13 +2357,15 @@ setGeneric("estGeno", function(object,
 #' @seealso [addScheme()] and [showScheme()]
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #'
 #' # Biparental F2 population.
 #' gdata <- setParents(gdata, parents = c("Founder1", "Founder2"))
+#' 
 #' # setParents gave member ID 1 and 2 to Founder1 and Founder2, respectively.
 #' gdata <- initScheme(gdata, crosstype = "pair", mating = cbind(c(1:2)))
+#' 
 #' # Now the progenies of the cross above have member ID 3.
 #' # If `crosstype = "selfing"` or `"sibling"`, you can omit a `mating` matrix.
 #' gdata <- addScheme(gdata, crosstype = "self")
@@ -2423,6 +2373,7 @@ setGeneric("estGeno", function(object,
 #' # 8-way RILs with sibling mating.
 #' # Our example data only have two foudners. Thus, we set first
 #' # eight samples as parents as example.
+#' gdata <- resetFilters(gdata)
 #' gdata <- setParents(gdata, parents = getScanID(gdata)[1:8])
 #'
 #' # If you made crosses of Founder1 x Founder2, Founder3 x Founder4,
@@ -2437,17 +2388,17 @@ setGeneric("estGeno", function(object,
 #' # Then, produce 4-way crosses.
 #' gdata <- addScheme(gdata, crosstype = "pair",
 #' mating = cbind(c(9:10), c(11:12)))
+#' 
 #' # 8-way crosses.
 #' gdata <- addScheme(gdata, crosstype = "pair", mating = cbind(c(13:14)))
+#' 
 #' # Inbreeding by 4 times selfing.
 #' gdata <- addScheme(gdata, crosstype = "self")
 #' gdata <- addScheme(gdata, crosstype = "self")
 #' gdata <- addScheme(gdata, crosstype = "self")
 #' gdata <- addScheme(gdata, crosstype = "self")
 #'
-#' # Execute error correction
-#' gdata <- estGeno(gdata)
-#'
+#' closeGDS(gdata) # Close the connection to the GDS file
 setGeneric("initScheme", function(object, crosstype, mating, ...)
   standardGeneric("initScheme"))
 
@@ -2501,13 +2452,15 @@ setGeneric("initScheme", function(object, crosstype, mating, ...)
 #' @seealso [addScheme()] and [showScheme()]
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #'
 #' # Biparental F2 population.
 #' gdata <- setParents(gdata, parents = c("Founder1", "Founder2"))
+#' 
 #' # setParents gave member ID 1 and 2 to Founder1 and Founder2, respectively.
 #' gdata <- initScheme(gdata, crosstype = "pair", mating = cbind(c(1:2)))
+#' 
 #' # Now the progenies of the cross above have member ID 3.
 #' # If `crosstype = "selfing"` or `"sibling"`, you can omit a `mating` matrix.
 #' gdata <- addScheme(gdata, crosstype = "self")
@@ -2515,6 +2468,7 @@ setGeneric("initScheme", function(object, crosstype, mating, ...)
 #' # 8-way RILs with sibling mating.
 #' # Our example data only have two foudners.
 #' # Thus, we set first eight samples as parents as example.
+#' gdata <- resetFilters(gdata)
 #' gdata <- setParents(gdata, parents = getScanID(gdata)[1:8])
 #'
 #' # If you made crosses of Founder1 x Founder2, Founder3 x Founder4,
@@ -2529,17 +2483,17 @@ setGeneric("initScheme", function(object, crosstype, mating, ...)
 #' # Then, produce 4-way crosses.
 #' gdata <- addScheme(gdata, crosstype = "pair",
 #' mating = cbind(c(9:10), c(11:12)))
+#' 
 #' # 8-way crosses.
 #' gdata <- addScheme(gdata, crosstype = "pair", mating = cbind(c(13:14)))
+#' 
 #' # Inbreeding by 4 times selfing.
 #' gdata <- addScheme(gdata, crosstype = "self")
 #' gdata <- addScheme(gdata, crosstype = "self")
 #' gdata <- addScheme(gdata, crosstype = "self")
 #' gdata <- addScheme(gdata, crosstype = "self")
 #'
-#' # Execute error correction
-#' gdata <- estGeno(gdata)
-#'
+#' closeGDS(gdata) # Close the connection to the GDS file
 setGeneric("addScheme", function(object, crosstype, mating, pop_size, ...)
   standardGeneric("addScheme"))
 
@@ -2565,7 +2519,7 @@ setGeneric("addScheme", function(object, crosstype, mating, pop_size, ...)
 #' @seealso [initScheme()] and [addScheme()]
 #'
 #' @examples
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
 #'
 #' gdata <- setParents(gdata, parents = c("Founder1", "Founder2"))
@@ -2573,5 +2527,6 @@ setGeneric("addScheme", function(object, crosstype, mating, pop_size, ...)
 #' gdata <- addScheme(gdata, crosstype = "self")
 #' showScheme(gdata)
 #'
+#' closeGDS(gdata) # Close the connection to the GDS file
 setGeneric("showScheme", function(object, ...)
   standardGeneric("showScheme"))

@@ -72,8 +72,9 @@ Detailed explanation of each metric can be found
 in \href{https://gatk.broadinstitute.org/hc/en-us}{GATK's web site}.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 gdata <- setInfoFilter(gdata, mq = 40, qd = 20)
 
+closeGDS(gdata) # Close the connection to the GDS file
 }

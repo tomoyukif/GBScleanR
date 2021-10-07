@@ -37,11 +37,12 @@ in the "annotation/format/AD/filt.data" node which can be accessed as
 mentioned above.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 gdata <- countRead(gdata)
 read_depth_per_marker <- getCountRead(gdata, target = "snp")
 reference_read_freq <- getCountReadRef(gdata, target = "snp", prop = TRUE)
 histGBSR(gdata, stats = "ad_ref")
+closeGDS(gdata) # Close the connection to the GDS file
 
 }

@@ -51,13 +51,16 @@ genotype, SNP ID, scan ID, read counts,
 and quality metrics of SNP markers.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
+gdata <- countGenotype(gdata)
 gdata <- setSnpFilter(gdata, missing = 0.2, het = c(0.1, 0.9), maf = 0.05)
 
 subsetgds_fn <- system.file("extdata",
-"simpop_subset.gds",
+"sample_subset.gds",
 package = "GBScleanR")
 subset_gdata <- subsetGDS(gdata, out_fn = subsetgds_fn)
 
+closeGDS(subset_gdata) # Close the connection to the GDS file
+closeGDS(gdata) # Close the connection to the GDS file
 }

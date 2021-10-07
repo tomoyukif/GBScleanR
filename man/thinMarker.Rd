@@ -67,8 +67,10 @@ to check the valid SNP markers.
 }
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
+gdata <- countGenotype(gdata)
 gdata <- thinMarker(gdata, range = 150)
 
+closeGDS(gdata) # Close the connection to the GDS file
 }

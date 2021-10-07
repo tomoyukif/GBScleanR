@@ -22,8 +22,9 @@ has been opened, while \code{FALSE} if closed.
 Check if a GDS file has been opened or not.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 isOpenGDS(gdata)
+closeGDS(gdata) # Close the connection to the GDS file
 
 }

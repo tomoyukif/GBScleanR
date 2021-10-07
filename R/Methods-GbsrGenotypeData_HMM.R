@@ -10,6 +10,11 @@ setMethod("estGeno",
                    optim,
                    iter,
                    n_threads) {
+            
+            if(length(object@scheme@crosstype) == 0){
+              message("No scheme information.\nBuild scheme information with initScheme() and addScheme().")
+            }
+            
             max_threads <- RcppParallel::defaultNumThreads()
             if (is.null(n_threads)) {
               n_threads <- max_threads / 2
@@ -66,32 +71,32 @@ setMethod("estGeno",
               .saveGeno(object, best_seq$best_geno, sum(index), valid_index[index])
               .savePGeno(object, best_seq$p_geno, sum(index), valid_index[index])
             }
-            .finalizeGDS(object)
+            object <- .finalizeGDS(object)
             return(object)
           })
 
 .initGDS <- function(object) {
-  gdsfmt::add.gdsn(
-    node = object@data@handler,
-    name = "estimated.haplotype",
-    storage = "bit6",
-    compress = "LZMA_RA",
-    replace = TRUE
-  )
-  gdsfmt::add.gdsn(
-    node = object@data@handler,
-    name = "corrected.genotype",
-    storage = "bit2",
-    compress = "LZMA_RA",
-    replace = TRUE
-  )
-  gdsfmt::add.gdsn(
-    node = object@data@handler,
-    name = "parents.genotype",
-    storage = "bit2",
-    compress = "LZMA_RA",
-    replace = TRUE
-  )
+    gdsfmt::add.gdsn(
+      node = object@data@handler$root,
+      name = "estimated.haplotype",
+      storage = "bit6",
+      compress = "LZMA_RA",
+      replace = TRUE
+    )
+    gdsfmt::add.gdsn(
+      node = object@data@handler$root,
+      name = "corrected.genotype",
+      storage = "bit2",
+      compress = "LZMA_RA",
+      replace = TRUE
+    )
+    gdsfmt::add.gdsn(
+      node = object@data@handler$root,
+      name = "parents.genotype",
+      storage = "bit2",
+      compress = "LZMA_RA",
+      replace = TRUE
+    )
 }
 
 .finalizeGDS <- function(object) {
@@ -101,6 +106,11 @@ setMethod("estGeno",
                                                   path = "corrected.genotype"))
   gdsfmt::readmode.gdsn(node = gdsfmt::index.gdsn(node = object@data@handler,
                                                   path = "parents.genotype"))
+  suppressMessages({
+    gdsfmt::closefn.gds(object@data@handler)
+    object@data@handler <- gdsfmt::openfn.gds(object@data@filename, readonly = FALSE)
+  })
+  return(object)
 }
 
 .loadReadCounts <- function(object, index) {
@@ -344,7 +354,7 @@ setMethod("estGeno",
   }
   chr <- strsplit(pat, "\\|")
   pat <- NULL
-  for (i in seq_len(chr)) {
+  for (i in seq_along(chr)) {
     chr1 <- strsplit(chr[[i]][1], "/")[[1]]
     chr2 <- strsplit(chr[[i]][2], "/")[[1]]
     pat <-
@@ -443,6 +453,7 @@ setMethod("estGeno",
     
   } else {
     output <- array(0, c(2, n_snp, nscan(object, valid = FALSE)))
+    output <- t(matrix(output, n_snp * 2))
   }
   
   hap_gdsn <-
@@ -472,7 +483,7 @@ setMethod("estGeno",
   out_geno <- apply(hap, 3, function(x) {
     vapply(seq_len(ncol(x)), function(y) {
       return(p_geno[x[1, y], y] + p_geno[x[2, y], y])
-    }, numeric(ncol(x)))
+    }, numeric(1))
   })
   sample_order <-
     c(param_list$parents_index, which(param_list$samples_index))
@@ -562,8 +573,8 @@ setMethod("estGeno",
       node = object@data@handler,
       name = "parents.genotype",
       storage = "bit2",
-      compress = "LZMA_RA",
       val = output,
+      compress = "LZMA_RA",
       replace = TRUE
     )
   } else {

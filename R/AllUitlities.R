@@ -33,8 +33,7 @@ print.GbsrGenotypeData <- function(x) {
 #' gbsrVCF2GDS converts a VCF file to a GDS file.
 #' The data structure of the GDS file created via this functions is same with
 #' those created by snpgdsVCF2GDS of
-#' [SNPRelate](https://www.bioconductor.org/packages/
-#' release/bioc/html/SNPRelate.html).
+#' [SNPRelate](https://www.bioconductor.org/packages/release/bioc/html/SNPRelate.html).
 #'  Unlike the GDS files created by SNPRelate GBScleanR's GDS files: \cr
 #' \itemize{
 #' \item{"Include annotation information of variants
@@ -45,10 +44,11 @@ print.GbsrGenotypeData <- function(x) {
 #' @return The output GDS file path.
 #'
 #' @examples
-#'vcf_fn <- system.file("extdata", "simpop.vcf", package = "GBScleanR")
-#'gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#'vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
+#'gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #'gbsrVCF2GDS(vcf_fn = vcf_fn, # Path to the input VCF file.
-#'            out_fn = gds_fn) # Path to the output GDS file.
+#'            out_fn = gds_fn, # Path to the output GDS file.
+#'            force = TRUE) # If you already have a GDS file named as `gds_fn`.
 #'
 #' @export
 #'
@@ -133,8 +133,8 @@ gbsrVCF2GDS <- function(vcf_fn,
           node = new_sub,
           name = "data",
           replace = TRUE,
+          compress = "LZMA_RA",
           storage = desp$storage,
-          compress = desp$compress
         )
         gdsfmt::assign.gdsn(node = newdata, src.node = srcnode)
         
@@ -143,18 +143,12 @@ gbsrVCF2GDS <- function(vcf_fn,
           gdsfmt::get.attr.gdsn(gdsfmt::index.gdsn(old_gds,
                                                    gsub("/data", "", i)))
         if (!is.null(old_attr)) {
-          for (i in seq_len(old_attr))
+          for (i in seq_along(old_attr))
             gdsfmt::put.attr.gdsn(new_sub,
                                   name = names(old_attr)[i],
                                   val = old_attr[[i]])
         }
-        old_attr <- gdsfmt::get.attr.gdsn(srcnode)
-        if (!is.null(old_attr)) {
-          for (i in seq_len(old_attr))
-            gdsfmt::put.attr.gdsn(newdata,
-                                  name = names(old_attr)[i],
-                                  val = old_attr[[i]])
-        }
+        gdsfmt::readmode.gdsn(newdata)
       }
     }
   }
@@ -164,7 +158,7 @@ gbsrVCF2GDS <- function(vcf_fn,
     node = new_gds,
     name = "snp.chromosome.name",
     storage = "string",
-    compress = "LZMA_ra",
+    compress = "LZMA_RA",
     replace = TRUE
   )
   gdsfmt::moveto.gdsn(node = chr_node,
@@ -176,13 +170,14 @@ gbsrVCF2GDS <- function(vcf_fn,
     node = new_gds,
     name = "snp.chromosome",
     val = as.integer(chr),
+    compress = "LZMA_RA",
     storage = "int8",
-    compress = "LZMA_ra",
     replace = TRUE
   )
   gdsfmt::readmode.gdsn(gdsfmt::index.gdsn(new_gds, "snp.chromosome"))
   return(new_gds_fn)
 }
+
 
 # Internal function to build data for slots of
 # the GenotypData class in GWASTools.
@@ -299,16 +294,18 @@ gbsrVCF2GDS <- function(vcf_fn,
 #' @importFrom methods new
 #'
 #' @examples
-#' vcf_fn <- system.file("extdata", "simpop.vcf", package = "GBScleanR")
-#' gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+#' vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #'
-#' gbsrVCF2GDS(vcf_fn = vcf_fn, # Path to the input VCF file.
-#'             out_fn = gds_fn) # Path to the output GDS file.
+#'gbsrVCF2GDS(vcf_fn = vcf_fn, # Path to the input VCF file.
+#'            out_fn = gds_fn, # Path to the output GDS file.
+#'            force = TRUE) # If you already have a GDS file named as `gds_fn`.
 #' gdata <- loadGDS(gds_fn = gds_fn)
 #'
 #' # If you would like to reload a GDS file.
 #' gdata <- loadGDS(genotypeData = gdata)
 #'
+#' closeGDS(gdata) # Close the connection to the GDS file
 loadGDS <- function(gds_fn, non_autosomes = NULL, genotypeData) {
   if (missing(genotypeData)) {
     message('Loading GDS file.')

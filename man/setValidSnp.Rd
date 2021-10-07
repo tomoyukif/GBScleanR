@@ -39,11 +39,15 @@ only the vector passed to \code{new} will be used to
 over write the validity information.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 
 # Randomly remove SNP markers
-gdata <- setValidSnp(gdata, update = sample(c(TRUE, FALSE), nsnp(gdata)))
+gdata <- setValidSnp(gdata, update = sample(c(TRUE, FALSE),
+nsnp(gdata), 
+replace = TRUE))
+
+closeGDS(gdata) # Close the connection to the GDS file
 
 }
 \seealso{

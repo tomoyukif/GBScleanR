@@ -3,7 +3,7 @@
 \name{resetSnpFilters}
 \alias{resetSnpFilters}
 \alias{resetSnpFilters,GbsrGenotypeData-method}
-\title{Reset the filter made by \code{\link[=setSnpFiler]{setSnpFiler()}}}
+\title{Reset the filter made by \code{\link[=setSnpFilter]{setSnpFilter()}}}
 \usage{
 resetSnpFilters(object, ...)
 
@@ -21,7 +21,7 @@ A GbsrGenotypeData object after removing all filters on markers.
 Remove "invalid" labels put on markers and make all markers valid.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 gdata <- setSnpFilter(gdata,
  id = getSnpID(gdata)[1:100],
@@ -31,4 +31,5 @@ gdata <- setSnpFilter(gdata,
 # Reset all filters applied above.
 gdata <- resetSnpFilters(gdata)
 
+closeGDS(gdata) # Close the connection to the GDS file
 }

@@ -93,7 +93,10 @@ setMethod("addScheme",
 setMethod("showScheme",
           "GbsrScheme",
           function(object, parents_name) {
-              for (i in seq_len(object@crosstype)) {
+              if(length(object@crosstype) == 0){
+                  message("No scheme information.\nRun initScheme().")
+              }
+              for (i in seq_along(object@crosstype)) {
                   if (i == 1) {
                       message('Generation: Parents')
                       parents <- object@parents

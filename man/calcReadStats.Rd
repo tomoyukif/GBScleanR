@@ -15,7 +15,7 @@ calcReadStats(object, target = "both", q = NULL, ...)
 
 \item{target}{Either of "snp" and "scan".}
 
-\item{q}{A numeric value \link{0-1} to indicate quantile to obtain.}
+\item{q}{A numeric value [0-1] to indicate quantile to obtain.}
 
 \item{...}{Unused.}
 }
@@ -38,7 +38,7 @@ in the "annotation/format/AD/filt.data" node which can be accessed as
 mentioned above.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 gdata <- calcReadStats(gdata, q = 0.5)
 mean_reference_read_depth <- getMeanReadRef(gdata, target = "snp")
@@ -47,5 +47,6 @@ target = "snp",
 q = 0.5)
 histGBSR(gdata, stats = "mean_ref")
 histGBSR(gdata, stats = "qtile_alt", q = 0.5)
+closeGDS(gdata) # Close the connection to the GDS file
 
 }

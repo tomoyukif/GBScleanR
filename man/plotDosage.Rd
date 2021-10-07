@@ -34,9 +34,10 @@ This function counts a reference allele dosage per marker per sample and
 draw line plots of them in facets for each chromosome for each sample.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 gdata <- countGenotype(gdata)
 plotDosage(gdata, ind = 1)
 
+closeGDS(gdata) # Close the connection to the GDS file
 }

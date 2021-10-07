@@ -29,8 +29,7 @@ You may use "bcftools" or "vcftools" for filtering.
 gbsrVCF2GDS converts a VCF file to a GDS file.
 The data structure of the GDS file created via this functions is same with
 those created by snpgdsVCF2GDS of
-\link{SNPRelate}(https://www.bioconductor.org/packages/
-release/bioc/html/SNPRelate.html).
+\href{https://www.bioconductor.org/packages/release/bioc/html/SNPRelate.html}{SNPRelate}.
 Unlike the GDS files created by SNPRelate GBScleanR's GDS files: \cr
 \itemize{
 \item{"Include annotation information of variants
@@ -40,9 +39,10 @@ recoreded in the FORMAT filed of the input VCF."}
 }
 }
 \examples{
-vcf_fn <- system.file("extdata", "simpop.vcf", package = "GBScleanR")
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gbsrVCF2GDS(vcf_fn = vcf_fn, # Path to the input VCF file.
-           out_fn = gds_fn) # Path to the output GDS file.
+           out_fn = gds_fn, # Path to the output GDS file.
+           force = TRUE) # If you already have a GDS file named as `gds_fn`.
 
 }

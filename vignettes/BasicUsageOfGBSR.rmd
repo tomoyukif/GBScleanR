@@ -1,7 +1,7 @@
 ---
 title: "Basic usage of utility functions in GBScleanR"
 author: "Tomoyuki Furuta"
-date: "September 30, 2021"
+date: "October 5, 2021"
 output: 
   pdf_document:
     toc: yes
@@ -68,15 +68,16 @@ The main class of the `GBScleanR` package is `gbsrGenotypData` which inherits th
 
 GBScleanR only support a VCF file as input. As an example data, we use simulated genotype data for a simulated biparental F2 population derived from inbred founders.
 ```{r}
-vcf_fn <- system.file("extdata", "simpop.vcf", package = "GBScleanR")
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 ```
 
 
 As mentioned above, the `gbsrGenotypeData` class requires genotype data in the `gds.class` object which enable us quick access to the genotype data without loading the whole data on RAM. At the beginning of the processing, we need to convert data format of our genotype data from VCF to GDS. This conversion can be achieved using `gbsrVCF2GDS` as shown below. A compressed VCF file (.vcf.gz) also can be the input. Our sample dataset contains genotype information of 100 samples with 1000 markeres on only one chromosome.
-```{r warning=FALSE, message=FALSE, eval = FALSE}
-gbsrVCF2GDS(vcf_fn = vcf_fn, # Path to the input VCF file.
-            out_fn = gds_fn) # Path to the output GDS file.
+```{r warning=FALSE, message=FALSE}
+gbsrVCF2GDS(vcf_fn = vcf_fn, 
+            out_fn = gds_fn,
+            force = TRUE) 
 ```
 \  
 
@@ -392,9 +393,9 @@ Usually reference reads and alternative reads show different data distributions.
 \  
 
 
-Here, let's filter out calls supported by less than 5 reads and then filter out markers having more than 10% of missing rate.
+Here, let's filter out calls supported by less than 1 reads and then filter out markers having more than 10% of missing rate.
 ```{r}
-gdata <- setCallFilter(gdata, dp_count = c(5, Inf))
+gdata <- setCallFilter(gdata, dp_count = c(1, Inf))
 gdata <- setSnpFilter(gdata, missing = 0.1)
 ```
 \  
@@ -436,15 +437,16 @@ We can reset filtering as following.
 ```{r eval=FALSE}
 gdata <- resetSnpFilters(gdata) # Reset the filter on markers
 gdata <- resetScanFilters(gdata) # Reset the filter on samples
-gdata <- resetCallFilters(gdata) # Reset the filter on calls
+gdata <- setRawGenotype(gdata) # Reset the filter on calls
 gdata <- resetFilters(gdata) # Reset all filters
 ```
 \  
 
 To save the filtered data, we can create the subset GDS file containing only the retained data.
 ```{r eval=FALSE}
+subset_fn <- system.file("extdata", "sample_subset.gds", package = "GBScleanR")
 subset_gdata <- subsetGDS(gdata,
-                          out_fn = "simpop_subset.gds", 
+                          out_fn = subset_fn, 
                           snp_incl = getValidSnp(gdata),
                           scan_incl = getValidScan(gdata))
 ```

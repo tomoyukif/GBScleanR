@@ -34,7 +34,7 @@ to generate the population which you are going to
 subject to the \code{estGeno()} function.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 
 gdata <- setParents(gdata, parents = c("Founder1", "Founder2"))
@@ -42,6 +42,7 @@ gdata <- initScheme(gdata, crosstype = "pair", mating = cbind(c(1:2)))
 gdata <- addScheme(gdata, crosstype = "self")
 showScheme(gdata)
 
+closeGDS(gdata) # Close the connection to the GDS file
 }
 \seealso{
 \code{\link[=initScheme]{initScheme()}} and \code{\link[=addScheme]{addScheme()}}

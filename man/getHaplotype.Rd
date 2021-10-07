@@ -40,12 +40,15 @@ the GDS file which can be generated via the \code{\link[=estGeno]{estGeno()}} fu
 Thus, this function is valid only after having executed \code{\link[=estGeno]{estGeno()}}.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 parents <- grep("Founder", getScanID(gdata), value = TRUE)
 gdata <- setParents(gdata, parents = parents, flip = TRUE)
+gdata <- initScheme(gdata, crosstype = "pair", mating = cbind(c(1:2)))
+gdata <- addScheme(gdata, crosstype = "self")
 gdata <- estGeno(gdata)
 hap <- getHaplotype(gdata)
+closeGDS(gdata) # Close the connection to the GDS file
 
 }
 \seealso{

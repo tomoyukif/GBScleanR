@@ -157,6 +157,174 @@ setMethod("show",
                                            "annotation/format/DP/data"))
 }
 
+
+.replaceGDSdata <- function(object, target, node) {
+  if ("sample.id" %in% target) {
+    id <- getScanID(object, valid = FALSE)
+    gdsfmt::add.gdsn(
+      object@data@handler,
+      "sample.id",
+      id,
+      "string",
+      compress = "LZMA_RA",
+      replace = TRUE
+    )
+    gdsfmt::readmode.gdsn(gdsfmt::index.gdsn(object@data@handler, "sample.id"))
+  }
+  
+  if ("genotype" %in% target) {
+    if (node == "filt" &
+        "filt.genotype" %in% gdsfmt::ls.gdsn(object@data@handler)) {
+      gt <- gdsfmt::index.gdsn(object@data@handler, "genotype")
+      gt_attr <- gdsfmt::get.attr.gdsn(gt)
+      gdsfmt::delete.gdsn(gt)
+      
+      newgt <-
+        gdsfmt::index.gdsn(object@data@handler, "filt.genotype")
+      gdsfmt::rename.gdsn(newgt, "genotype")
+      gdsfmt::put.attr.gdsn(newgt, names(gt_attr)[1], gt_attr[[1]])
+      gdsfmt::readmode.gdsn(newgt)
+      
+    } else if (node == "cor" &
+               "corrected.genotype" %in% gdsfmt::ls.gdsn(object@data@handler)) {
+      gt <- gdsfmt::index.gdsn(object@data@handler, "genotype")
+      gt_attr <- gdsfmt::get.attr.gdsn(gt)
+      gdsfmt::delete.gdsn(gt)
+      newgt <-
+        gdsfmt::index.gdsn(object@data@handler, "corrected.genotype")
+      gdsfmt::rename.gdsn(newgt, "genotype")
+      gdsfmt::put.attr.gdsn(newgt, names(gt_attr)[1], gt_attr[[1]])
+      gdsfmt::readmode.gdsn(newgt)
+    } else {
+      warning('Nothing to replace.')
+    }
+  }
+  if ("ad" %in% target) {
+    ad_gdsn <-
+      gdsfmt::index.gdsn(object@data@handler, "annotation/format/AD")
+    ls_gdsn <- gdsfmt::ls.gdsn(ad_gdsn)
+    if ("filt.data" %in% ls_gdsn) {
+      ad <- gdsfmt::index.gdsn(ad_gdsn, "data")
+      gdsfmt::delete.gdsn(ad)
+      ad_gdsn <-
+        gdsfmt::index.gdsn(object@data@handler, "annotation/format/AD")
+      fad <- gdsfmt::index.gdsn(ad_gdsn, "filt.data")
+      gdsfmt::rename.gdsn(fad, "data")
+      gdsfmt::readmode.gdsn(fad)
+      if (length(ls_gdsn) > 2) {
+        ls_gdsn <- ls_gdsn[!ls_gdsn %in% c("data", "filt.data")]
+        for (i in ls_gdsn) {
+          ad_gdsn <-
+            gdsfmt::index.gdsn(object@data@handler, "annotation/format/AD")
+          gdsfmt::delete.gdsn(gdsfmt::index.gdsn(ad_gdsn, i))
+        }
+      }
+      
+    } else {
+      warning('Nothing to replace.')
+    }
+  }
+}
+
+
+# Internally used function to flip genotype data based on the flipped marker information.
+# Flipped markers are markers where the alleles expected as reference allele are called as
+# alternative allele.
+.flipGeno <- function(object, var) {
+  flipped <- getFlipped(object, valid = FALSE)
+  gt <-
+    gdsfmt::read.gdsn(gdsfmt::index.gdsn(object@data@handler, var))
+  flip_gt <- gt[, flipped]
+  flip_0 <- flip_gt == 0
+  flip_2 <- flip_gt == 2
+  flip_gt[flip_0] <- 2
+  flip_gt[flip_2] <- 0
+  gt[, flipped] <- flip_gt
+  gt_attr <-
+    gdsfmt::get.attr.gdsn(gdsfmt::index.gdsn(object@data@handler, var))
+  gt_gdsn <- gdsfmt::add.gdsn(object@data@handler,
+                              var,
+                              gt,
+                              "bit2",
+                              compress = "LZMA_RA",
+                              replace = TRUE)
+  if (!is.null(gt_attr)) {
+    for (i in seq_along(gt_attr)) {
+      gdsfmt::put.attr.gdsn(node = gt_gdsn,
+                            name = names(gt_attr)[i],
+                            val = gt_attr[[i]])
+    }
+  }
+  gdsfmt::readmode.gdsn(gdsfmt::index.gdsn(object@data@handler, var))
+}
+
+# Internally used function to flip AD data based on the flipped marker information.
+# Flipped markers are markers where the alleles expected as reference allele are called as
+# alternative allele.
+.flipAD <- function(object, var) {
+  flipped <- getFlipped(object, valid = FALSE)
+  ad <-
+    gdsfmt::index.gdsn(object@data@handler, "annotation/format/AD")
+  data <- gdsfmt::read.gdsn(gdsfmt::index.gdsn(ad, var))
+  ref <- data[, c(TRUE, FALSE)]
+  alt <- data[, c(FALSE, TRUE)]
+  tmp <- ref[, flipped]
+  ref[, flipped] <- alt[, flipped]
+  alt[, flipped] <- tmp
+  data[, c(TRUE, FALSE)] <- ref
+  data[, c(FALSE, TRUE)] <- alt
+  gdsfmt::add.gdsn(
+    node = ad,
+    name = var,
+    val = data,
+    storage = "vl_int",
+    compress = "LZMA_RA",
+    replace = TRUE
+  )
+  gdsfmt::readmode.gdsn(gdsfmt::index.gdsn(ad, var))
+}
+
+.flipData <- function(object) {
+  if (!haveFlipped(object)) {
+    stop('Nothing to flip.')
+  }
+  
+  # Genotypes
+  .flipGeno(object, "genotype")
+  ls_gdsn <- gdsfmt::ls.gdsn(object@data@handler)
+  if ("filt.genotype" %in% ls_gdsn) {
+    .flipGeno(object, "filt.genotype")
+  }
+  
+  # Alleles
+  allele <- paste(getAlleleA(object, valid = FALSE),
+                  getAlleleB(object, valid = FALSE),
+                  sep = "/")
+  gdsfmt::add.gdsn(
+    node = object@data@handler,
+    name = "snp.allele",
+    val = allele,
+    storage = "string",
+    compress = "LZMA_RA",
+    replace = TRUE
+  )
+  gdsfmt::readmode.gdsn(gdsfmt::index.gdsn(object@data@handler, "snp.allele"))
+  
+  # Allele reads
+  .flipAD(object, "data")
+  
+  # Filtered allele reads
+  ls_gdsn <-
+    gdsfmt::ls.gdsn(gdsfmt::index.gdsn(object@data@handler,
+                                       "annotation/format/AD"))
+  if ("filt.data" %in% ls_gdsn) {
+    .flipAD(object, "filt.data")
+  }
+  
+  object@snpAnnot$flipped <- NULL
+  return(object)
+}
+
 #' @rdname gbsrGDS2VCF
 setMethod("gbsrGDS2VCF",
           "GbsrGenotypeData",
@@ -168,6 +336,13 @@ setMethod("gbsrGDS2VCF",
                    out_info) {
             have_hap <-
               "estimated.haplotype" %in% gdsfmt::ls.gdsn(object@data@handler)
+            if(have_hap){
+              hap_dim <- gdsfmt::objdesp.gdsn(gdsfmt::index.gdsn(object@data@handler, "estimated.haplotype"))$dim
+              if(length(hap_dim) != 3)
+              {
+                have_hap <- FALSE
+              }
+            }
             suppressMessages(closeGDS(object))
             gds_file <- object@data@filename
             if (!grepl(".gds$", gds_file)) {
@@ -179,12 +354,12 @@ setMethod("gbsrGDS2VCF",
             tmp_gds@snpAnnot <- object@snpAnnot
             tmp_gds@scanAnnot <- object@scanAnnot
             
-            if (haveFlipped(object)) {
-              tmp_gds <- flipData(tmp_gds)
-            }
+            # if (haveFlipped(object)) {
+            #   tmp_gds <- .flipData(tmp_gds)
+            # }
             if (node %in% c("filt", "cor")) {
-              suppressWarnings(replaceGDSdata(tmp_gds, "genotype", node))
-              suppressWarnings(replaceGDSdata(tmp_gds, "ad", "filt"))
+              suppressWarnings(.replaceGDSdata(tmp_gds, "genotype", node))
+              suppressWarnings(.replaceGDSdata(tmp_gds, "ad", "filt"))
               if ("DP" %in% out_fmt) {
                 .recalcDP(tmp_gds)
               }
@@ -221,10 +396,15 @@ setMethod("gbsrGDS2VCF",
             
             out_gds <-
               gdsfmt::openfn.gds(out_fn_tmp, readonly = FALSE)
-            if (have_hap) {
+            if(have_hap) {
               in_gds <- gdsfmt::openfn.gds(gds_file)
               .insertHaplotype(out_gds, in_gds)
               gdsfmt::closefn.gds(in_gds)
+              info_var <- "PGT"
+              fmt_var <- "HAP"
+            } else {
+              info_var <- character(0)
+              fmt_var <- character(0)
             }
             
             in_gds <- gdsfmt::openfn.gds(tmp_gds_file)
@@ -234,6 +414,8 @@ setMethod("gbsrGDS2VCF",
             
             SeqArray::seqGDS2VCF(gdsfile = out_fn_tmp,
                                  vcf.fn = out_fn,
+                                 info.var = info_var,
+                                 fmt.var = fmt_var,
                                  verbose = FALSE)
             on.exit({
               if (valid) {
@@ -287,6 +469,7 @@ setMethod("saveSnpAnnot",
               replace = TRUE
             )
             gdsfmt::readmode.gdsn(node = new_node)
+            return(object)
           })
 
 #' @rdname saveScanAnnot
@@ -302,6 +485,8 @@ setMethod("saveScanAnnot",
               replace = TRUE
             )
             gdsfmt::readmode.gdsn(node = new_node)
+            
+            return(object)
           })
 
 #' @rdname loadSnpAnnot
@@ -456,107 +641,6 @@ setMethod("setValidScan",
   }
   return(object)
 }
-
-# Internally used function to flip genotype data based on the flipped marker information.
-# Flipped markers are markers where the alleles expected as reference allele are called as
-# alternative allele.
-.flipGeno <- function(object, var) {
-  flipped <- getFlipped(object, valid = FALSE)
-  gt <-
-    gdsfmt::read.gdsn(gdsfmt::index.gdsn(object@data@handler, var))
-  flip_gt <- gt[, flipped]
-  flip_0 <- flip_gt == 0
-  flip_2 <- flip_gt == 2
-  flip_gt[flip_0] <- 2
-  flip_gt[flip_2] <- 0
-  gt[, flipped] <- flip_gt
-  gt_attr <-
-    gdsfmt::get.attr.gdsn(gdsfmt::index.gdsn(object@data@handler, var))
-  gt_gdsn <- gdsfmt::add.gdsn(object@data@handler,
-                              var,
-                              gt,
-                              "bit2",
-                              compress = "LZMA_RA",
-                              replace = TRUE)
-  if (!is.null(gt_attr)) {
-    for (i in seq_along(gt_attr)) {
-      gdsfmt::put.attr.gdsn(node = gt_gdsn,
-                            name = names(gt_attr)[i],
-                            val = gt_attr[[i]])
-    }
-  }
-  gdsfmt::readmode.gdsn(gdsfmt::index.gdsn(object@data@handler, var))
-}
-
-# Internally used function to flip AD data based on the flipped marker information.
-# Flipped markers are markers where the alleles expected as reference allele are called as
-# alternative allele.
-.flipAD <- function(object, var) {
-  flipped <- getFlipped(object, valid = FALSE)
-  ad <-
-    gdsfmt::index.gdsn(object@data@handler, "annotation/format/AD")
-  data <- gdsfmt::read.gdsn(gdsfmt::index.gdsn(ad, var))
-  ref <- data[, c(TRUE, FALSE)]
-  alt <- data[, c(FALSE, TRUE)]
-  tmp <- ref[, flipped]
-  ref[, flipped] <- alt[, flipped]
-  alt[, flipped] <- tmp
-  data[, c(TRUE, FALSE)] <- ref
-  data[, c(FALSE, TRUE)] <- alt
-  gdsfmt::add.gdsn(
-    node = ad,
-    name = var,
-    val = data,
-    storage = "vl_int",
-    compress = "LZMA_RA",
-    replace = TRUE
-  )
-  gdsfmt::readmode.gdsn(gdsfmt::index.gdsn(ad, var))
-}
-
-#' @rdname flipData
-setMethod("flipData",
-          "GbsrGenotypeData",
-          function(object) {
-            if (!haveFlipped(object)) {
-              stop('Nothing to flip.')
-            }
-            
-            # Genotypes
-            .flipGeno(object, "genotype")
-            ls_gdsn <- gdsfmt::ls.gdsn(object@data@handler)
-            if ("filt.genotype" %in% ls_gdsn) {
-              .flipGeno(object, "filt.genotype")
-            }
-            
-            # Alleles
-            allele <- paste(getAlleleA(object, valid = FALSE),
-                            getAlleleB(object, valid = FALSE),
-                            sep = "/")
-            gdsfmt::add.gdsn(
-              node = object@data@handler,
-              name = "snp.allele",
-              val = allele,
-              storage = "string",
-              compress = "LZMA_RA",
-              replace = TRUE
-            )
-            gdsfmt::readmode.gdsn(gdsfmt::index.gdsn(object@data@handler, "snp.allele"))
-            
-            # Allele reads
-            .flipAD(object, "data")
-            
-            # Filtered allele reads
-            ls_gdsn <-
-              gdsfmt::ls.gdsn(gdsfmt::index.gdsn(object@data@handler,
-                                                 "annotation/format/AD"))
-            if ("filt.data" %in% ls_gdsn) {
-              .flipAD(object, "filt.data")
-            }
-            
-            object@snpAnnot$flipped <- NULL
-            return(object)
-          })
 
 
 #' @rdname getFlipped
@@ -837,8 +921,6 @@ setMethod("getInfo",
               info_node <- gdsfmt::index.gdsn(node = object@data@handler,
                                               path = path)
             } else {
-              msg <- paste0('No data of ', var, '.')
-              message(msg)
               return(NULL)
             }
             
@@ -1844,6 +1926,7 @@ setMethod("calcReadStats",
               names(df) <- col_names
               pData(object@snpAnnot) <- cbind(pdata, df)
             }
+            
             return(object)
           })
 
@@ -2060,6 +2143,7 @@ setMethod("setCallFilter",
                 alt_qtile = scan_alt_qtile,
                 omit_geno = omit_geno
               )
+            
             check2 <- .setSnpCallFilter(
               object = object,
               dp_qtile = snp_dp_qtile,
@@ -2067,7 +2151,7 @@ setMethod("setCallFilter",
               alt_qtile = snp_alt_qtile
             )
             
-            ## Generate filtered AD data
+            # Generate filtered AD data
             if (check1 | check2) {
               .makeCallFilteredData(object)
               object@data@genotypeVar <- "filt.genotype"
@@ -2079,14 +2163,11 @@ setMethod("setCallFilter",
 .initFilt <- function(object) {
   ls_gdsn <- gdsfmt::ls.gdsn(object@data@handler)
   if ("filt.genotype" %in% ls_gdsn) {
-    gdsfmt::delete.gdsn(gdsfmt::index.gdsn(object@data@handler,
-                                           "filt.genotype"),
-                        force = TRUE)
-    gdsfmt::delete.gdsn(
-      gdsfmt::index.gdsn(object@data@handler,
-                         "annotation/format/AD/filt.data"),
-      force = TRUE
-    )
+    filt <- gdsfmt::index.gdsn(object@data@handler, "filt.genotype")
+    gdsfmt::delete.gdsn(filt, force = TRUE)
+    filt <- gdsfmt::index.gdsn(object@data@handler,
+                               "annotation/format/AD/filt.data")
+    gdsfmt::delete.gdsn(filt, force = TRUE)
   }
 }
 
@@ -2338,21 +2419,6 @@ setMethod("setInfoFilter",
             valid <- snp_mq & snp_fs & snp_qd & snp_sor &
               snp_mqranksum & snp_readposranksum & snp_baseqranksum
             object <- setValidSnp(object, update = valid)
-            if ("parents" %in% names(pdata)) {
-              pData(object@scanAnnot) <-
-                subset(pdata, select = c(scanID, validScan, parents))
-            } else {
-              pData(object@scanAnnot) <-
-                subset(pdata, select = c(scanID, validScan))
-            }
-            return(object)
-          })
-
-#' @rdname resetCallFilters
-setMethod("resetCallFilters",
-          "GbsrGenotypeData",
-          function(object) {
-            object@data@genotypeVar <- "genotype"
             return(object)
           })
 
@@ -2392,7 +2458,7 @@ setMethod("resetSnpFilters",
 setMethod("resetFilters",
           "GbsrGenotypeData",
           function(object) {
-            object <- resetCallFilters(object)
+            object <- setRawGenotype(object)
             object <- resetScanFilters(object)
             object <- resetSnpFilters(object)
             return(object)
@@ -2619,6 +2685,7 @@ setMethod("resetFilters",
     gdsfmt::setdim.gdsn(node = filt_scan,
                         valdim = c(nsnp(object, valid = FALSE),
                                    nscan(object, valid = FALSE)))
+    gdsfmt::readmode.gdsn(node = filt_scan)
     return(TRUE)
   } else {
     return(FALSE)
@@ -2635,8 +2702,7 @@ setMethod("resetFilters",
   ad_data_node <- gdsfmt::index.gdsn(node = object@data@handler,
                                      path = "annotation/format/AD/data")
   n_snp <- nsnp(object, valid = FALSE)
-  check <- all(ref_qtile == qtile_default) &
-    all(alt_qtile == qtile_default)
+  check <- all(ref_qtile == qtile_default)
   
   if (!check) {
     ref_markers <- rep(c(TRUE, FALSE), n_snp)
@@ -2673,9 +2739,11 @@ setMethod("resetFilters",
         ref_qtile <-
           c(
             quantile(x, probs = ref_qtile[1], na.rm = TRUE),
-            quantile(x, probs = ref_qtile[2], na.rm =
-                       TRUE)
+            quantile(x, probs = ref_qtile[2], na.rm = TRUE)
           )
+        if(all(is.na(ref_qtile))){
+          ref_qtile <- rep(TRUE, length(x))
+        }
         ref_qtile <-
           .getSubFilter(x, ref_qtile, c(-1,-1), TRUE, TRUE)
         
@@ -2686,6 +2754,7 @@ setMethod("resetFilters",
     gdsfmt::setdim.gdsn(node = filt_ref,
                         valdim = c(nscan(object, valid = FALSE),
                                    nsnp(object, valid = FALSE)))
+    gdsfmt::readmode.gdsn(node = filt_ref)
     out <- TRUE
   } else {
     out <- FALSE
@@ -2740,6 +2809,8 @@ setMethod("resetFilters",
     gdsfmt::setdim.gdsn(node = filt_alt,
                         valdim = c(nscan(object, valid = FALSE),
                                    nsnp(object, valid = FALSE)))
+    
+    gdsfmt::readmode.gdsn(node = filt_alt)
     out <- c(out, TRUE)
   } else {
     out <- c(out, FALSE)
@@ -2757,14 +2828,14 @@ setMethod("resetFilters",
     node = ad_node,
     name = "filt.data",
     storage = ad_data_desp$storage,
-    compress = ad_data_desp$compress,
+    compress = "LZMA_RA",
     replace = TRUE
   )
   ad_filt_data_tmp <- gdsfmt::add.gdsn(
     node = ad_node,
     name = "filt.data_tmp",
     storage = ad_data_desp$storage,
-    compress = ad_data_desp$compress,
+    compress = "LZMA_RA",
     replace = TRUE
   )
   
@@ -2775,7 +2846,7 @@ setMethod("resetFilters",
     node = object@data@handler,
     name = "filt.genotype",
     storage = gt_data_desp$storage,
-    compress = gt_data_desp$compress,
+    compress = "LZMA_RA",
     replace = TRUE
   )
   gt_data_desp <- gdsfmt::objdesp.gdsn(node = gt_data)
@@ -2783,7 +2854,7 @@ setMethod("resetFilters",
     node = object@data@handler,
     name = "filt.genotype_tmp",
     storage = gt_data_desp$storage,
-    compress = gt_data_desp$compress,
+    compress = "LZMA_RA",
     replace = TRUE
   )
   
@@ -2941,7 +3012,7 @@ setMethod("subsetGDS",
                 node = newgds,
                 name = i_node,
                 storage = i_desc$storage,
-                compress = i_desc$compress,
+                compress = "LZMA_RA",
                 replace = TRUE
               )
               
@@ -2979,6 +3050,7 @@ setMethod("subsetGDS",
                   )
                 }
               } else {
+                gdsfmt::delete.gdsn(newgds_i_node)
                 next
               }
               newgds_i_attr <-
@@ -3020,7 +3092,7 @@ setMethod("subsetGDS",
                 node = newgds_info,
                 name = i_node,
                 storage = i_desc$storage,
-                compress = i_desc$compress,
+                compress = "LZMA_RA",
                 replace = TRUE
               )
               gdsfmt::assign.gdsn(node = newgds_i_node,
@@ -3063,6 +3135,9 @@ setMethod("subsetGDS",
               
               ls_oldgds_i_node <- gdsfmt::ls.gdsn(oldgds_i_node)
               for (i_node_i in ls_oldgds_i_node) {
+                if(!grepl("data", i_node_i)){
+                  next
+                }
                 oldgds_i_node_i <-
                   gdsfmt::index.gdsn(node = oldgds_i_node, path = i_node_i)
                 i_desc <- gdsfmt::objdesp.gdsn(oldgds_i_node_i)
@@ -3071,7 +3146,7 @@ setMethod("subsetGDS",
                     node = newgds_i_node,
                     name = i_node_i,
                     storage = i_desc$storage,
-                    compress = i_desc$compress,
+                    compress = "LZMA_RA",
                     replace = TRUE
                   )
                 check <- which(i_desc$dim %in% n_scan)
@@ -3107,13 +3182,7 @@ setMethod("subsetGDS",
             gdsfmt::cleanup.gds(newgds$filename, verbose = FALSE)
             output <- loadGDS(gds_fn = newgds$filename)
             if (object@data@genotypeVar == "filt.genotype") {
-              replaceGDSdata(output, "genotype",)
-            }
-            ad <-
-              "filt.data" %in% gdsfmt::ls.gdsn(gdsfmt::index.gdsn(output@data@handler,
-                                                                  "annotation/format/AD"))
-            if (ad) {
-              replaceGDSdata(output, "ad")
+              output <- setFiltGenotype(output)
             }
             return(output)
           })
@@ -3134,71 +3203,6 @@ setMethod("setRawGenotype",
             return(object)
           })
 
-#' @rdname replaceGDSdata
-setMethod("replaceGDSdata",
-          "GbsrGenotypeData",
-          function(object, target, node) {
-            if ("sample.id" %in% target) {
-              id <- getScanID(object, valid = FALSE)
-              gdsfmt::add.gdsn(
-                object@data@handler,
-                "sample.id",
-                id,
-                "string",
-                compress = "LZMA_RA",
-                replace = TRUE
-              )
-              gdsfmt::readmode.gdsn(gdsfmt::index.gdsn(object@data@handler, "sample.id"))
-            }
-            
-            if ("genotype" %in% target) {
-              if (node == "filt" &
-                  "filt.genotype" %in% gdsfmt::ls.gdsn(object@data@handler)) {
-                gt <- gdsfmt::index.gdsn(object@data@handler, "genotype")
-                newgt <-
-                  gdsfmt::index.gdsn(object@data@handler, "filt.genotype")
-                gt_attr <- gdsfmt::get.attr.gdsn(gt)
-                gdsfmt::delete.gdsn(gt)
-                gdsfmt::rename.gdsn(newgt, "genotype")
-                gdsfmt::put.attr.gdsn(newgt, names(gt_attr)[1], gt_attr[[1]])
-                gdsfmt::readmode.gdsn(newgt)
-                
-              } else if (node == "cor" &
-                         "corrected.genotype" %in% gdsfmt::ls.gdsn(object@data@handler)) {
-                gt <- gdsfmt::index.gdsn(object@data@handler, "genotype")
-                newgt <-
-                  gdsfmt::index.gdsn(object@data@handler, "corrected.genotype")
-                gt_attr <- gdsfmt::get.attr.gdsn(gt)
-                gdsfmt::delete.gdsn(gt)
-                gdsfmt::rename.gdsn(newgt, "genotype")
-                gdsfmt::put.attr.gdsn(newgt, names(gt_attr)[1], gt_attr[[1]])
-                gdsfmt::readmode.gdsn(newgt)
-              } else {
-                warning('Nothing to replace.')
-              }
-            }
-            if ("ad" %in% target) {
-              ad_gdsn <-
-                gdsfmt::index.gdsn(object@data@handler, "annotation/format/AD")
-              ls_gdsn <- gdsfmt::ls.gdsn(ad_gdsn)
-              if ("filt.data" %in% ls_gdsn) {
-                ad <- gdsfmt::index.gdsn(ad_gdsn, "data")
-                fad <- gdsfmt::index.gdsn(ad_gdsn, "filt.data")
-                gdsfmt::delete.gdsn(ad)
-                gdsfmt::rename.gdsn(fad, "data")
-                gdsfmt::readmode.gdsn(fad)
-                if (length(ls_gdsn) > 2) {
-                  ls_gdsn <- ls_gdsn[!ls_gdsn %in% c("data", "filt.data")]
-                  for (i in ls_gdsn) {
-                    gdsfmt::delete.gdsn(gdsfmt::index.gdsn(ad_gdsn, i))
-                  }
-                }
-                
-              } else {
-                warning('Nothing to replace.')
-              }
-            }
-          })
 
 #' @rdname initScheme
 setMethod("initScheme",

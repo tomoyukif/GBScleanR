@@ -44,10 +44,10 @@ setSnpFilter(
 \item{id}{A vector of strings match with scan ID which can
 be retrieve by \code{getScanID()}.}
 
-\item{missing}{A numeric value \link{0-1} to specify
+\item{missing}{A numeric value [0-1] to specify
 the maximum missing genotype call rate per marker}
 
-\item{het}{A numeric value \link{0-1} to specify
+\item{het}{A numeric value [0-1] to specify
 the maximum heterozygous genotype call rate per marker}
 
 \item{mac}{A integer value to specify the minimum minor allele
@@ -97,11 +97,12 @@ labeled as "invalid". To check valid and invalid
 markers, run \code{\link[=getValidSnp]{getValidSnp()}}.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 gdata <- setSnpFilter(gdata,
 id = getSnpID(gdata)[1:100],
  missing = 0.2,
  dp = c(5, Inf))
 
+closeGDS(gdata) # Close the connection to the GDS file
 }

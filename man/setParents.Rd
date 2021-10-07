@@ -6,7 +6,7 @@
 \title{Set labels to samples which should be recognized as
 parents of the population to be subjected to error correction.}
 \usage{
-setParents(object, parents, flip = FALSE, mono = FALSE, bi = TRUE, ...)
+setParents(object, parents, flip = FALSE, mono = FALSE, bi = FALSE, ...)
 
 \S4method{setParents}{GbsrGenotypeData}(object, parents, flip, mono, bi)
 }
@@ -56,10 +56,13 @@ not flipped \code{FALSE}. \code{\link[=haveFlipped]{haveFlipped()}} just tells y
 the SnpAnnotatoinDataSet slot has the information of flipped markers or not.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 parents <- grep("Founder", getScanID(gdata), value = TRUE)
 gdata <- setParents(gdata, parents = parents)
+gdata <- initScheme(gdata, crosstype = "pair", mating = cbind(c(1:2)))
+gdata <- addScheme(gdata, crosstype = "self")
 gdata <- estGeno(gdata)
+closeGDS(gdata) # Close the connection to the GDS file
 
 }

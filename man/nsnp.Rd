@@ -30,9 +30,10 @@ of over all SNPs, set \code{valid = FALSE}. \code{\link[=getValidSnp]{getValidSn
 which markers are valid.
 }
 \examples{
-gds_fn <- system.file("extdata", "simpop.gds", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 nsnp(gdata)
+closeGDS(gdata) # Close the connection to the GDS file
 
 }
 \seealso{
