@@ -167,7 +167,9 @@ setGeneric("loadScanAnnot", function(object, ...)
 #' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' out_fn <- system.file("extdata", "sample_out.vcf", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
+#' \donttest{
 #' gbsrGDS2VCF(gdata, out_fn)
+#' }
 #' # gbsrGDS2VCF() closes the connection to the GDS file of the gdata object.
 #'
 setGeneric("gbsrGDS2VCF", function(object,
@@ -2131,12 +2133,14 @@ setGeneric("thinMarker", function(object, range = 150, ...)
 #' gdata <- countGenotype(gdata)
 #' gdata <- setSnpFilter(gdata, missing = 0.2, het = c(0.1, 0.9), maf = 0.05)
 #'
+#' \donttest{
 #' subsetgds_fn <- system.file("extdata",
 #' "sample_subset.gds",
 #' package = "GBScleanR")
 #' subset_gdata <- subsetGDS(gdata, out_fn = subsetgds_fn)
-#'
 #' closeGDS(subset_gdata) # Close the connection to the GDS file
+#' }
+#' 
 #' closeGDS(gdata) # Close the connection to the GDS file
 #' @export
 #'
