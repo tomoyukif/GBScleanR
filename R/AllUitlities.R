@@ -394,14 +394,14 @@ loadGDS <- function(gds_fn, non_autosomes = NULL, genotypeData) {
 
 .gds_decomp <- function(object){
   if(inherits(object, "GbsrGenotypeData")){
-    ls_gdsn <- gdsfmt::ls.gdsn(object@data@handler, recursive = T, include.dirs = F)
+    ls_gdsn <- gdsfmt::ls.gdsn(object@data@handler, recursive = TRUE, include.dirs = FALSE)
     for(i in ls_gdsn){
       i_node <- gdsfmt::index.gdsn(object@data@handler, i)
       gdsfmt::compression.gdsn(i_node, "")
     }
     
   } else if(inherits(object, "gds.class")){
-    ls_gdsn <- gdsfmt::ls.gdsn(object$root, recursive = T, include.dirs = F)
+    ls_gdsn <- gdsfmt::ls.gdsn(object$root, recursive = TRUE, include.dirs = FALSE)
     for(i in ls_gdsn){
       i_node <- gdsfmt::index.gdsn(object$root, i)
       gdsfmt::compression.gdsn(i_node, "")
@@ -411,7 +411,7 @@ loadGDS <- function(gds_fn, non_autosomes = NULL, genotypeData) {
 
 .gds_comp <- function(object){
   if(inherits(object, "GbsrGenotypeData")){
-    ls_gdsn <- gdsfmt::ls.gdsn(object@data@handler, recursive = T, include.dirs = F)
+    ls_gdsn <- gdsfmt::ls.gdsn(object@data@handler, recursive = TRUE, include.dirs = FALSE)
     for(i in ls_gdsn){
       i_node <- gdsfmt::index.gdsn(object@data@handler, i)
       gdsfmt::compression.gdsn(i_node, "LZMA_RA")
@@ -422,7 +422,7 @@ loadGDS <- function(gds_fn, non_autosomes = NULL, genotypeData) {
     }
     
   } else if(inherits(object, "gds.class")){
-    ls_gdsn <- gdsfmt::ls.gdsn(object$root, recursive = T, include.dirs = F)
+    ls_gdsn <- gdsfmt::ls.gdsn(object$root, recursive = TRUE, include.dirs = FALSE)
     for(i in ls_gdsn){
       i_node <- gdsfmt::index.gdsn(object$root, i)
       gdsfmt::compression.gdsn(i_node, "LZMA_RA")
