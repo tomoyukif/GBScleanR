@@ -1,19 +1,16 @@
 ---
-title: "Basic usage of utility functions in GBScleanR"
+title: "Basic usage of GBScleanR"
 author: "Tomoyuki Furuta"
-date: "October 5, 2021"
+date: "October 7, 2021"
 output: 
-  pdf_document:
-    toc: yes
-  knitr::html_vignette:
+  rmarkdown::html_vignette:
     toc: true
-    css: custom.css
     fig_caption: yes
 urlcolor: blue
 header-includes:
   \usepackage{float}
 vignette: >
-  %\VignetteIndexEntry{BasicUsageOfGBScleanR}
+  %\VignetteIndexEntry{Basic usage of GBScleanR}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---

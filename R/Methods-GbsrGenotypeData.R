@@ -358,9 +358,9 @@ setMethod("gbsrGDS2VCF",
             tmp_gds@snpAnnot <- object@snpAnnot
             tmp_gds@scanAnnot <- object@scanAnnot
             
-            if (haveFlipped(object)) {
-              tmp_gds <- .flipData(tmp_gds)
-            }
+            # if (haveFlipped(object)) {
+            #   tmp_gds <- .flipData(tmp_gds)
+            # }
             if (node %in% c("filt", "cor")) {
               suppressWarnings(.replaceGDSdata(tmp_gds, "genotype", node))
               suppressWarnings(.replaceGDSdata(tmp_gds, "ad", "filt"))
@@ -2993,10 +2993,10 @@ setMethod("subsetGDS",
             }
             
             oldgds <- object@data@handler
-            file.copy(object@data@filename, out_fn, overwrite = T)
+            file.copy(object@data@filename, out_fn, overwrite = TRUE)
             newgds <- gdsfmt::openfn.gds(filename = out_fn, readonly = FALSE)
             
-            ls_node <- gdsfmt::ls.gdsn(newgds, recursive = T, include.dirs = F)
+            ls_node <- gdsfmt::ls.gdsn(newgds, recursive = TRUE, include.dirs = FALSE)
             for (i_node in ls_node) {
               if(grepl("annotation/format", i_node)){
                 if(!grepl("data", i_node)){

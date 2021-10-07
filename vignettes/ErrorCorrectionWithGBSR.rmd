@@ -1,19 +1,16 @@
 ---
-title: "Error correction of GBS data using GBScleanR"
+title: "Error correction with GBScleanR"
 author: "Tomoyuki Furuta"
-date: "October 5, 2021"
+date: "October 7, 2021"
 output: 
-  pdf_document:
-    toc: yes
-  knitr::html_vignette:
+  rmarkdown::html_vignette:
     toc: true
-    css: custom.css
     fig_caption: yes
 urlcolor: blue
 header-includes:
  \usepackage{float}
 vignette: >
-  %\VignetteIndexEntry{ErrorCorrectionWithGBScleanR}
+  %\VignetteIndexEntry{Error correction with GBScleanR}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
@@ -67,11 +64,8 @@ The main class of the `GBScleanR` package is `gbsrGenotypData` which inherits th
 
 GBScleanR only support a VCF file as input. As an example data, we use simulated genotype data for a simulated biparental F2 population derived from inbred founders.
 ```{r}
-# vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
-# gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-
-vcf_fn <- "../inst/extdata/sample.vcf"
-gds_fn <- "../inst/extdata/sample.gds"
+vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 ```
 
 
