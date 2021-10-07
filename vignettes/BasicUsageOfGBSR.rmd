@@ -373,8 +373,8 @@ gdata <- setScanFilter(
 
 
 `setCallFilter()` is another type of filtering which works on each genotype call. We can replace some genotype calls with missing. If you would like to filter out less reliable genotype calls supported by less than 5 reads, set the arguments as below.
-```{r eval=FALSE}
-gdata <- setCallFilter(gdata, dp_count = c(5, Inf))
+```{r}
+gdata <- setCallFilter(gdata, dp_count = c(1, Inf))
 ```
 \  
 

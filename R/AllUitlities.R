@@ -97,7 +97,12 @@ gbsrVCF2GDS <- function(vcf_fn,
   SeqArray::seqGDS2SNP(gdsfile = gds_fn, out.gdsfn = new_gds_fn)
   old_gds <- gdsfmt::openfn.gds(gds_fn, readonly = FALSE)
   new_gds <- gdsfmt::openfn.gds(new_gds_fn, readonly = FALSE)
+  .gds_decomp(old_gds)
+  .gds_decomp(new_gds)
+  
   on.exit(expr = {
+    .gds_decomp(new_gds)
+    .gds_comp(new_gds)
     gdsfmt::closefn.gds(old_gds)
     gdsfmt::closefn.gds(new_gds)
     file.remove(gds_fn)
@@ -118,7 +123,6 @@ gbsrVCF2GDS <- function(vcf_fn,
     i_gdsn <- gdsfmt::index.gdsn(new_ano, node_i)
     check <- any(gdsfmt::objdesp.gdsn(i_gdsn)$dim == 0)
     if(check){
-      gdsfmt::compression.gdsn(i_gdsn, "")
       gdsfmt::delete.gdsn(i_gdsn)
     }
   }
@@ -148,7 +152,6 @@ gbsrVCF2GDS <- function(vcf_fn,
           node = new_sub,
           name = "data",
           replace = TRUE,
-          compress = "LZMA_RA",
           storage = desp$storage,
         )
         gdsfmt::assign.gdsn(node = newdata, src.node = srcnode)
@@ -163,7 +166,6 @@ gbsrVCF2GDS <- function(vcf_fn,
                                   name = names(old_attr)[i],
                                   val = old_attr[[i]])
         }
-        gdsfmt::readmode.gdsn(newdata)
       }
     }
   }
@@ -173,7 +175,6 @@ gbsrVCF2GDS <- function(vcf_fn,
     node = new_gds,
     name = "snp.chromosome.name",
     storage = "string",
-    compress = "LZMA_RA",
     replace = TRUE
   )
   gdsfmt::moveto.gdsn(node = chr_node,
@@ -185,11 +186,10 @@ gbsrVCF2GDS <- function(vcf_fn,
     node = new_gds,
     name = "snp.chromosome",
     val = as.integer(chr),
-    compress = "LZMA_RA",
     storage = "int8",
     replace = TRUE
   )
-  gdsfmt::readmode.gdsn(gdsfmt::index.gdsn(new_gds, "snp.chromosome"))
+  
   return(new_gds_fn)
 }
 
@@ -391,3 +391,46 @@ loadGDS <- function(gds_fn, non_autosomes = NULL, genotypeData) {
   )
   return(out)
 }
+
+.gds_decomp <- function(object){
+  if(inherits(object, "GbsrGenotypeData")){
+    ls_gdsn <- gdsfmt::ls.gdsn(object@data@handler, recursive = T, include.dirs = F)
+    for(i in ls_gdsn){
+      i_node <- gdsfmt::index.gdsn(object@data@handler, i)
+      gdsfmt::compression.gdsn(i_node, "")
+    }
+    
+  } else if(inherits(object, "gds.class")){
+    ls_gdsn <- gdsfmt::ls.gdsn(object$root, recursive = T, include.dirs = F)
+    for(i in ls_gdsn){
+      i_node <- gdsfmt::index.gdsn(object$root, i)
+      gdsfmt::compression.gdsn(i_node, "")
+    }
+  }
+}
+
+.gds_comp <- function(object){
+  if(inherits(object, "GbsrGenotypeData")){
+    ls_gdsn <- gdsfmt::ls.gdsn(object@data@handler, recursive = T, include.dirs = F)
+    for(i in ls_gdsn){
+      i_node <- gdsfmt::index.gdsn(object@data@handler, i)
+      gdsfmt::compression.gdsn(i_node, "LZMA_RA")
+    }
+    for(i in ls_gdsn){
+      i_node <- gdsfmt::index.gdsn(object@data@handler, i)
+      gdsfmt::readmode.gdsn(node = i_node)
+    }
+    
+  } else if(inherits(object, "gds.class")){
+    ls_gdsn <- gdsfmt::ls.gdsn(object$root, recursive = T, include.dirs = F)
+    for(i in ls_gdsn){
+      i_node <- gdsfmt::index.gdsn(object$root, i)
+      gdsfmt::compression.gdsn(i_node, "LZMA_RA")
+    }
+    for(i in ls_gdsn){
+      i_node <- gdsfmt::index.gdsn(object$root, i)
+      gdsfmt::readmode.gdsn(node = i_node)
+    }
+  }
+}
+

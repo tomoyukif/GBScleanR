@@ -73,7 +73,7 @@ As mentioned above, the `gbsrGenotypeData` class requires genotype data in the `
 ```{r}
 gbsrVCF2GDS(vcf_fn = vcf_fn, # Path to the input VCF file.
             out_fn = gds_fn,
-            force = T) # Path to the output GDS file.
+            force = TRUE) # Path to the output GDS file.
 ```
 \  
 
