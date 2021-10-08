@@ -10,21 +10,28 @@ isOpenGDS(object, ...)
 \S4method{isOpenGDS}{GbsrGenotypeData}(object)
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{...}{Unused.}
 }
 \value{
-\code{TRUE} if the GDS file linked to the input GbsrGenotypeData object
+\code{TRUE} if the GDS file linked to the input \link{GbsrGenotypeData} object
 has been opened, while \code{FALSE} if closed.
 }
 \description{
 Check if a GDS file has been opened or not.
 }
 \examples{
+# Use a GDS file of example data.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+
+# Instantiation of [GbsrGenotypeData]
 gdata <- loadGDS(gds_fn)
+
+# Check connection to the GDS file
 isOpenGDS(gdata)
-closeGDS(gdata) # Close the connection to the GDS file
+
+# Close the connection to the GDS file
+closeGDS(gdata) 
 
 }

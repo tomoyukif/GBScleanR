@@ -10,7 +10,7 @@ getCountAlleleRef(object, target = "snp", valid = TRUE, prop = FALSE, ...)
 \S4method{getCountAlleleRef}{GbsrGenotypeData}(object, target = "snp", valid = TRUE, prop = FALSE)
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{target}{Either of "snp" and "scan".}
 
@@ -31,14 +31,22 @@ Obtain total reference allele counts per SNP or per scan (sample)
 You need to execute \code{\link[=countGenotype]{countGenotype()}} to calculate sumaary statisticsto be
 obtained via this function.
 If \code{valid = TRUE}, the chromosome information of markers which are
-labeled \code{TRUE} in the ScanAnnotationDataSet slot will be returned.
+labeled \code{TRUE} in the \link{ScanAnnotationDataFrame} slot will be returned.
 \code{\link[=getValidSnp]{getValidSnp()}} tells you which samples are valid.
 }
 \examples{
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
+
+# Summarize the genotype count information and store them in the
+# [SnpAnnotationDataFrame] and [ScanAnnotationDataFrame] objects 
+# linked at the slots of the [GbsrGenotypeData] object.
 gdata <- countGenotype(gdata)
+
 getCountAlleleRef(gdata)
-closeGDS(gdata) # Close the connection to the GDS file
+
+# Close the connection to the GDS file.
+closeGDS(gdata)
 
 }

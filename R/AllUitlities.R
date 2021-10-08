@@ -32,23 +32,28 @@ print.GbsrGenotypeData <- function(x) {
 #' @details
 #' gbsrVCF2GDS converts a VCF file to a GDS file.
 #' The data structure of the GDS file created via this functions is same with
-#' those created by snpgdsVCF2GDS of
+#' those created by `snpgdsVCF2GDS` of
 #' [SNPRelate](https://www.bioconductor.org/packages/release/bioc/html/SNPRelate.html).
-#'  Unlike the GDS files created by SNPRelate GBScleanR's GDS files: \cr
+#'  Unlike the GDS files created by `SNPRelate` `GBScleanR`'s GDS files: \cr
 #' \itemize{
 #' \item{"Include annotation information of variants
-#' recorded in the INFO filed of the input VCF."}
+#' recorded in the `INFO` filed of the input VCF."}
 #' \item{"Include allelic read count data (indicated as AD)
-#' recoreded in the FORMAT filed of the input VCF."}
+#' recoreded in the `FORMAT` filed of the input VCF."}
 #' }
 #' @return The output GDS file path.
 #'
 #' @examples
-#'vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
-#'gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-#'gbsrVCF2GDS(vcf_fn = vcf_fn, # Path to the input VCF file.
-#'            out_fn = gds_fn, # Path to the output GDS file.
-#'            force = TRUE) # If you already have a GDS file named as `gds_fn`.
+#' # Create a GDS file from a sample VCF file.
+#' vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
+#' gds_fn <- tempfile("sample", fileext = ".gds")
+#' gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
+#' 
+#' # Load data in the GDS file and instantiate a `GbsrGenotypeData` object.
+#' gdata <- loadGDS(gds_fn)
+#' 
+#' # Close the connection to the GDS file.
+#' closeGDS(gdata)
 #'
 #' @export
 #'
@@ -287,18 +292,18 @@ gbsrVCF2GDS <- function(vcf_fn,
                                                        stringsAsFactors = FALSE)))
 }
 
-#' Load a GDS file and construct a GbsrGenotypeData object.
+#' Load a GDS file and construct a `GbsrGenotypeData` object.
 #'
 #' Load data stored in an input GDS file to R environment and
-#' create a GbsrGenotypeData instance.
-#' GBScleanR handles only one class GbsrGenotypeData and
+#' create a `GbsrGenotypeData` instance.
+#' GBScleanR handles only one class `GbsrGenotypeData` and
 #' conducts all data manipulation via class methods for it.
 #'
 #' @param gds_fn A string of the path to an input GDS file.
 #' @param non_autosomes A list with elements X, Y, XY, and/or M. See details.
-#' @param genotypeData A GbsrGenotypeData object to reload.
+#' @param genotypeData A `GbsrGenotypeData` object to reload.
 #'
-#' @return A GbsrGenotypeData object.
+#' @return A `GbsrGenotypeData` object.
 #'
 #' @export
 #'
@@ -309,18 +314,19 @@ gbsrVCF2GDS <- function(vcf_fn,
 #' @importFrom methods new
 #'
 #' @examples
+#' # Create a GDS file from a sample VCF file.
 #' vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
-#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+#' gds_fn <- tempfile("sample", fileext = ".gds")
+#' gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
+#' 
+#' # Load data in the GDS file and instantiate a `GbsrGenotypeData` object.
+#' gdata <- loadGDS(gds_fn)
 #'
-#'gbsrVCF2GDS(vcf_fn = vcf_fn, # Path to the input VCF file.
-#'            out_fn = gds_fn, # Path to the output GDS file.
-#'            force = TRUE) # If you already have a GDS file named as `gds_fn`.
-#' gdata <- loadGDS(gds_fn = gds_fn)
-#'
-#' # If you would like to reload a GDS file.
 #' gdata <- loadGDS(genotypeData = gdata)
 #'
-#' closeGDS(gdata) # Close the connection to the GDS file
+#' # Close the connection to the GDS file.
+#' closeGDS(gdata)
+#' 
 loadGDS <- function(gds_fn, non_autosomes = NULL, genotypeData) {
   if (missing(genotypeData)) {
     message('Loading GDS file.')

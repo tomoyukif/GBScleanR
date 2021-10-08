@@ -10,14 +10,14 @@ thinMarker(object, range = 150, ...)
 \S4method{thinMarker}{GbsrGenotypeData}(object, range = 150)
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{range}{A integer value to indicate the stretch to search markers.}
 
 \item{...}{Unused.}
 }
 \value{
-A GbsrGenotypeData object with filters on markers.
+A \link{GbsrGenotypeData} object with filters on markers.
 }
 \description{
 Markers within the length of the sequenced reads
@@ -67,8 +67,11 @@ to check the valid SNP markers.
 }
 }
 \examples{
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
+
+# Summarize genotype count information to be used in thinMarker().
 gdata <- countGenotype(gdata)
 gdata <- thinMarker(gdata, range = 150)
 

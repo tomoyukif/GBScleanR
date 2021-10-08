@@ -10,7 +10,7 @@ setValidScan(object, new, update, ...)
 \S4method{setValidScan}{GbsrGenotypeData}(object, new, update)
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{new}{A logical vector of the same length with
 the over all number of the samples.}
@@ -21,7 +21,7 @@ the currently valid samples.}
 \item{...}{Unused.}
 }
 \value{
-A GbsrGenotypeData object with updated
+A \link{GbsrGenotypeData} object with updated
 scan(sample) validity information.
 }
 \description{
@@ -39,15 +39,18 @@ a vector for both argument, only the vector passed to \code{new}
 will be used to over write the validity information.
 }
 \examples{
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 
-# Randomly remove samples
-gdata <- setValidScan(gdata, update = sample(c(TRUE, FALSE), 
-nscan(gdata), 
-replace = TRUE))
+# Randomly remove samples.
+gdata <- setValidScan(gdata,
+                      update = sample(c(TRUE, FALSE), 
+                                      nscan(gdata), 
+                                      replace = TRUE))
 
-closeGDS(gdata) # Close the connection to the GDS file
+# Close the connection to the GDS file.
+closeGDS(gdata)
 
 }
 \seealso{

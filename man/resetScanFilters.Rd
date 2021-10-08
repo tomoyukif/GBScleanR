@@ -10,28 +10,39 @@ resetScanFilters(object, ...)
 \S4method{resetScanFilters}{GbsrGenotypeData}(object)
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{...}{Unused.}
 }
 \value{
-A GbsrGenotypeData object after removing
+A \link{GbsrGenotypeData} object after removing
 all filters on scan(samples).
 }
 \description{
 Remove "invalid" labels put on samples and make all samples valid.
 }
 \examples{
-gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+# Create a GDS file from a sample VCF file.
+vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
+gds_fn <- tempfile("sample", fileext = ".gds")
+gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
+
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gdata <- loadGDS(gds_fn)
+
+# Summarize the information needed for filtering.
+gdata <- countGenotype(gdata)
+gdata <- countRead(gdata)
+
 gdata <- setScanFilter(gdata,
-id = getScanID(gdata)[1:10],
-missing = 0.2,
-dp = c(5, Inf))
+                       id = getScanID(gdata)[1:10],
+                       missing = 0.2,
+                       dp = c(5, Inf))
 
 # Reset all filters applied above.
 gdata <- resetScanFilters(gdata)
 
-closeGDS(gdata) # Close the connection to the GDS file
+# Close the connection to the GDS file
+closeGDS(gdata)
 
 }

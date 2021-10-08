@@ -1,13 +1,18 @@
 #' Draw histograms of specified statistics
 #'
-#' @param x A GbsrGenotypeData object.
+#' @param x A [GbsrGenotypeData] object.
 #' @param stats A vector of strings to specify statistics to be drawn.
-#' @param target Either or both of "snp" and "scan", e.g. `target = "snp"` to draw a histogram only for SNPs.
+#' @param target Either or both of "snp" and "scan", e.g. `target = "snp"` 
+#' to draw a histogram only for SNPs.
 #' @param q An integer to specify a quantile calculated via [calcReadStats()].
-#' @param binwidth An integer to specify bin width of the histogram. This value is passed to the ggplot function.
-#' @param color A named vector "Marker" and "Sample" to specify border color of bins in the histograms.
-#' @param fill A named vector "Marker" and "Sample" to specify fill color of bins in the histograms.
-#' @param ggargs An expression to be internally passed to a ggplot object to be drawn.
+#' @param binwidth An integer to specify bin width of the histogram. 
+#' This value is passed to the ggplot function.
+#' @param color A named vector "Marker" and "Sample" to specify border 
+#' color of bins in the histograms.
+#' @param fill A named vector "Marker" and "Sample" to specify fill 
+#' color of bins in the histograms.
+#' @param ggargs An expression to be internally passed to a ggplot 
+#' object to be drawn.
 #'
 #' @details
 #' You can draw histograms of several summary statistics of genotype counts
@@ -36,13 +41,15 @@
 #' \item{"baseqranksum"}{"Alt Vs. Ref base qualities"},
 #' }
 #'
-#' To draw histograms for "missing", "het", "raf", you need to run [countGenotype()]
-#' first to obtain statistics. Similary, "dp", "ad_ref", "ad_alt", "rrf" requires
-#' values obtained via [countRead()]. [calcReadStats()] should be executed before
-#' drawing histograms of "mean_ref", "sd_ref", "qtile_ref", "mean_alt", "sd_alt",
+#' To draw histograms for "missing", "het", "raf", you need to run
+#' [countGenotype()] first to obtain statistics. Similary, "dp",
+#'  "ad_ref", "ad_alt", "rrf" requires values obtained via 
+#'  [countRead()]. [calcReadStats()] should be executed before drawing 
+#'  histograms of "mean_ref", "sd_ref", "qtile_ref", "mean_alt", "sd_alt",
 #' and "qtile_alt". "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
-#' and "baseqranksum" only work with `target = "snp"`, if your data contains those
-#' values supplied via SNP calling tools like [GATK](https://gatk.broadinstitute.org/hc/en-us).
+#' and "baseqranksum" only work with `target = "snp"`, if your data
+#'  contains those values supplied via SNP calling tools like 
+#' [GATK](https://gatk.broadinstitute.org/hc/en-us).
 #'
 #' @export
 #'
@@ -52,19 +59,28 @@
 #' @import graphics
 #'
 #' @examples
-#' # Draw histograms of missing rate, heterozygosity, and reference
-#' # allele frequency per SNP and per sample.
+#' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 #' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
+#' 
+#' # Summarize genotype count information to be used in `histGBSR()`
 #' gdata <- countGenotype(gdata)
+#' 
+#' # Draw histograms of missing rate, heterozygosity, and reference
+#' # allele frequency per SNP and per sample.
 #' histGBSR(gdata, stats = c("missing", "het", "raf"))
 #'
+#'
+#' # Calculate means, standard deviations, quantile values of read counts 
+#' # to be used in `histGBSR()`
+#' gdata <- calcReadStats(gdata, q = 0.9)
+#' 
 #' # Draw histograms of 90 percentile values of reference read counts
 #' # and alternative read counts per SNP and per sample.
-#' gdata <- calcReadStats(gdata, q = 0.9)
 #' histGBSR(gdata, stats = c("qtile_ref", "qtile_alt"), q = 0.9)
 #'
-#' closeGDS(gdata) # Close the connection to the GDS file
+#' # Close the connection to the GDS file
+#' closeGDS(gdata)
 histGBSR  <- function(x,
                       stats = c("dp", "missing", "het"),
                       target = c("snp", "scan"),
@@ -145,9 +161,9 @@ histGBSR  <- function(x,
       scale_fill_manual(values = fill, breaks = names(fill)) +
       scale_color_manual(values = color, breaks = names(color)) +
       theme(
-        axis.title = element_text(face = "bold", size = rel(1.3)),
-        axis.text = element_text(size = rel(1.2)),
-        strip.text = element_text(size = rel(1.3), face = "bold"),
+        axis.title = element_text(face = "bold", size = rel(1)),
+        axis.text = element_text(size = rel(0.5)),
+        strip.text = element_text(size = rel(0.8), face = "bold"),
         legend.position = "none"
       )
     if (!is.null(ggargs)) {
@@ -159,13 +175,18 @@ histGBSR  <- function(x,
 
 #' Draw boxplots of specified statistics
 #'
-#' @param x A GbsrGenotypeData object.
+#' @param x A [GbsrGenotypeData] object.
 #' @param stats A vector of strings to specify statistics to be drawn.
-#' @param target Either or both of "snp" and "scan", e.g. `target = "snp"` to draw a histogram only for SNPs.
-#' @param q An integer to specify a quantile calculated via [calcReadStats()].
-#' @param color A named vector "Marker" and "Sample" to specify border color of bins in the histograms.
-#' @param fill A named vector "Marker" and "Sample" to specify fill color of bins in the histograms.
-#' @param ggargs An expression to be internally passed to a ggplot object to be drawn.
+#' @param target Either or both of "snp" and "scan", e.g. `target = "snp"` 
+#' to draw a histogram only for SNPs.
+#' @param q An integer to specify a quantile calculated via 
+#' [calcReadStats()].
+#' @param color A named vector "Marker" and "Sample" to specify 
+#' border color of bins in the histograms.
+#' @param fill A named vector "Marker" and "Sample" to specify 
+#' fill color of bins in the histograms.
+#' @param ggargs An expression to be internally passed to 
+#' a ggplot object to be drawn.
 #'
 #' @details
 #' You can draw boxplots of several summary statistics of genotype counts
@@ -195,13 +216,15 @@ histGBSR  <- function(x,
 #' \item{"baseqranksum"}{"Alt Vs. Ref base qualities"},
 #' }
 #'
-#' To draw boxplots for "missing", "het", "raf", you need to run [countGenotype()]
-#' first to obtain statistics. Similary, "dp", "ad_ref", "ad_alt", "rrf" requires
-#' values obtained via [countRead()]. [calcReadStats()] should be executed before
-#' drawing boxplots of "mean_ref", "sd_ref", "qtile_ref", "mean_alt", "sd_alt",
-#' and "qtile_alt". "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
-#' and "baseqranksum" only work with `target = "snp"`, if your data contains those
-#' values supplied via SNP calling tools like [GATK](https://gatk.broadinstitute.org/hc/en-us).
+#' To draw boxplots for "missing", "het", "raf", you need to run 
+#' [countGenotype()] first to obtain statistics. Similary, "dp", 
+#' "ad_ref", "ad_alt", "rrf" requires values obtained via [countRead()]. 
+#' [calcReadStats()] should be executed before drawing boxplots of 
+#' "mean_ref", "sd_ref", "qtile_ref", "mean_alt", "sd_alt", and 
+#' "qtile_alt". "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
+#' and "baseqranksum" only work with `target = "snp"`, if your data 
+#' contains those values supplied via SNP calling tools like 
+#' [GATK](https://gatk.broadinstitute.org/hc/en-us).
 #'
 #' @export
 #'
@@ -211,19 +234,26 @@ histGBSR  <- function(x,
 #' @import graphics
 #'
 #' @examples
-#' # Draw boxplots of missing rate, heterozygosity, and reference
-#' # allele frequency per SNP and per sample.
+#' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 #' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
+#' 
+#' # Summarize genotype count information to be used in `boxplotGBSR()`
 #' gdata <- countGenotype(gdata)
+#' 
 #' boxplotGBSR(gdata, stats = c("missing", "het", "raf"))
 #'
+#' # Calculate means, standard deviations, quantile values of read counts 
+#' # to be used in `boxplotGBSR()`
+#' gdata <- calcReadStats(gdata, q = 0.9)
+#' 
 #' # Draw boxplots of 90 percentile values of reference read counts and
 #' # alternative read counts per SNP and per sample.
-#' gdata <- calcReadStats(gdata, q = 0.9)
 #' boxplotGBSR(gdata, stats = c("qtile_ref", "qtile_alt"), q = 0.9)
 #'
-#' closeGDS(gdata) # Close the connection to the GDS file
+#' # Close the connection to the GDS file
+#' closeGDS(gdata)
+#' 
 boxplotGBSR <- function(x,
                         stats = "missing",
                         target = c("snp", "scan"),
@@ -297,9 +327,9 @@ boxplotGBSR <- function(x,
       scale_fill_manual(values = fill, breaks = names(fill)) +
       scale_color_manual(values = color, breaks = names(color)) +
       theme(
-        axis.title = element_text(face = "bold", size = rel(1.3)),
-        axis.text = element_text(size = rel(1.2)),
-        strip.text = element_text(size = rel(1.3), face = "bold"),
+        axis.title = element_text(face = "bold", size = rel(1)),
+        axis.text = element_text(size = rel(0.5)),
+        strip.text = element_text(size = rel(0.8), face = "bold"),
         legend.position = "none"
       )
     if (!is.null(ggargs)) {
@@ -312,14 +342,19 @@ boxplotGBSR <- function(x,
 
 #' Draw line plots of specified statistics
 #'
-#' @param x A GbsrGenotypeData object.
+#' @param x A [GbsrGenotypeData] object.
 #' @param stats A vector of strings to specify statistics to be drawn.
-#' @param coord A vector with two integer specifying the number of rows and columns to draw faceted line plots for chromosomes.
-#' @param q An integer to specify a quantile calculated via [calcReadStats()].
+#' @param coord A vector with two integer specifying the number of rows 
+#' and columns to draw faceted line plots for chromosomes.
+#' @param q An integer to specify a quantile calculated via 
+#' [calcReadStats()].
 #' @param lwd A numeric value to specify the line width in plots.
-#' @param binwidth An integer to specify bin width of the histogram. This argument only work with `stats = "marker"` and is passed to the ggplot function.
-#' @param color A strings vector named "Marker", "Ref", "Het", "Alt" to specify line colors. `stats = "geno` only requires "Ref", "Het" and "Alt", while others uses the value named "Marker".
-#' @param ggargs An expression to be internally passed to a ggplot object to be drawn.
+#' @param binwidth An integer to specify bin width of the histogram. 
+#' This argument only work with `stats = "marker"` and is passed to the ggplot function.
+#' @param color A strings vector named "Marker", "Ref", "Het", "Alt" 
+#' to specify line colors. `stats = "geno` only requires "Ref", "Het" and "Alt", while others uses the value named "Marker".
+#' @param ggargs An expression to be internally passed to a ggplot 
+#' object to be drawn.
 #'
 #' @details
 #' You can draw line plots of several summary statistics of genotype counts
@@ -350,13 +385,15 @@ boxplotGBSR <- function(x,
 #' \item{"baseqranksum"}{"Alt Vs. Ref base qualities"},
 #' }
 #'
-#' To draw line plots for "missing", "het", "raf", you need to run [countGenotype()]
-#' first to obtain statistics. Similary, "dp", "ad_ref", "ad_alt", "rrf" requires
-#' values obtained via [countRead()]. [calcReadStats()] should be executed before
-#' drawing line plots of "mean_ref", "sd_ref", "qtile_ref", "mean_alt", "sd_alt",
-#' and "qtile_alt". "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
-#' and "baseqranksum" only work with `target = "snp"`, if your data contains those
-#' values supplied via SNP calling tools like [GATK](https://gatk.broadinstitute.org/hc/en-us).
+#' To draw line plots for "missing", "het", "raf", you need to run 
+#' [countGenotype()] first to obtain statistics. Similary, "dp", 
+#' "ad_ref", "ad_alt", "rrf" requires values obtained via [countRead()]. 
+#' [calcReadStats()] should be executed before drawing line plots of 
+#' "mean_ref", "sd_ref", "qtile_ref", "mean_alt", "sd_alt", and 
+#' "qtile_alt". "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
+#' #' and "baseqranksum" only work with `target = "snp"`, if your data 
+#' contains those values supplied via SNP calling tools like 
+#' [GATK](https://gatk.broadinstitute.org/hc/en-us).
 #'
 #' @export
 #' @import ggplot2
@@ -365,18 +402,27 @@ boxplotGBSR <- function(x,
 #' @return NULL.
 #'
 #' @examples
-#' # Draw line plots of missing rate, heterozygosity, proportion of genotype calls per SNP.
+#' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 #' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
+#' 
+#' # Summarize genotype count information to be used in `plotGBSR()`
 #' gdata <- countGenotype(gdata)
+#' 
+#' # Draw line plots of missing rate, heterozygosity, proportion of genotype calls per SNP.
 #' plotGBSR(gdata, stats = c("missing", "het", "raf", "geno"))
 #'
+#' # Calculate means, standard deviations, quantile values of read counts 
+#' # to be used in `plotGBSR()`
+#' gdata <- calcReadStats(gdata, q = 0.9)
+#' 
 #' # Draw line plots of 90 percentile values of reference read counts and
 #' # alternative read counts per SNP and per sample.
-#' gdata <- calcReadStats(gdata, q = 0.9)
 #' plotGBSR(gdata, stats = c("qtile_ref", "qtile_alt"), q = 0.9)
 #'
-#' closeGDS(gdata) # Close the connection to the GDS file
+#' # Close the connection to the GDS file
+#' closeGDS(gdata)
+#' 
 plotGBSR  <- function(x,
                       stats = c("dp", "missing", "het"),
                       coord = NULL,
@@ -461,11 +507,11 @@ plotGBSR  <- function(x,
       scale_x_continuous(expand = expansion(0, 0.5), limits = c(0, NA)) +
       scale_color_manual(values = color, breaks = names(color)) +
       theme(
-        plot.title = element_text(face = "bold", size = rel(1.5)),
-        axis.title = element_text(face = "bold", size = rel(1.3)),
-        axis.text = element_text(size = rel(1)),
+        plot.title = element_text(face = "bold", size = rel(1)),
+        axis.title = element_text(face = "bold", size = rel(0.7)),
+        axis.text = element_text(size = rel(0.5)),
         strip.text.y = element_text(
-          size = rel(1.2),
+          size = rel(0.8),
           face = "bold",
           angle = 0
         )
@@ -484,17 +530,25 @@ plotGBSR  <- function(x,
 
 #' Draw a scatter plot of a pair of specified statistics
 #'
-#' @param x A GbsrGenotypeData object.
+#' @param x A [GbsrGenotypeData] object.
 #' @param stats1 A string to specify statistics to be drawn.
 #' @param stats2 A string to specify statistics to be drawn.
-#' @param target Either or both of "snp" and "scan", e.g. `target = "snp"` to draw a histogram only for SNPs.
-#' @param q An integer to specify a quantile calculated via [calcReadStats()].
+#' @param target Either or both of "snp" and "scan", e.g. 
+#' `target = "snp"` to draw a histogram only for SNPs.
+#' @param q An integer to specify a quantile calculated via 
+#' [calcReadStats()].
 #' @param size A numeric value to specify the dot size of a scatter plot.
-#' @param alpha A numeric value \[0-1\] to specify the transparency of dots in a scatter plot.
-#' @param color A named vector "Marker" and "Sample" to specify border color of bins in the histograms.
-#' @param fill A named vector "Marker" and "Sample" to specify fill color of bins in the histograms.`stats = "geno` only requires "Ref", "Het" and "Alt", while others uses the value named "Marker".
-#' @param smooth A logical value to indicate whether draw a smooth line for data points. See also [ggplot2::stat_smooth()].
-#' @param ggargs An expression to be internally passed to a ggplot object to be drawn.
+#' @param alpha A numeric value \[0-1\] to specify the transparency of 
+#' dots in a scatter plot.
+#' @param color A named vector "Marker" and "Sample" to specify border 
+#' color of bins in the histograms.
+#' @param fill A named vector "Marker" and "Sample" to specify fill color 
+#' of bins in the histograms.`stats = "geno` only requires "Ref", "Het" 
+#' and "Alt", while others uses the value named "Marker".
+#' @param smooth A logical value to indicate whether draw a smooth line for 
+#' data points. See also [ggplot2::stat_smooth()].
+#' @param ggargs An expression to be internally passed to a ggplot object 
+#' to be drawn.
 #'
 #' @details
 #' You can draw a scatter plot of per-marker and/or per-sample summary
@@ -523,13 +577,15 @@ plotGBSR  <- function(x,
 #' \item{"baseqranksum"}{"Alt Vs. Ref base qualities"},
 #' }
 #'
-#' To draw scatter plots for "missing", "het", "raf", you need to run [countGenotype()]
-#' first to obtain statistics. Similary, "dp", "ad_ref", "ad_alt", "rrf" requires
-#' values obtained via [countRead()]. [calcReadStats()] should be executed before
-#' drawing line plots of "mean_ref", "sd_ref", "qtile_ref", "mean_alt", "sd_alt",
-#' and "qtile_alt". "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
-#' and "baseqranksum" only work with `target = "snp"`, if your data contains those
-#' values supplied via SNP calling tools like [GATK](https://gatk.broadinstitute.org/hc/en-us).
+#' To draw scatter plots for "missing", "het", "raf", you need to run 
+#' [countGenotype()] first to obtain statistics. Similary, "dp", 
+#' "ad_ref", "ad_alt", "rrf" requires values obtained via [countRead()]. 
+#' [calcReadStats()] should be executed before drawing line plots of 
+#' "mean_ref", "sd_ref", "qtile_ref", "mean_alt", "sd_alt", and 
+#' "qtile_alt". "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
+#' and "baseqranksum" only work with `target = "snp"`, if your data 
+#' contains those values supplied via SNP calling tools like 
+#' [GATK](https://gatk.broadinstitute.org/hc/en-us).
 #'
 #'
 #' @return NULL.
@@ -539,13 +595,20 @@ plotGBSR  <- function(x,
 #' @import graphics
 #'
 #' @examples
-#' # Draw scatter plots of missing rate vs heterozygosity.
+#' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 #' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
+#' 
+#' # Summarize genotype count information to be used in `pairsGBSR()`
 #' gdata <- countGenotype(gdata)
+#' 
+#' # Draw scatter plots of missing rate vs heterozygosity.
 #' pairsGBSR(gdata, stats1 = "missing", stats2 = "het")
 #'
-#' closeGDS(gdata) # Close the connection to the GDS file
+#' # Close the connection to the GDS file
+#' closeGDS(gdata)
+#' 
+#' 
 pairsGBSR  <- function(x,
                        stats1 = "dp",
                        stats2 = "missing",
@@ -632,11 +695,11 @@ pairsGBSR  <- function(x,
     scale_fill_manual(values = fill, breaks = names(fill)) +
     scale_color_manual(values = color, breaks = names(color)) +
     theme(
-      plot.title = element_text(face = "bold", size = rel(1.5)),
-      axis.title = element_text(face = "bold", size = rel(1.3)),
-      axis.text = element_text(size = rel(1)),
+      plot.title = element_text(face = "bold", size = rel(1)),
+      axis.title = element_text(face = "bold", size = rel(0.7)),
+      axis.text = element_text(size = rel(0.5)),
       strip.text.y = element_text(
-        size = rel(1.2),
+        size = rel(0.8),
         face = "bold",
         angle = 0
       ),
@@ -927,20 +990,26 @@ pairsGBSR  <- function(x,
 #' This function counts a reference allele dosage per marker per sample and
 #' draw line plots of them in facets for each chromosome for each sample.
 #'
-#' @param x A GbsrGenotypeData object.
-#' @param coord A vector with two integer specifying the number of rows and columns to draw faceted line plots for chromosomes.
+#' @param x A [GbsrGenotypeData] object.
+#' @param coord A vector with two integer specifying the number of rows 
+#' and columns to draw faceted line plots for chromosomes.
 #' @param chr A vector of indexes to specify chromosomes to be drawn.
 #' @param ind A vector of indexes to specify samples to be drawn.
-#' @param valid_only A logical value whether to draw a plot only for valid markers and samples. You can get validity with `getValidSnp()` and `getValidScan`.
+#' @param valid_only A logical value whether to draw a plot only for 
+#' valid markers and samples. You can get validity with `getValidSnp()` 
+#' and `getValidScan`.
 #' @param dot_fill A string to indicate the dot color in a plot.
 #'
 #' @examples
+#' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 #' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
-#' gdata <- countGenotype(gdata)
+#' 
 #' plotDosage(gdata, ind = 1)
 #'
-#' closeGDS(gdata) # Close the connection to the GDS file
+#' # Close the connection to the GDS file
+#' closeGDS(gdata)
+#' 
 #' @return NULL.
 #' @export
 #' @import ggplot2
@@ -1020,26 +1089,34 @@ plotDosage <- function(x,
   }
 }
 
-#' Draw line plots of proportion of reference allele read counts per marker per sample.
+#' Draw line plots of proportion of reference allele read counts
+#'  per marker per sample.
 #'
-#' This function calculate a proportion of reference allele read counts per marker per sample and
+#' This function calculate a proportion of reference allele read 
+#' counts per marker per sample and
 #' draw line plots of them in facets for each chromosome for each sample.
 #'
-#' @param x A GbsrGenotypeData object.
-#' @param coord A vector with two integer specifying the number of rows and columns to draw faceted line plots for chromosomes.
+#' @param x A [GbsrGenotypeData] object.
+#' @param coord A vector with two integer specifying the number of rows and 
+#' columns to draw faceted line plots for chromosomes.
 #' @param chr A vector of indexes to specify chromosomes to be drawn.
 #' @param ind A vector of indexes to specify samples to be drawn.
-#' @param valid_only A logical value whether to draw a plot only for valid markers and samples. You can get validity with `getValidSnp()` and `getValidScan`.
+#' @param valid_only A logical value whether to draw a plot only for valid 
+#' markers and samples. You can get validity with `getValidSnp()` 
+#' and `getValidScan`.
 #' @param dot_fill A string to indicate the dot color in a plot.
 #'
 #'
 #' @examples
+#' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 #' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gdata <- loadGDS(gds_fn)
-#' gdata <- countGenotype(gdata)
+#' 
 #' plotReadRatio(gdata, ind = 1)
 #'
-#' closeGDS(gdata) # Close the connection to the GDS file
+#' # Close the connection to the GDS file
+#' closeGDS(gdata)
+#' 
 #' @return NULL.
 #' @export
 #' @import ggplot2

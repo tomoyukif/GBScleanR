@@ -19,27 +19,35 @@ pairsGBSR(
 )
 }
 \arguments{
-\item{x}{A GbsrGenotypeData object.}
+\item{x}{A \link{GbsrGenotypeData} object.}
 
 \item{stats1}{A string to specify statistics to be drawn.}
 
 \item{stats2}{A string to specify statistics to be drawn.}
 
-\item{target}{Either or both of "snp" and "scan", e.g. \code{target = "snp"} to draw a histogram only for SNPs.}
+\item{target}{Either or both of "snp" and "scan", e.g.
+\code{target = "snp"} to draw a histogram only for SNPs.}
 
-\item{q}{An integer to specify a quantile calculated via \code{\link[=calcReadStats]{calcReadStats()}}.}
+\item{q}{An integer to specify a quantile calculated via
+\code{\link[=calcReadStats]{calcReadStats()}}.}
 
 \item{size}{A numeric value to specify the dot size of a scatter plot.}
 
-\item{alpha}{A numeric value [0-1] to specify the transparency of dots in a scatter plot.}
+\item{alpha}{A numeric value [0-1] to specify the transparency of
+dots in a scatter plot.}
 
-\item{color}{A named vector "Marker" and "Sample" to specify border color of bins in the histograms.}
+\item{color}{A named vector "Marker" and "Sample" to specify border
+color of bins in the histograms.}
 
-\item{fill}{A named vector "Marker" and "Sample" to specify fill color of bins in the histograms.\verb{stats = "geno} only requires "Ref", "Het" and "Alt", while others uses the value named "Marker".}
+\item{fill}{A named vector "Marker" and "Sample" to specify fill color
+of bins in the histograms.\verb{stats = "geno} only requires "Ref", "Het"
+and "Alt", while others uses the value named "Marker".}
 
-\item{smooth}{A logical value to indicate whether draw a smooth line for data points. See also \code{\link[ggplot2:geom_smooth]{ggplot2::stat_smooth()}}.}
+\item{smooth}{A logical value to indicate whether draw a smooth line for
+data points. See also \code{\link[ggplot2:geom_smooth]{ggplot2::stat_smooth()}}.}
 
-\item{ggargs}{An expression to be internally passed to a ggplot object to be drawn.}
+\item{ggargs}{An expression to be internally passed to a ggplot object
+to be drawn.}
 }
 \value{
 NULL.
@@ -74,20 +82,29 @@ arguments can take the following values:
 \item{"baseqranksum"}{"Alt Vs. Ref base qualities"},
 }
 
-To draw scatter plots for "missing", "het", "raf", you need to run \code{\link[=countGenotype]{countGenotype()}}
-first to obtain statistics. Similary, "dp", "ad_ref", "ad_alt", "rrf" requires
-values obtained via \code{\link[=countRead]{countRead()}}. \code{\link[=calcReadStats]{calcReadStats()}} should be executed before
-drawing line plots of "mean_ref", "sd_ref", "qtile_ref", "mean_alt", "sd_alt",
-and "qtile_alt". "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
-and "baseqranksum" only work with \code{target = "snp"}, if your data contains those
-values supplied via SNP calling tools like \href{https://gatk.broadinstitute.org/hc/en-us}{GATK}.
+To draw scatter plots for "missing", "het", "raf", you need to run
+\code{\link[=countGenotype]{countGenotype()}} first to obtain statistics. Similary, "dp",
+"ad_ref", "ad_alt", "rrf" requires values obtained via \code{\link[=countRead]{countRead()}}.
+\code{\link[=calcReadStats]{calcReadStats()}} should be executed before drawing line plots of
+"mean_ref", "sd_ref", "qtile_ref", "mean_alt", "sd_alt", and
+"qtile_alt". "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
+and "baseqranksum" only work with \code{target = "snp"}, if your data
+contains those values supplied via SNP calling tools like
+\href{https://gatk.broadinstitute.org/hc/en-us}{GATK}.
 }
 \examples{
-# Draw scatter plots of missing rate vs heterozygosity.
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
+
+# Summarize genotype count information to be used in `pairsGBSR()`
 gdata <- countGenotype(gdata)
+
+# Draw scatter plots of missing rate vs heterozygosity.
 pairsGBSR(gdata, stats1 = "missing", stats2 = "het")
 
-closeGDS(gdata) # Close the connection to the GDS file
+# Close the connection to the GDS file
+closeGDS(gdata)
+
+
 }

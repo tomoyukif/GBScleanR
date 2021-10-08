@@ -10,7 +10,7 @@ getRead(object, chr = NULL, node = "raw", parents = FALSE, ...)
 \S4method{getRead}{GbsrGenotypeData}(object, chr, node, parents)
 }
 \arguments{
-\item{object}{A gbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{chr}{A integer vector of indexes indicating
 chromosomes to get read count data.}
@@ -29,7 +29,7 @@ alternative read counts for all markers in all samples.
 }
 \description{
 Read counts for reference allele and alternative allele are retrieved
-from the GDS file linked to the given GbsrGenotypeData object.
+from the GDS file linked to the given \link{GbsrGenotypeData} object.
 }
 \details{
 Read count data can be obtained from the "annotation/format/AD/data" node
@@ -40,10 +40,14 @@ in the "annotation/format/AD/filt.data" node which can be accessed as
 mentioned above.
 }
 \examples{
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
+
 read <- getRead(gdata)
-closeGDS(gdata) # Close the connection to the GDS file
+
+# Close the connection to the GDS file.
+closeGDS(gdata)
 
 }
 \seealso{

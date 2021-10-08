@@ -29,7 +29,7 @@ setInfoFilter(
 )
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{mq}{A numeric value to specify minimum mapping
 quality (shown as MQ in the VCF format).}
@@ -58,12 +58,12 @@ qualities (shown as BaseQRankSum in the VCF format).}
 \item{...}{Unused.}
 }
 \value{
-A GbsrGenotypeData object with filters on markers.
+A \link{GbsrGenotypeData} object with filters on markers.
 }
 \description{
 A VCF file usually has marker quality metrics in
 the INFO filed and those are stored in
-a GDS file created via \code{GBScleanR}. This function filter
+a GDS file created via \link{GBScleanR}. This function filter
 out markers based on those marker
 quality metrics.
 }
@@ -72,9 +72,12 @@ Detailed explanation of each metric can be found
 in \href{https://gatk.broadinstitute.org/hc/en-us}{GATK's web site}.
 }
 \examples{
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
+
 gdata <- setInfoFilter(gdata, mq = 40, qd = 20)
 
-closeGDS(gdata) # Close the connection to the GDS file
+# Close the connection to the GDS file.
+closeGDS(gdata)
 }

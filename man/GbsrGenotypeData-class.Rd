@@ -3,17 +3,50 @@
 \docType{class}
 \name{GbsrGenotypeData-class}
 \alias{GbsrGenotypeData-class}
-\title{GbsrGenotypeData class}
+\alias{GbsrGenotypeData}
+\title{Class \code{GbsrGenotypeData}}
 \description{
-The \code{GbsrGenotypeData} class is a container for genotype data from a VCF file
-together with the metadata associated with the samples and SNPs.
+The \code{GbsrGenotypeData} class is the main class of \link{GBScleanR} and
+user work with this class object.
 }
 \details{
-The \code{GbsrGenotypeData} class has three slots: data, SNP annotation,
-and scan annotation. "Samples" or "individuals" subjected to
+The \code{GbsrGenotypeData} class has slots to store summarized genotype
+data, a \link{GbsrScheme} object, and the connection information
+to a GDS file which can be generated from a VCF file of your
+genotype data via \code{\link[=gbsrVCF2GDS]{gbsrVCF2GDS()}}.
+The \link{GbsrGenotypeData} class has four slots: \code{data}, \code{snpAnnot},
+and \code{scanAnnot} and \code{scheme.} "Samples" or "individuals" subjected to
 genotyping are called "scan" here with following the way used
-in the \code{GWASTools} package. SNP and scan annotation are
-automatically obtained via the \code{\link[=loadGDS]{loadGDS()}} function and update
-when the class methods to calculate SNP wise and scan wise
-statistics and set some labels on them.
+in \link{GWASTools}. The slots \code{snpAnnot} and \code{scanAnnot} store
+a \link{SnpAnnotationDataFrame} object and a
+\link{ScanAnnotationDataFrame} object, respectively.
+The slot \code{data} stores a \link{GdsGenotypeReader} object.
+Those three classes are included from \link{GWASTools}.
+The slot \code{scheme} holds a \link{GbsrScheme} object.
+The function \code{\link[=loadGDS]{loadGDS()}} initialize those class objects internally.
+}
+\section{Slots}{
+
+\describe{
+\item{\code{scheme}}{A \link{GbsrScheme} object.}
+
+\item{\code{data}}{A \link{GdsGenotypeReader} object.}
+
+\item{\code{snpAnnot}}{A \link{SnpAnnotationDataFrame} object.}
+
+\item{\code{scanAnnot}}{A \link{ScanAnnotationDataFrame} object.}
+}}
+
+\examples{
+# `loadGDS()` initialize objects in the slots of a `GbsrGenotypeData`
+# object internally.
+
+# Load data in the GDS file and instantiate 
+# a `GbsrGenotypeData` object.
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+
+# Close connection to the GDS file.
+closeGDS(gdata)
+
 }

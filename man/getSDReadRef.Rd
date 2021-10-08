@@ -11,7 +11,7 @@ getSDReadRef(object, target = "snp", valid = TRUE, ...)
 \S4method{getSDReadRef}{GbsrGenotypeData}(object, target = "snp", valid = TRUE)
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{target}{Either of "snp" and "scan".}
 
@@ -31,14 +31,24 @@ per SNP or per scan (sample)
 You need to execute \code{\link[=calcReadStats]{calcReadStats()}} to calculate summary statistics to be
 obtained via this function.
 If \code{valid = TRUE}, the chromosome information of markers which are
-labeled \code{TRUE} in the ScanAnnotationDataSet slot will be returned.
+labeled \code{TRUE} in the \link{ScanAnnotationDataFrame} slot will be returned.
 \code{\link[=getValidSnp]{getValidSnp()}} tells you which samples are valid.
 }
 \examples{
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
+
+# Calculate means, standard deviations, quantiles of read counts
+# per marker and per sample with or without standardization of 
+# the counts and store them in the
+# [SnpAnnotationDataFrame] and [ScanAnnotationDataFrame] objects 
+# linked at the slots of the [GbsrGenotypeData] object.
 gdata <- calcReadStats(gdata)
+
 getSDReadRef(gdata)
-closeGDS(gdata) # Close the connection to the GDS file
+
+# Close the connection to the GDS file.
+closeGDS(gdata)
 
 }

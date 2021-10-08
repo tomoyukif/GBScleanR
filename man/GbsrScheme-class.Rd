@@ -3,13 +3,51 @@
 \docType{class}
 \name{GbsrScheme-class}
 \alias{GbsrScheme-class}
-\title{GbsrScheme class}
+\alias{GbsrScheme}
+\title{Class \code{GbsrScheme}}
 \description{
-GBScleanR uses breeding scheme information to set the expected
+\link{GBScleanR} uses breeding scheme information to set the expected
 number of cross overs in a chromosome which is a required parameter
-for the genotype error correction with the Hidden Markov model
-implemented in the "clean" function. This class stores those
+for the genotype error correction with the hidden Markov model
+implemented in the \code{\link[=estGeno]{estGeno()}} function. This class stores those
 information including ID of parental samples, type crosses
 performed at each generation of breeding and population
 sizes of each generation. This class is not exported.
+}
+\section{Slots}{
+
+\describe{
+\item{\code{crosstype}}{A vector of strings indicating the type of
+crossing done at each generation.}
+
+\item{\code{pop_size}}{A vector  of integers of the population size
+of each generation.}
+
+\item{\code{mating}}{A list of matrices showing combinations member
+IDs of samples mated.}
+
+\item{\code{parents}}{A vector of member IDs of parents.}
+
+\item{\code{progenies}}{A vector of memeber IDs of progenies produced
+at each generation.}
+}}
+
+\examples{
+# `loadGDS()` initialize a `GbsrScheme` object internally and 
+# attache it to the shceme slot of a [GbsrGenotypeData] object.
+
+# Load data in the GDS file and instantiate 
+# a [GbsrGenotypeData] object.
+gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+gdata <- loadGDS(gds_fn)
+
+# Print the information stored in the `GbsrScheme` object.
+showScheme(gdata)
+
+# Close the connection to the GDS file.
+closeGDS(gdata)
+
+}
+\seealso{
+\link{GbsrGenotypeData} dnd \code{\link[=loadGDS]{loadGDS()}}.
 }

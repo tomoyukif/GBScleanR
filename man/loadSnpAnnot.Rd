@@ -3,31 +3,50 @@
 \name{loadSnpAnnot}
 \alias{loadSnpAnnot}
 \alias{loadSnpAnnot,GbsrGenotypeData-method}
-\title{Load the stored SnpAnnotationDataSet information}
+\title{Load the stored \link{SnpAnnotationDataFrame} information}
 \usage{
 loadSnpAnnot(object, ...)
 
 \S4method{loadSnpAnnot}{GbsrGenotypeData}(object)
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object}
+\item{object}{A \link{GbsrGenotypeData} object}
 
 \item{...}{Unused.}
 }
 \value{
-A GbsrGenotypeData object.
+A \link{GbsrGenotypeData} object.
 }
 \description{
-All the data stored in the SnpAnnotatoinDataSet slot of the GbsrGenotypeData
-object can be saved in the GDS file linked to the given GbsrGenotypeData
+All the data stored in the \code{SnpAnnotationnDataFrame} slot of the \link{GbsrGenotypeData}
+object can be saved in the GDS file linked to the given \link{GbsrGenotypeData}
 object via \code{\link[=saveSnpAnnot]{saveSnpAnnot()}}. You can load the saved data using this
 function.
 }
 \examples{
-gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+# Create a GDS file from a sample VCF file.
+vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
+gds_fn <- tempfile("sample", fileext = ".gds")
+gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
+
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gdata <- loadGDS(gds_fn)
+
+# Save data stored in a [ScanAnnotationDataFrame] object
+# linked in the slot of the `GbsrGenotypeData.`
+gdata <- saveSnpAnnot(gdata)
+
+# Close the connection to the GDS file
+closeGDS(gdata)
+
+# Open the connection to the GDS file again.
+gdata <- loadGDS(genotypeData = gdata)
+
+# Load the saved [SnpAnnotationDataFrame] object
 gdata <- loadSnpAnnot(gdata)
-closeGDS(gdata) # Close the connection to the GDS file
+
+# Close the connection to the GDS file
+closeGDS(gdata)
 
 
 }

@@ -28,21 +28,26 @@ You may use "bcftools" or "vcftools" for filtering.
 \details{
 gbsrVCF2GDS converts a VCF file to a GDS file.
 The data structure of the GDS file created via this functions is same with
-those created by snpgdsVCF2GDS of
+those created by \code{snpgdsVCF2GDS} of
 \href{https://www.bioconductor.org/packages/release/bioc/html/SNPRelate.html}{SNPRelate}.
-Unlike the GDS files created by SNPRelate GBScleanR's GDS files: \cr
+Unlike the GDS files created by \code{SNPRelate} \code{GBScleanR}'s GDS files: \cr
 \itemize{
 \item{"Include annotation information of variants
-recorded in the INFO filed of the input VCF."}
+recorded in the \code{INFO} filed of the input VCF."}
 \item{"Include allelic read count data (indicated as AD)
-recoreded in the FORMAT filed of the input VCF."}
+recoreded in the \code{FORMAT} filed of the input VCF."}
 }
 }
 \examples{
+# Create a GDS file from a sample VCF file.
 vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
-gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gbsrVCF2GDS(vcf_fn = vcf_fn, # Path to the input VCF file.
-           out_fn = gds_fn, # Path to the output GDS file.
-           force = TRUE) # If you already have a GDS file named as `gds_fn`.
+gds_fn <- tempfile("sample", fileext = ".gds")
+gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
+
+# Load data in the GDS file and instantiate a `GbsrGenotypeData` object.
+gdata <- loadGDS(gds_fn)
+
+# Close the connection to the GDS file.
+closeGDS(gdata)
 
 }

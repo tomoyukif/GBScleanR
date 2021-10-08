@@ -41,7 +41,7 @@ setCallFilter(
 )
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{dp_count}{A numeric vector with length two specifying lower and
 upper limit of total read counts (reference reads + alternative reads).}
@@ -86,7 +86,7 @@ and "alt" to remove specified genotype calls.}
 \item{...}{Unused.}
 }
 \value{
-A GbsrGenotypeData object with filters on genotype calls.
+A \link{GbsrGenotypeData} object with filters on genotype calls.
 }
 \description{
 Perform filtering of each genotype call, neither markers
@@ -103,14 +103,18 @@ by the total read count of each sample. \code{scan_dp_qtile}, \code{scan_ref_qti
 and \code{scan_alt_qtile} work similarly but use quantile values of read counts
 of each sample to decide the lower and upper limit of read counts.
 This function generate two new nodes in the GDS file linked with
-the given GbsrGenotypeData object. The new nodes "filt.data" in the AD node
+the given \link{GbsrGenotypeData} object. The new nodes "filt.data" in the AD node
 and "filt.genotype" contains read count data and genotype data
 after filtering, respectively.
 To reset the filter applied by setCallFilter(), run \code{\link[=setRawGenotype]{setRawGenotype()}}.
 }
 \examples{
+# Create a GDS file from a sample VCF file.
+vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
+gds_fn <- tempfile("sample", fileext = ".gds")
+gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
 
-gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gdata <- loadGDS(gds_fn)
 
 # Filter out genotype calls supported by less than 5 reads.
@@ -123,6 +127,7 @@ gdata <- setCallFilter(gdata, scan_dp_qtile = c(0.2, 1))
 # Reset the filter
 gdata <- setRawGenotype(gdata)
 
-closeGDS(gdata) # Close the connection to the GDS file
+# Close the connection to the GDS file.
+closeGDS(gdata)
 
 }

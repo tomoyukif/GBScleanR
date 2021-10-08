@@ -10,7 +10,7 @@ nscan(object, valid = TRUE, ...)
 \S4method{nscan}{GbsrGenotypeData}(object, valid = TRUE)
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{valid}{A logical value. See details.}
 
@@ -21,19 +21,23 @@ An integer value to indicate the number of samples.
 }
 \description{
 This function returns the number of samples recorded in the GDS file
-connected to the given GbsrGenotypeData object.
+connected to the given \link{GbsrGenotypeData} object.
 }
 \details{
 If \code{valid = TRUE}, the number of samples which are labeled \code{TRUE}
-in the ScanAnnotationDataSet slot will be returned. You need
+in the \link{ScanAnnotationDataFrame} slot will be returned. You need
 the number of over all samples, set \code{valid = FALSE}.
 \code{\link[=getValidSnp]{getValidSnp()}} tells you which samples are valid.
 }
 \examples{
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
+
 nscan(gdata)
-closeGDS(gdata) # Close the connection to the GDS file
+
+# Close the connection to the GDS file.
+closeGDS(gdata)
 
 }
 \seealso{

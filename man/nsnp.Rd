@@ -10,7 +10,7 @@ nsnp(object, valid = TRUE, ...)
 \S4method{nsnp}{GbsrGenotypeData}(object, valid = TRUE)
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{valid}{A logical value. See details.}
 
@@ -21,19 +21,23 @@ An integer value to indicate the number of SNP markers.
 }
 \description{
 This function returns the number of SNPs recorded in the GDS file
-connected to the given GbsrGenotypeData object.
+connected to the given \link{GbsrGenotypeData} object.
 }
 \details{
 If \code{valid = TRUE}, the number of SNPs which are labeled \code{TRUE} in
-the SnpAnnotationDataSet slot will be returned. You need the number
+the \link{SnpAnnotationDataFrame} slot will be returned. You need the number
 of over all SNPs, set \code{valid = FALSE}. \code{\link[=getValidSnp]{getValidSnp()}} tells you
 which markers are valid.
 }
 \examples{
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
+
 nsnp(gdata)
-closeGDS(gdata) # Close the connection to the GDS file
+
+# Close the connection to the GDS file.
+closeGDS(gdata) 
 
 }
 \seealso{

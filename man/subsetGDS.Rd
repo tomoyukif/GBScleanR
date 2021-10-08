@@ -16,7 +16,7 @@ subsetGDS(object, out_fn, snp_incl, scan_incl, incl_parents = TRUE, ...)
 )
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{out_fn}{A string to specify the path to an output GDS file.}
 
@@ -34,13 +34,13 @@ samples should be included in a subset data or not.}
 \item{...}{Unused.}
 }
 \value{
-A GbsrGenotypeData object linking to
+A \link{GbsrGenotypeData} object linking to
 the new GDS file storing subset data.
 }
 \description{
 Create a new GDS file storing the subset
 data from the current GDS file linked to
-the given GbsrGenotypeData object with
+the given \link{GbsrGenotypeData} object with
 keeping (or removing) information based on
 valid markers and samples information.
 }
@@ -51,16 +51,27 @@ genotype, SNP ID, scan ID, read counts,
 and quality metrics of SNP markers.
 }
 \examples{
-gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+#' # Create a GDS file from a sample VCF file.
+vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
+gds_fn <- tempfile("sample", fileext = ".gds")
+gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
+
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gdata <- loadGDS(gds_fn)
+
+# Summarize genotype count information to be used in `setSnpFilter()`
 gdata <- countGenotype(gdata)
+
+# Filter out markers meeting the criteia.
 gdata <- setSnpFilter(gdata, missing = 0.2, het = c(0.1, 0.9), maf = 0.05)
 
-subsetgds_fn <- system.file("extdata",
-"sample_subset.gds",
-package = "GBScleanR")
+# Create a new GDS file with the subset data obtained by applying 
+# the filter maed via `setSnpFilter()`.
+subsetgds_fn <- tempfile("sample_subset", fileext = ".gds")
 subset_gdata <- subsetGDS(gdata, out_fn = subsetgds_fn)
 
-closeGDS(subset_gdata) # Close the connection to the GDS file
-closeGDS(gdata) # Close the connection to the GDS file
+# Close the connection to the GDS files.
+closeGDS(subset_gdata)
+closeGDS(gdata)
+
 }

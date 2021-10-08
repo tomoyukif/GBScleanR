@@ -10,7 +10,7 @@ getValidSnp(object, ...)
 \S4method{getValidSnp}{GbsrGenotypeData}(object)
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{...}{Unused.}
 }
@@ -22,10 +22,14 @@ the number of total SNP markers
 Return a logical vector indicating which are valid SNP markers.
 }
 \examples{
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
+
 getValidSnp(gdata)
-closeGDS(gdata) # Close the connection to the GDS file
+
+# Close the connection to the GDS file.
+closeGDS(gdata)
 
 }
 \seealso{

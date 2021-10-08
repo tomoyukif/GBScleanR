@@ -10,7 +10,7 @@ getFlipped(object, valid = TRUE, ...)
 \S4method{getFlipped}{GbsrGenotypeData}(object, valid = TRUE)
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{valid}{A logical value to specify flip alleles
 only of valid markers. see also\code{\link[=setSnpFilter]{setSnpFilter()}}.}
@@ -33,20 +33,32 @@ argument are supposed as reference alleles of the markers.
 If the "expected" reference alleles are not actually
 called as reference alleles but alternative alleles
 in the given data. \code{\link[=setParents]{setParents()}} will automatically labels
-those markers "flipped". The SnpAnnotatoinDataSet slot sores this
+those markers "flipped". The SnpAnnotatoinDataFrame slot sores this
 information and accessible via \code{\link[=getFlipped]{getFlipped()}} which gives you
 a logical vector indicating which markers are labeled as flipped
 \code{TRUE} or not flipped \code{FALSE}. \code{\link[=haveFlipped]{haveFlipped()}} just tells you
-whether the SnpAnnotatoinDataSet slot has the information of
+whether the SnpAnnotatoinDataFrame slot has the information of
 flipped markers or not.
 }
 \examples{
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
+
+# Find the IDs of parental samples.
 parents <- grep("Founder", getScanID(gdata), value = TRUE)
+
+# Set the parents and flip allele information 
+# if the reference sample (Founder1 in our case) has homozygous
+# alternative genotype at some markers of which alleles will 
+# be swapped to make the reference sample have homozygous 
+# reference genotype.
 gdata <- setParents(gdata, parents = parents, flip = TRUE)
+
 getFlipped(gdata)
-closeGDS(gdata) # Close the connection to the GDS file
+
+# Close the connection to the GDS file.
+closeGDS(gdata)
 
 }
 \seealso{

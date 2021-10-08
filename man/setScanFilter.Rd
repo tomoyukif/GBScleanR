@@ -39,10 +39,11 @@ setScanFilter(
 )
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{id}{A vector of strings match with scan ID which can
-be retrieve by \code{getScanID()}.}
+be retrieve by \code{getScanID()}. The samples with the specified IDs
+will be filtered out.}
 
 \item{missing}{A numeric value [0-1] to specify the maximum
 missing genotype call rate per sample.}
@@ -80,7 +81,7 @@ standard deviation of alternative read counts per sample.}
 \item{...}{Unused.}
 }
 \value{
-A GbsrGenotypeData object with filters on scan(samples).
+A \link{GbsrGenotypeData} object with filters on scan(samples).
 }
 \description{
 Search samples which do not meet the criteria and label them as "invalid".
@@ -97,12 +98,20 @@ a larger standard deviation will be labeled as "invalid".
 To check valid and invalid samples, run \code{\link[=getValidScan]{getValidScan()}}.
 }
 \examples{
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
-gdata <- setScanFilter(gdata,
-id = getScanID(gdata)[1:10],
-missing = 0.2,
-dp = c(5, Inf))
 
-closeGDS(gdata) # Close the connection to the GDS file
+# Summarize the information needed for filtering.
+gdata <- countGenotype(gdata)
+gdata <- countRead(gdata)
+
+gdata <- setScanFilter(gdata,
+                       id = getScanID(gdata)[1:10],
+                       missing = 0.2,
+                       dp = c(5, Inf))
+
+# Close the connection to the GDS file.
+closeGDS(gdata)
+
 }

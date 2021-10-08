@@ -10,7 +10,7 @@ closeGDS(object, ...)
 \S4method{closeGDS}{GbsrGenotypeData}(object)
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{...}{Unused.}
 }
@@ -19,11 +19,14 @@ NULL.
 }
 \description{
 Close the connection to the GDS file linked to the given
-GbsrGenotypeData object.
+\link{GbsrGenotypeData} object.
 }
 \examples{
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
-closeGDS(gdata) # Close the connection to the GDS file
+
+# Close the connection to the GDS file
+closeGDS(gdata) 
 
 }

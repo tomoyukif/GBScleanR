@@ -10,7 +10,7 @@ countGenotype(object, target = "both", node = "", ...)
 \S4method{countGenotype}{GbsrGenotypeData}(object, target = "both", node = "")
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{target}{Either of "snp" and "scan".}
 
@@ -19,13 +19,13 @@ countGenotype(object, target = "both", node = "", ...)
 \item{...}{Unused.}
 }
 \value{
-A GbsrGenotypeData object with genotype count information.
+A \link{GbsrGenotypeData} object with genotype count information.
 }
 \description{
 This function calculates several summary statistics of
 genotype calls and alleles per marker and per sample.
-Those values will be stored in the SnpAnnotaionDataSet slot
-and the ScanAnnotationDataSet slot and obtained via getter functions, e.g.s
+Those values will be stored in the SnpAnnotaionDataFrame slot
+and the \link{ScanAnnotationDataFrame} slot and obtained via getter functions, e.g.s
 \code{\link[=getCountGenoRef]{getCountGenoRef()}}, \code{\link[=getCountAlleleRef]{getCountAlleleRef()}}, and \code{\link[=getMAF]{getMAF()}}.
 }
 \details{
@@ -39,14 +39,27 @@ On the other hand, the "corrected.genotype" node can be generated
 via the \code{\link[=estGeno]{estGeno()}} function.
 }
 \examples{
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
+
+# Summarize the genotype count information and store them in the
+# [SnpAnnotationDataFrame] and [ScanAnnotationDataFrame] objects 
+# linked at the slots of the [GbsrGenotypeData] object.
 gdata <- countGenotype(gdata)
+
+# Get the proportion of missing genotype per sample.
 sample_missing_rate <- getCountGenoMissing(gdata,
-target = "scan",
-prop = TRUE)
+                                           target = "scan",
+                                           prop = TRUE)
+                                           
+# Get the minor allele frequency per marker.
 marker_minor_allele_freq <- getMAF(gdata, target = "snp")
+
+# Draw histograms of the missing rate per sample and marker.
 histGBSR(gdata, stats = "missing")
-closeGDS(gdata) # Close the connection to the GDS file
+
+# Close the connection to the GDS file.
+closeGDS(gdata)
 
 }

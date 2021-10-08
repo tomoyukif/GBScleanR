@@ -11,7 +11,7 @@ setParents(object, parents, flip = FALSE, mono = FALSE, bi = FALSE, ...)
 \S4method{setParents}{GbsrGenotypeData}(object, parents, flip, mono, bi)
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{parents}{A vector of strings with at least length two.
 The specified strings should match with the samples
@@ -29,14 +29,14 @@ are not biallelic between parents.}
 \item{...}{Unused.}
 }
 \value{
-A GbsrGenotypeData object with parents information.
+A \link{GbsrGenotypeData} object with parents information.
 }
 \description{
 Specify two or more samples in the dataset as parents
 of the population. Markers will be filtered out up on your specification.
 }
 \details{
-The \code{clean} function of \code{GBScleanR} uses read count information of
+The \code{clean} function of \link{GBScleanR} uses read count information of
 samples and their parents separately to estimate most probable
 genotype calls of them. Therefore, you must specify proper samples
 as parents via this function. If you would like to remove SNP markers
@@ -49,20 +49,46 @@ alleles of the markers. If the "expected" reference alleles are not
 actually called as reference alleles but alternative alleles
 in the given data. setParents() will automatically labels
 those markers "flipped".
-The SnpAnnotatoinDataSet slot sores this information and accessible
+The SnpAnnotatoinDataFrame slot sores this information and accessible
 via \code{\link[=getFlipped]{getFlipped()}} which gives you a logical vector
 indicating which markers are labeled as flipped \code{TRUE} or
 not flipped \code{FALSE}. \code{\link[=haveFlipped]{haveFlipped()}} just tells you whether
-the SnpAnnotatoinDataSet slot has the information of flipped markers or not.
+the SnpAnnotatoinDataFrame slot has the information of flipped markers or not.
 }
 \examples{
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
+
+# Find the IDs of parental samples.
 parents <- grep("Founder", getScanID(gdata), value = TRUE)
-gdata <- setParents(gdata, parents = parents)
+
+# Set the parents and flip allele information 
+# if the reference sample (Founder1 in our case) has homozygous
+# alternative genotype at some markers of which alleles will 
+# be swapped to make the reference sample have homozygous 
+# reference genotype.
+gdata <- setParents(gdata, parents = parents, flip = TRUE)
+
+# Initialize a scheme object stored in the slot of the GbsrGenotypeData.
+# We chose `crosstype = "pair"` because two inbred founders were mated
+# in our breeding scheme.
+# We also need to specify the mating matrix which has two rows and 
+# one column with integers 1 and 2 indicating a sample (founder) 
+# with the memberID 1 and a sample (founder) with the memberID 2
+# were mated.
 gdata <- initScheme(gdata, crosstype = "pair", mating = cbind(c(1:2)))
-gdata <- addScheme(gdata, crosstype = "self")
+
+# Add information of the next cross conducted in our scheme.
+# We chose 'crosstype = "selfing"', which do not require a
+# mating matrix.
+gdata <- addScheme(gdata, crosstype = "selfing")
+
+# Execute error correction by estimating genotype and haplotype of 
+# founders and offspring.
 gdata <- estGeno(gdata)
-closeGDS(gdata) # Close the connection to the GDS file
+
+# Close the connection to the GDS file.
+closeGDS(gdata)
 
 }

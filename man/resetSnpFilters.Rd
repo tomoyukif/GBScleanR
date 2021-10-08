@@ -10,26 +10,43 @@ resetSnpFilters(object, ...)
 \S4method{resetSnpFilters}{GbsrGenotypeData}(object)
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{...}{Unused.}
 }
 \value{
-A GbsrGenotypeData object after removing all filters on markers.
+A \link{GbsrGenotypeData} object after removing all filters on markers.
 }
 \description{
 Remove "invalid" labels put on markers and make all markers valid.
 }
 \examples{
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
+
+# Check the number of markers.
+nsnp(gdata)
+
+# Summarize the information needed for filtering.
+gdata <- countGenotype(gdata)
+gdata <- countRead(gdata)
+
+# filter out some markers meeting the criteria.
 gdata <- setSnpFilter(gdata,
- id = getSnpID(gdata)[1:100],
- missing = 0.2,
- dp = c(5, Inf))
+                      id = getSnpID(gdata)[1:100],
+                      missing = 0.2,
+                      dp = c(5, Inf))
+
+# Check the number of the retained markers.
+nsnp(gdata)
 
 # Reset all filters applied above.
 gdata <- resetSnpFilters(gdata)
 
-closeGDS(gdata) # Close the connection to the GDS file
+# Check the number of the markers again.
+nsnp(gdata)
+
+# Close the connection to the GDS file.
+closeGDS(gdata)
 }

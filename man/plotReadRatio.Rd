@@ -2,7 +2,8 @@
 % Please edit documentation in R/PlotFunctions.R
 \name{plotReadRatio}
 \alias{plotReadRatio}
-\title{Draw line plots of proportion of reference allele read counts per marker per sample.}
+\title{Draw line plots of proportion of reference allele read counts
+per marker per sample.}
 \usage{
 plotReadRatio(
   x,
@@ -14,15 +15,18 @@ plotReadRatio(
 )
 }
 \arguments{
-\item{x}{A GbsrGenotypeData object.}
+\item{x}{A \link{GbsrGenotypeData} object.}
 
-\item{coord}{A vector with two integer specifying the number of rows and columns to draw faceted line plots for chromosomes.}
+\item{coord}{A vector with two integer specifying the number of rows and
+columns to draw faceted line plots for chromosomes.}
 
 \item{chr}{A vector of indexes to specify chromosomes to be drawn.}
 
 \item{ind}{A vector of indexes to specify samples to be drawn.}
 
-\item{valid_only}{A logical value whether to draw a plot only for valid markers and samples. You can get validity with \code{getValidSnp()} and \code{getValidScan}.}
+\item{valid_only}{A logical value whether to draw a plot only for valid
+markers and samples. You can get validity with \code{getValidSnp()}
+and \code{getValidScan}.}
 
 \item{dot_fill}{A string to indicate the dot color in a plot.}
 }
@@ -30,14 +34,18 @@ plotReadRatio(
 NULL.
 }
 \description{
-This function calculate a proportion of reference allele read counts per marker per sample and
+This function calculate a proportion of reference allele read
+counts per marker per sample and
 draw line plots of them in facets for each chromosome for each sample.
 }
 \examples{
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
-gdata <- countGenotype(gdata)
+
 plotReadRatio(gdata, ind = 1)
 
-closeGDS(gdata) # Close the connection to the GDS file
+# Close the connection to the GDS file
+closeGDS(gdata)
+
 }

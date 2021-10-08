@@ -11,33 +11,51 @@ resetFilters(object, ...)
 \S4method{resetFilters}{GbsrGenotypeData}(object)
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{...}{Unused.}
 }
 \value{
-A GbsrGenotypeData object after removing all filters.
+A \link{GbsrGenotypeData} object after removing all filters.
 
-A GbsrGenotypeData object after removing all filters on markers.
+A \link{GbsrGenotypeData} object after removing all filters on markers.
 }
 \description{
 Return all data intact.
 }
 \examples{
-gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+# Create a GDS file from a sample VCF file.
+vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
+gds_fn <- tempfile("sample", fileext = ".gds")
+gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
+
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gdata <- loadGDS(gds_fn)
+
+# `setCallFilter()` do not require summarized information of 
+# genotype counts and read counts.
+gdata <- setCallFilter(gdata, dp_count = c(5, Inf))
+
+# `setScanFilter()` and `setSnpFilter()` needs information of 
+# the genotype count summary and the read count summary.
+gdata <- countGenotype(gdata)
+gdata <- countRead(gdata)
+
 gdata <- setScanFilter(gdata,
-id = getScanID(gdata)[1:10],
-missing = 0.2,
-dp = c(5, Inf))
+                       id = getScanID(gdata)[1:10],
+                       missing = 0.2,
+                       dp = c(5, Inf))
+                       
 gdata <- setSnpFilter(gdata,
- id = getSnpID(gdata)[1:100],
-  missing = 0.2,
-  dp = c(5, Inf))
+                      id = getSnpID(gdata)[1:100],
+                      missing = 0.2,
+                      dp = c(5, Inf))
+                      
 gdata <- setInfoFilter(gdata, mq = 40, qd = 20)
 
 # Reset all filters applied above.
 gdata <- resetFilters(gdata)
 
-closeGDS(gdata) # Close the connection to the GDS file
+# Close the connection to the GDS file.
+closeGDS(gdata)
 }

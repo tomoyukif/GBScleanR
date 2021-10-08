@@ -10,12 +10,12 @@ setFiltGenotype(object, ...)
 \S4method{setFiltGenotype}{GbsrGenotypeData}(object)
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{...}{Unused.}
 }
 \value{
-A GbsrGenotypeData object.
+A \link{GbsrGenotypeData} object.
 }
 \description{
 Set the "filt.genotype" node and the "filt.data" node as
@@ -25,10 +25,10 @@ in the primary nodes are used in the
 functions of GBScleanR.
 }
 \details{
-A GbsrGenotypeData object storing information of
+A \link{GbsrGenotypeData} object storing information of
 the primary node of genotype data and
 read count data. All of the functions implemented
-in \code{GBScleanR} check the primary nodes
+in \link{GBScleanR} check the primary nodes
 and use data stored in those nodes. \code{\link[=setCallFilter]{setCallFilter()}}
 create new nodes storing
 filtered genotype calls and read counts in a GDS file
@@ -41,20 +41,33 @@ genotype and read count data, respectively.
 You can set the filtered data again by \code{\link[=setFiltGenotype]{setFiltGenotype()}}.
 }
 \examples{
-gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
-gdata <- setCallFilter(gdata, dp_count = c(5, Inf))
-# Now any functions of GBScleanR reference the genotype data
-# stored in the "filt.genotype" node.
+# Create a GDS file from a sample VCF file.
+vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
+gds_fn <- tempfile("sample", fileext = ".gds")
+gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
 
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
+gdata <- loadGDS(gds_fn)
+
+# Filter out set zero to read counts and 
+# missing to genotype calls of which meet the criteria.
+gdata <- setCallFilter(gdata, dp_count = c(5, Inf))
+
+# Now any functions of [GBScleanR] reference the genotype data
+# stored in the "filt.genotype" node of the GDS file.
+
+# Close and reopen the connection to the GDS file.
 closeGDS(gdata)
 gdata <- loadGDS(genotypeData = gdata)
+
 # If the connection was closed once and re-loaded,
 # raw genotype data is referenced by the functions.
+
 # To set the "filt.genotype" node as genotype data again,
 # run the setFiltGenotype().
 gdata <- setFiltGenotype(gdata)
 
-closeGDS(gdata) # Close the connection to the GDS file
+# Close the connection to the GDS file
+closeGDS(gdata)
 
 }

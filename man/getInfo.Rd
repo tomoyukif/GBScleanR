@@ -10,7 +10,7 @@ getInfo(object, var, valid = TRUE, ...)
 \S4method{getInfo}{GbsrGenotypeData}(object, var, valid = TRUE)
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{var}{A string to indicate which annotation info should be retrieved.}
 
@@ -27,15 +27,17 @@ via SNP calling tools like bcftools and GATK.
 }
 \details{
 If \code{valid = TRUE}, the chromosome information of markers which are
-labeled \code{TRUE} in the ScanAnnotationDataSet slot will be returned.
+labeled \code{TRUE} in the \link{ScanAnnotationDataFrame} slot will be returned.
 \code{\link[=getValidSnp]{getValidSnp()}} tells you which samples are valid.
 }
 \examples{
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 
 # Get mapping qualities (MQ) of markers.
 mq <- getInfo(gdata, "MQ")
 
-closeGDS(gdata) # Close the connection to the GDS file
+# Close the connection to the GDS file.
+closeGDS(gdata)
 }

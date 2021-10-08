@@ -10,7 +10,7 @@ getValidScan(object, parents = FALSE, ...)
 \S4method{getValidScan}{GbsrGenotypeData}(object, parents = FALSE)
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{parents}{A logical value to indicate to set FALSE or TRUE
 to parental samples. If you specify \code{parents = "only"}, this
@@ -26,10 +26,14 @@ with the number of total samples.
 Return a logical vector indicating which are valid scans (samples).
 }
 \examples{
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
+
 getValidScan(gdata)
-closeGDS(gdata) # Close the connection to the GDS file
+
+# Close the connection the GDS file.
+closeGDS(gdata)
 
 }
 \seealso{

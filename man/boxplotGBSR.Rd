@@ -15,19 +15,24 @@ boxplotGBSR(
 )
 }
 \arguments{
-\item{x}{A GbsrGenotypeData object.}
+\item{x}{A \link{GbsrGenotypeData} object.}
 
 \item{stats}{A vector of strings to specify statistics to be drawn.}
 
-\item{target}{Either or both of "snp" and "scan", e.g. \code{target = "snp"} to draw a histogram only for SNPs.}
+\item{target}{Either or both of "snp" and "scan", e.g. \code{target = "snp"}
+to draw a histogram only for SNPs.}
 
-\item{q}{An integer to specify a quantile calculated via \code{\link[=calcReadStats]{calcReadStats()}}.}
+\item{q}{An integer to specify a quantile calculated via
+\code{\link[=calcReadStats]{calcReadStats()}}.}
 
-\item{color}{A named vector "Marker" and "Sample" to specify border color of bins in the histograms.}
+\item{color}{A named vector "Marker" and "Sample" to specify
+border color of bins in the histograms.}
 
-\item{fill}{A named vector "Marker" and "Sample" to specify fill color of bins in the histograms.}
+\item{fill}{A named vector "Marker" and "Sample" to specify
+fill color of bins in the histograms.}
 
-\item{ggargs}{An expression to be internally passed to a ggplot object to be drawn.}
+\item{ggargs}{An expression to be internally passed to
+a ggplot object to be drawn.}
 }
 \value{
 NULL.
@@ -63,26 +68,35 @@ the following values:
 \item{"baseqranksum"}{"Alt Vs. Ref base qualities"},
 }
 
-To draw boxplots for "missing", "het", "raf", you need to run \code{\link[=countGenotype]{countGenotype()}}
-first to obtain statistics. Similary, "dp", "ad_ref", "ad_alt", "rrf" requires
-values obtained via \code{\link[=countRead]{countRead()}}. \code{\link[=calcReadStats]{calcReadStats()}} should be executed before
-drawing boxplots of "mean_ref", "sd_ref", "qtile_ref", "mean_alt", "sd_alt",
-and "qtile_alt". "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
-and "baseqranksum" only work with \code{target = "snp"}, if your data contains those
-values supplied via SNP calling tools like \href{https://gatk.broadinstitute.org/hc/en-us}{GATK}.
+To draw boxplots for "missing", "het", "raf", you need to run
+\code{\link[=countGenotype]{countGenotype()}} first to obtain statistics. Similary, "dp",
+"ad_ref", "ad_alt", "rrf" requires values obtained via \code{\link[=countRead]{countRead()}}.
+\code{\link[=calcReadStats]{calcReadStats()}} should be executed before drawing boxplots of
+"mean_ref", "sd_ref", "qtile_ref", "mean_alt", "sd_alt", and
+"qtile_alt". "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
+and "baseqranksum" only work with \code{target = "snp"}, if your data
+contains those values supplied via SNP calling tools like
+\href{https://gatk.broadinstitute.org/hc/en-us}{GATK}.
 }
 \examples{
-# Draw boxplots of missing rate, heterozygosity, and reference
-# allele frequency per SNP and per sample.
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
+
+# Summarize genotype count information to be used in `boxplotGBSR()`
 gdata <- countGenotype(gdata)
+
 boxplotGBSR(gdata, stats = c("missing", "het", "raf"))
+
+# Calculate means, standard deviations, quantile values of read counts 
+# to be used in `boxplotGBSR()`
+gdata <- calcReadStats(gdata, q = 0.9)
 
 # Draw boxplots of 90 percentile values of reference read counts and
 # alternative read counts per SNP and per sample.
-gdata <- calcReadStats(gdata, q = 0.9)
 boxplotGBSR(gdata, stats = c("qtile_ref", "qtile_alt"), q = 0.9)
 
-closeGDS(gdata) # Close the connection to the GDS file
+# Close the connection to the GDS file
+closeGDS(gdata)
+
 }

@@ -10,7 +10,7 @@ getChromosome(object, valid = TRUE, levels = FALSE, name = FALSE, ...)
 \S4method{getChromosome}{GbsrGenotypeData}(object, valid = TRUE, levels = FALSE, name = FALSE)
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{valid}{A logical value. See details.}
 
@@ -28,19 +28,23 @@ This function returns indexes or names of chromsomes of each SNP or just a
 set of unique chromosome names.
 }
 \details{
-A GDS file created via GBScleanR stores chromosome names as
+A GDS file created via \link{GBScleanR} stores chromosome names as
 sequential integers from 1 to N, where N is the number of chromosomes.
 This function returns those indexes as default. If you need actual names
 of the chromosomes, set \code{name = TRUE}.
 \code{levels = TRUE} gives you only unique chromosome names with length N.
 If \code{valid = TRUE}, the chromosome information of markers which
-are labeled \code{TRUE} in the ScanAnnotationDataSet slot will be returned.
+are labeled \code{TRUE} in the \link{ScanAnnotationDataFrame} slot will be returned.
 \code{\link[=getValidSnp]{getValidSnp()}} tells you which samples are valid.
 }
 \examples{
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
+
 getChromosome(gdata)
-closeGDS(gdata) # Close the connection to the GDS file
+
+# Close the connection to the GDS file.
+closeGDS(gdata)
 
 }

@@ -39,10 +39,11 @@ setSnpFilter(
 )
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{id}{A vector of strings match with scan ID which can
-be retrieve by \code{getScanID()}.}
+be retrieve by \code{getScanID()}. The markers with the specified IDs
+will be filtered out.}
 
 \item{missing}{A numeric value [0-1] to specify
 the maximum missing genotype call rate per marker}
@@ -80,7 +81,7 @@ standard deviation of alternative read counts per marker.}
 \item{...}{Unused.}
 }
 \value{
-A GbsrGenotypeData object with filters on markers.
+A \link{GbsrGenotypeData} object with filters on markers.
 }
 \description{
 Search markers which do not meet the criteria and label them as "invalid".
@@ -97,12 +98,20 @@ labeled as "invalid". To check valid and invalid
 markers, run \code{\link[=getValidSnp]{getValidSnp()}}.
 }
 \examples{
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
-gdata <- setSnpFilter(gdata,
-id = getSnpID(gdata)[1:100],
- missing = 0.2,
- dp = c(5, Inf))
 
-closeGDS(gdata) # Close the connection to the GDS file
+# Summarize the information needed for filtering.
+gdata <- countGenotype(gdata)
+gdata <- countRead(gdata)
+
+gdata <- setSnpFilter(gdata,
+                      id = getSnpID(gdata)[1:100],
+                      missing = 0.2,
+                      dp = c(5, Inf))
+
+# Close the connection to the GDS file.
+closeGDS(gdata)
+
 }

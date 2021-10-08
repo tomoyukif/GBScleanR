@@ -10,7 +10,7 @@ getParents(object, ...)
 \S4method{getParents}{GbsrGenotypeData}(object)
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{...}{Unused.}
 }
@@ -24,12 +24,21 @@ set via \code{\link[=setParents]{setParents()}}. Scan IDs are IDs given by user 
 original VCF file. Member IDs are serial numbers assigned by \code{\link[=setParents]{setParents()}}.
 }
 \examples{
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
+
+# Find the IDs of parental samples.
 parents <- grep("Founder", getScanID(gdata), value = TRUE)
-gdata <- setParents(gdata, parents = parents)
+
+# Set the parents.
+gdata <- setParents(gdata, parents = parents, flip = TRUE)
+
+# Get the information of parents.
 getParents(gdata)
-closeGDS(gdata) # Close the connection to the GDS file
+
+# Close the connection to the GDS file.
+closeGDS(gdata)
 
 
 }

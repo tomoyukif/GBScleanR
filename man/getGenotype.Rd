@@ -10,7 +10,7 @@ getGenotype(object, chr = NULL, node = "raw", parents = FALSE, ...)
 \S4method{getGenotype}{GbsrGenotypeData}(object, chr, node, parents)
 }
 \arguments{
-\item{object}{A gbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{chr}{A integer vector of indexes indicating chromosomes
 to get read count data.}
@@ -28,7 +28,7 @@ by the number of reference alleles at each marker of each sample.
 }
 \description{
 Genotype calls are retrieved from the GDS file linked to the given
-GbsrGenotypeData object.
+\link{GbsrGenotypeData} object.
 }
 \details{
 Genotype call data can be obtained from the "genotype" node,
@@ -43,10 +43,14 @@ On the other hand, the "corrected.genotype" node can be generated
 via the \code{\link[=estGeno]{estGeno()}} function.
 }
 \examples{
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
+
 geno <- getGenotype(gdata)
-closeGDS(gdata) # Close the connection to the GDS file
+
+# Close the connection to the GDS file.
+closeGDS(gdata)
 
 
 }

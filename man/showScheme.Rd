@@ -5,7 +5,7 @@
 \alias{showScheme}
 \alias{showScheme,GbsrGenotypeData-method}
 \alias{showScheme,GbsrScheme-method}
-\title{Show the information stored in a GbsrScheme object}
+\title{Show the information stored in a \link{GbsrScheme} object}
 \usage{
 showScheme(object, ...)
 
@@ -14,7 +14,7 @@ showScheme(object, ...)
 \S4method{showScheme}{GbsrScheme}(object, parents_name)
 }
 \arguments{
-\item{object}{A GbsrGenotypeData object.}
+\item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{...}{Unused.}
 
@@ -25,24 +25,85 @@ NULL. Print the scheme information on the R console.
 }
 \description{
 Print the information of each generation in
-a GbsrScheme object in the scheme
-slot of a GbsrGenotypeData object.
-A GbsrScheme object stores information of a population size,
+a \link{GbsrScheme} object in the scheme
+slot of a \link{GbsrGenotypeData} object.
+A \link{GbsrScheme} object stores information of a population size,
 mating combinations and
 a type of cross applied to each generation of the breeding process
 to generate the population which you are going to
 subject to the \code{estGeno()} function.
 }
 \examples{
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)
 
+############################################################################
+# Biparental F2 population.
 gdata <- setParents(gdata, parents = c("Founder1", "Founder2"))
+
+# setParents gave member ID 1 and 2 to Founder1 and Founder2, respectively.
 gdata <- initScheme(gdata, crosstype = "pair", mating = cbind(c(1:2)))
+
+# Now the progenies of the cross above have member ID 3.
+# If `crosstype = "selfing"` or `"sibling"`, you can omit a `mating` matrix.
 gdata <- addScheme(gdata, crosstype = "self")
+
+############################################################################
+# 8-way RILs with sibling mating.
+# Our example data only have two foudners. Thus, we set first
+# eight samples as parents as example.
+gdata <- setParents(gdata, parents = getScanID(gdata)[1:8])
+
+# We can check the member IDs assigned to the parents.
+getParents(gdata)
+
+# We have eight members with IDs from 1 to 8, now.
+# If you made crosses of 1 x 2, 3 x 4, 5 x 6, 
+# and 7 x 8, run the following.
+gdata <- initScheme(gdata, 
+                    crosstype = "pair",
+                    mating = cbind(c(1:2), c(3:4), c(5:6), c(7:8)))
+
+# Now the progenies of the crosses above have member ID 9, 10, 11,
+# and 12 for each combination of mating.You can check IDs with showScheme().
 showScheme(gdata)
 
-closeGDS(gdata) # Close the connection to the GDS file
+# Then, add the step of 4-way crosses.
+gdata <- addScheme(gdata,
+                   crosstype = "pair",
+                   mating = cbind(c(9:10), c(11:12)))
+
+# Check IDs.
+showScheme(gdata)
+
+# 8-way crosses at the last generation of the paring step.
+gdata <- addScheme(gdata,
+                   crosstype = "pair", 
+                   mating = cbind(c(13:14)))
+
+#' # Check IDs.
+showScheme(gdata)
+
+# Inbreeding by 4 times selfing.
+gdata <- addScheme(gdata, crosstype = "self")
+gdata <- addScheme(gdata, crosstype = "self")
+gdata <- addScheme(gdata, crosstype = "self")
+gdata <- addScheme(gdata, crosstype = "self")
+
+############################################################################
+# Now you can exectute `estGeno()` which requires a [GbsrScheme] object.
+
+# Execute error correction by estimating genotype and haplotype of 
+# founders and offspring.
+gdata <- estGeno(gdata, optim = FALSE)
+
+# `optime = FALSE` in `estGeno()` reduce the calculation time
+# with loosing robustness against error prone markers.
+
+# Close the connection to the GDS file
+closeGDS(gdata) 
+
 }
 \seealso{
 \code{\link[=initScheme]{initScheme()}} and \code{\link[=addScheme]{addScheme()}}
