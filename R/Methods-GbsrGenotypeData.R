@@ -2848,6 +2848,7 @@ setMethod("subsetGDS",
             file.copy(object@data@filename, out_fn, overwrite = TRUE)
             newgds <- gdsfmt::openfn.gds(filename = out_fn, readonly = FALSE)
             
+            .gds_decomp(newgds)
             ls_node <- gdsfmt::ls.gdsn(newgds, recursive = TRUE, include.dirs = FALSE)
             for (i_node in ls_node) {
               if(grepl("annotation/format", i_node)){
@@ -2856,7 +2857,6 @@ setMethod("subsetGDS",
                 }
               }
               newgds_i_node <- gdsfmt::index.gdsn(node = newgds, path = i_node)
-              gdsfmt::compression.gdsn(newgds_i_node, "")
               i_desc <- gdsfmt::objdesp.gdsn(newgds_i_node)
               if(any(i_desc$dim == 0)){
                 next
@@ -2895,13 +2895,10 @@ setMethod("subsetGDS",
                   )
                 }
               }
-              
-              gdsfmt::compression.gdsn(newgds_i_node, "LZMA_RA")
-              gdsfmt::readmode.gdsn(newgds_i_node)
             }
             
+            .gds_comp(newgds)
             gdsfmt::closefn.gds(newgds)
-            gdsfmt::cleanup.gds(newgds$filename, verbose = FALSE)
             
             output <- loadGDS(gds_fn = newgds$filename)
             if (object@data@genotypeVar == "filt.genotype") {
