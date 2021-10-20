@@ -332,14 +332,25 @@ setMethod("gbsrGDS2VCF",
                 have_hap <- FALSE
               }
             }
-            suppressMessages(closeGDS(object))
+            
+            .gds_decomp(object)
+            
             gds_file <- object@data@filename
             if (!grepl(".gds$", gds_file)) {
               gds_file <- paste0(gds_file, ".gds")
             }
             tmp_gds <- sub(".gds", ".tmp.gds", gds_file)
-            file.copy(gds_file, tmp_gds, overwrite = TRUE)
-            tmp_gds <- suppressMessages(loadGDS(tmp_gds))
+            
+            tmp_gds <- gdsfmt::createfn.gds(tmp_gds)
+            ls_gdsn <- gdsfmt::ls.gdsn(object@data@handler)
+            for(i in ls_gdsn){
+              i_node <- gdsfmt::index.gdsn(object@data@handler, i)
+              gdsfmt::copyto.gdsn(tmp_gds$root, i_node)
+            }
+            gdsfmt::closefn.gds(tmp_gds)
+            .gds_comp(object)
+            
+            tmp_gds <- suppressMessages(loadGDS(tmp_gds$filename))
             tmp_gds@snpAnnot <- object@snpAnnot
             tmp_gds@scanAnnot <- object@scanAnnot
             
@@ -2844,12 +2855,15 @@ setMethod("subsetGDS",
               return(NULL)
             }
             
-            oldgds <- object@data@handler
-            closeGDS(object)
-            file.copy(object@data@filename, out_fn, overwrite = TRUE)
-            newgds <- gdsfmt::openfn.gds(filename = out_fn, readonly = FALSE)
+            .gds_decomp(object)
             
-            .gds_decomp(newgds)
+            newgds <- gdsfmt::createfn.gds(out_fn)
+            ls_gdsn <- gdsfmt::ls.gdsn(object@data@handler)
+            for(i in ls_gdsn){
+              i_node <- gdsfmt::index.gdsn(object@data@handler, i)
+              gdsfmt::copyto.gdsn(newgds$root, i_node)
+            }
+            
             ls_node <- gdsfmt::ls.gdsn(newgds, recursive = TRUE, include.dirs = FALSE)
             for (i_node in ls_node) {
               if(grepl("annotation/format", i_node)){
@@ -2901,6 +2915,7 @@ setMethod("subsetGDS",
             .gds_comp(newgds)
             gdsfmt::closefn.gds(newgds)
             
+            .gds_comp(object)
             output <- loadGDS(gds_fn = newgds$filename)
             if (object@data@genotypeVar == "filt.genotype") {
               output <- setFiltGenotype(output)
