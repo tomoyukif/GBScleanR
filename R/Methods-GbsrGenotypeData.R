@@ -2845,6 +2845,7 @@ setMethod("subsetGDS",
             }
             
             oldgds <- object@data@handler
+            closeGDS(object)
             file.copy(object@data@filename, out_fn, overwrite = TRUE)
             newgds <- gdsfmt::openfn.gds(filename = out_fn, readonly = FALSE)
             
