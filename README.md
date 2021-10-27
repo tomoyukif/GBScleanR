@@ -14,6 +14,7 @@ GBScleanR currenly only supports genotype data of biparental populations.
 
 ## Installation
 You can install `GBScleanR` from the Bioconductor repository with running the following code on an R console.
+ * Currently not avaiable from Bioconductor, please install from the GitHub repository.
 
 From Bioconductor:
 ```
