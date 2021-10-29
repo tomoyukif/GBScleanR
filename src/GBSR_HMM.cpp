@@ -22,8 +22,8 @@ double logsum(std::vector<double> & v){
   if(v.size() == 1){
     return v[0];
   }
-  double log_sum;
-  std::vector<double>::size_type count;
+  double log_sum = 0;
+  std::vector<double>::size_type count = 0;
   double neg_inf = -std::numeric_limits<double>::infinity();
   double v_max = *std::max_element(v.begin(), v.end());
   if(std::isinf(v_max)){
@@ -50,8 +50,8 @@ double logsum(std::vector<double> & v){
 
 // Normalize log probabilities
 NumericVector lognorm(NumericVector v){
-  double log_sum;
-  std::vector<double>::size_type count;
+  double log_sum = 0;
+  std::vector<double>::size_type count = 0;
   double v_max = *std::max_element(v.begin(), v.end());
   if(std::isinf(v_max)){
     double even = 1 / (double)v.size();
@@ -80,8 +80,8 @@ NumericVector lognorm(NumericVector v){
 }
 
 void lognorm_vec(vector<double> & v){
-  double log_sum;
-  std::vector<double>::size_type count;
+  double log_sum = 0;
+  std::vector<double>::size_type count = 0;
   double v_max = *std::max_element(v.begin(), v.end());
   
   if(std::isinf(v_max)){
@@ -319,9 +319,13 @@ struct ParInitVit : public Worker {
         sum_v3 += v3[g] * prob_i[g];
       }
       sum_v = sum_v1 + sum_v2 + sum_v3;
-      prob_i[0] = sum_v1 / sum_v;
-      prob_i[1] = sum_v2 / sum_v;
-      prob_i[2] = sum_v3 / sum_v;
+      if(sum_v == 0){
+          prob_i.assign(3, 1/3);
+      } else {
+          prob_i[0] = sum_v1 / sum_v;
+          prob_i[1] = sum_v2 / sum_v;
+          prob_i[2] = sum_v3 / sum_v;
+      }
       double hap_prob = 0.0;
       std::size_t col_i;
       std::size_t n_h = dim[4];
@@ -514,16 +518,20 @@ struct ParCalcPathFounder : public Worker {
           }
           
           sum_v = sum_v1 + sum_v2 + sum_v3;
-          prob_i[0] = sum_v1 / sum_v;
-          prob_i[1] = sum_v2 / sum_v;
-          prob_i[2] = sum_v3 / sum_v;
+          if(sum_v == 0){
+              prob_i.assign(3, 1/3);
+          } else {
+              prob_i[0] = sum_v1 / sum_v;
+              prob_i[1] = sum_v2 / sum_v;
+              prob_i[2] = sum_v3 / sum_v;
+          }
           
           for(std::size_t j1=0; j1<n_p; ++j1){
             if(std::isinf(p_emit1[j1])){
               score_j[j1] = neg_inf;
             } else {
               
-              std::size_t valid_j1;
+              std::size_t valid_j1 = 0;
               for(std::size_t j=0;j<valid_p_indices1.size();++j){
                 valid_j1 = valid_p_indices1[j];
                 if(j1 == valid_j1){
@@ -548,8 +556,8 @@ struct ParCalcPathFounder : public Worker {
         max_j = get_max_int(score_j);
         f_path_m[j2] = max_j;
         
-        std::size_t max_valid_index;
-        std::size_t valid_j1;
+        std::size_t max_valid_index = 0;
+        std::size_t valid_j1 = 0;
         for(std::size_t j=0;j<valid_p_indices1.size();++j){
           valid_j1 = valid_p_indices1[j];
           if(max_j == valid_j1){
@@ -557,7 +565,7 @@ struct ParCalcPathFounder : public Worker {
           }
         }
         
-        std::size_t j2_valid_index;
+        std::size_t j2_valid_index = 0;
         std::size_t valid_j2;
         for(std::size_t j=0;j<valid_p_indices2.size();++j){
           valid_j2 = valid_p_indices2[j];
@@ -601,9 +609,13 @@ struct ParCalcPathFounder : public Worker {
           }
           
           sum_v = sum_v1 + sum_v2 + sum_v3;
-          prob_i[0] = sum_v1 / sum_v;
-          prob_i[1] = sum_v2 / sum_v;
-          prob_i[2] = sum_v3 / sum_v;
+          if(sum_v == 0){
+              prob_i.assign(3, 1/3);
+          } else {
+              prob_i[0] = sum_v1 / sum_v;
+              prob_i[1] = sum_v2 / sum_v;
+              prob_i[2] = sum_v3 / sum_v;
+          }
           
           for(std::size_t k=0; k<n_h; ++k){
             col_i = j2 * n_h + k;
@@ -639,7 +651,7 @@ void last_vit_founder(IntegerVector f_seq,
   
   for(std::size_t i=0; i<n_o; ++i){
     for(std::size_t j1=0; j1<n_p; ++j1){
-      std::size_t valid_j1;
+      std::size_t valid_j1 = 0;
       for(R_xlen_t j=0;j<valid_p_indices.size();++j){
         valid_j1 = valid_p_indices[j];
         if(j1 == valid_j1){
@@ -681,7 +693,7 @@ void backtrack(IntegerMatrix f_path,
     f_prev = f_seq[m];
     f_seq[m-1] = f_path(m , f_prev);
   }
-  Rcpp::Rcout << "\r" << "Backtracking best genotype sequences: Dene!" << std::string(70, ' ');
+  Rcpp::Rcout << "\r" << "Backtracking best genotype sequences: Done!" << std::string(70, ' ');
 }
 
 // Functions for the Viterbi algorithm For OFFSPRING
@@ -784,9 +796,13 @@ struct ParVitOffspring : public Worker {
           sum_v3 += v3[g] * prob_i[g];
         }
         sum_v = sum_v1 + sum_v2 + sum_v3;
-        prob_i[0] = sum_v1 / sum_v;
-        prob_i[1] = sum_v2 / sum_v;
-        prob_i[2] = sum_v3 / sum_v;
+        if(sum_v == 0){
+            prob_i.assign(3, 1/3);
+        } else {
+            prob_i[0] = sum_v1 / sum_v;
+            prob_i[1] = sum_v2 / sum_v;
+            prob_i[2] = sum_v3 / sum_v;
+        }
         
         std::size_t f_geno = f_seq[m];
         std::size_t trans_prob_col;
@@ -1019,12 +1035,11 @@ List run_viterbi(NumericMatrix p_ref,
                        valid_p_indices1);
     }
   }
-  Rcpp::Rcout << "\r" << "Forward founder genotype probability calculation: Dene!" << std::string(70, ' ');
+  Rcpp::Rcout << "\r" << "Forward founder genotype probability calculation: Done!" << std::string(70, ' ');
   
   backtrack(f_path,
             f_seq,
             dim);
-  
   
   ParVitOffspring vit_offspring(o_seq,
                                 iter_sample,
@@ -1155,9 +1170,13 @@ struct ParFB : public Worker {
             sum_v3 += v3[g] * prob_i[g];
           }
           sum_v = sum_v1 + sum_v2 + sum_v3;
-          prob_i[0] = sum_v1 / sum_v;
-          prob_i[1] = sum_v2 / sum_v;
-          prob_i[2] = sum_v3 / sum_v;
+          if(sum_v == 0){
+              prob_i.assign(3, 1/3);
+          } else {
+              prob_i[0] = sum_v1 / sum_v;
+              prob_i[1] = sum_v2 / sum_v;
+              prob_i[2] = sum_v3 / sum_v;
+          }
           
           j = p_geno[0];
           for(std::size_t k=0; k<n_h; ++k){
@@ -1194,9 +1213,13 @@ struct ParFB : public Worker {
             sum_v3 += v3[g] * prob_i[g];
           }
           sum_v = sum_v1 + sum_v2 + sum_v3;
-          prob_i[0] = sum_v1 / sum_v;
-          prob_i[1] = sum_v2 / sum_v;
-          prob_i[2] = sum_v3 / sum_v;
+          if(sum_v == 0){
+              prob_i.assign(3, 1/3);
+          } else {
+              prob_i[0] = sum_v1 / sum_v;
+              prob_i[1] = sum_v2 / sum_v;
+              prob_i[2] = sum_v3 / sum_v;
+          }
           
           std::size_t j = p_geno[m];
           

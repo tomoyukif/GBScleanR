@@ -734,6 +734,8 @@ setMethod("estGeno",
 .getBestSeq <- function(param_list, outprob) {
   param_list$trans_prob <- matrix(param_list$trans_prob,
                                   nrow = dim(param_list$trans_prob)[1])
+  param_list$bias[param_list$bias < param_list$error_rate[2]] <- param_list$error_rate[2]
+  param_list$bias[param_list$bias > param_list$error_rate[1]] <- param_list$error_rate[1]
   
   out_list <- run_viterbi(
     p_ref = param_list$reads$p_ref,
@@ -947,9 +949,8 @@ setMethod("estGeno",
 
 .runCycle <- function(param_list, outprob, outgeno) {
   param_list$count <- param_list$count + 1
-  message("Cycle ", param_list$count, "...")
   cycle <- paste0("Cycle ", param_list$count, ": ")
-  msg <- paste0("\r", cycle, " Forward path...")
+  msg <- paste0("\r", cycle, "Forward path...")
   message(msg)
   
   if (param_list$flip) {
