@@ -1,0 +1,22 @@
+library(GBScleanR)
+
+vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
+gds_fn <- tempfile("sample", fileext = ".gds")
+gbsrVCF2GDS(vcf_fn, gds_fn, TRUE, FALSE)
+on.exit({unlink(gds_fn)})
+gds <- loadGDS(gds_fn)
+
+test_that("estGeno", {
+    gds <- setParents(gds, grep("Founder", getScanID(gds), value=TRUE))
+    gds <- initScheme(gds, "pair", cbind(c(1:2)))
+    gds <- addScheme(gds, "self")
+    gds <- estGeno(gds)
+    p_hap <- getHaplotype(gds, parents = "only")
+    expect_true(all(p_hap[,,1] == 1))
+    expect_true(all(p_hap[,,2] == 2))
+    hap <- getHaplotype(gds)
+    expect_true(all(dim(hap) == c(2, nsnp(gds), nscan(gds))))
+    p_geno <- getGenotype(gds, node = "parents")
+    expect_true(nrow(p_geno) == sum(getParents(gds, TRUE)) * 2)
+    expect_true(ncol(p_geno) == nsnp(gds, FALSE))
+})
