@@ -2051,7 +2051,7 @@ setGeneric("setParents", function(object,
 #'
 #' @param object A [GbsrGenotypeData] object.
 #' @param bool If TRUE, the function returns a logical vector indicating
-#' which scans (samples) have been set as parents.ぼ
+#' which scans (samples) have been set as parents.
 #' @param ... Unused.
 #'
 #' @export

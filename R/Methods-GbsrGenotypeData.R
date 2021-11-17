@@ -2454,10 +2454,10 @@ setMethod("subsetGDS",
 
             .gds_decomp(object)
 
-            if(!file.copy(.getGDSFileName(object), out_fn)){
-              stop("Failed to create a new file to the following path \n",
-                   out_fn, call. = FALSE)
-            }
+            # if(!file.copy(.getGDSFileName(object), out_fn)){
+            #   stop("Failed to create a new file to the following path \n",
+            #        out_fn, call. = FALSE)
+            # }
             newgds <- openfn.gds(out_fn, FALSE)
 
             all_data_node <- ls.gdsn(newgds,

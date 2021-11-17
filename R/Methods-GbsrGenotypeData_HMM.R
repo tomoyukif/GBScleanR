@@ -710,7 +710,7 @@ setMethod("estGeno",
 
   bias1 <- .getBias(best_seq, 1, ref, alt)
   bias2 <- .getBias(best_seq, 2, ref, alt)
-  bias_cor <- suppressWarnings(cor(bias1$bias, bias2$bias, "pair"))
+  bias_cor <- cor(bias1$bias, bias2$bias, "pair")
   if (!is.na(bias_cor) & bias_cor > 0.7) {
     bias <- .sumUpBias(bias1, bias2)
   } else {
