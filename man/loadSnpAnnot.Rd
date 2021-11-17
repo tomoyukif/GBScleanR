@@ -18,7 +18,8 @@ loadSnpAnnot(object, ...)
 A \link{GbsrGenotypeData} object.
 }
 \description{
-All the data stored in the \code{SnpAnnotationnDataFrame} slot of the \link{GbsrGenotypeData}
+All the data stored in the \code{SnpAnnotationnDataFrame} slot
+of the \link{GbsrGenotypeData}
 object can be saved in the GDS file linked to the given \link{GbsrGenotypeData}
 object via \code{\link[=saveSnpAnnot]{saveSnpAnnot()}}. You can load the saved data using this
 function.
@@ -30,23 +31,23 @@ gds_fn <- tempfile("sample", fileext = ".gds")
 gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
 
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Save data stored in a [ScanAnnotationDataFrame] object
 # linked in the slot of the `GbsrGenotypeData.`
-gdata <- saveSnpAnnot(gdata)
+gds <- saveSnpAnnot(gds)
 
 # Close the connection to the GDS file
-closeGDS(gdata)
+closeGDS(gds)
 
 # Open the connection to the GDS file again.
-gdata <- loadGDS(genotypeData = gdata)
+gds <- loadGDS(gds)
 
 # Load the saved [SnpAnnotationDataFrame] object
-gdata <- loadSnpAnnot(gdata)
+gds <- loadSnpAnnot(gds)
 
 # Close the connection to the GDS file
-closeGDS(gdata)
+closeGDS(gds)
 
 
 }

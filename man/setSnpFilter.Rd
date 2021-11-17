@@ -7,7 +7,7 @@
 \usage{
 setSnpFilter(
   object,
-  id,
+  id = NA_integer_,
   missing = 1,
   het = c(0, 1),
   mac = 0,
@@ -25,31 +25,31 @@ setSnpFilter(
 \S4method{setSnpFilter}{GbsrGenotypeData}(
   object,
   id,
-  missing = 1,
-  het = c(0, 1),
-  mac = 0,
-  maf = 0,
-  ad_ref = c(0, Inf),
-  ad_alt = c(0, Inf),
-  dp = c(0, Inf),
-  mean_ref = c(0, Inf),
-  mean_alt = c(0, Inf),
-  sd_ref = Inf,
-  sd_alt = Inf
+  missing,
+  het,
+  mac,
+  maf,
+  ad_ref,
+  ad_alt,
+  dp,
+  mean_ref,
+  mean_alt,
+  sd_ref,
+  sd_alt
 )
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
 
-\item{id}{A vector of strings match with scan ID which can
-be retrieve by \code{getScanID()}. The markers with the specified IDs
+\item{id}{A vector of integers matching with snp ID which can
+be retrieve by \code{getSnpID()}. The markers with the specified IDs
 will be filtered out.}
 
 \item{missing}{A numeric value [0-1] to specify
 the maximum missing genotype call rate per marker}
 
-\item{het}{A numeric value [0-1] to specify
-the maximum heterozygous genotype call rate per marker}
+\item{het}{A numeric vector with length two [0-1] to specify
+the minimum and maximum heterozygous genotype call rate per marker}
 
 \item{mac}{A integer value to specify the minimum minor allele
 count per marker}
@@ -100,18 +100,18 @@ markers, run \code{\link[=getValidSnp]{getValidSnp()}}.
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Summarize the information needed for filtering.
-gdata <- countGenotype(gdata)
-gdata <- countRead(gdata)
+gds <- countGenotype(gds)
+gds <- countRead(gds)
 
-gdata <- setSnpFilter(gdata,
-                      id = getSnpID(gdata)[1:100],
+gds <- setSnpFilter(gds,
+                      id = getSnpID(gds)[1:100],
                       missing = 0.2,
                       dp = c(5, Inf))
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }

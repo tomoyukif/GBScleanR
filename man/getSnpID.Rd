@@ -5,14 +5,16 @@
 \alias{getSnpID,GbsrGenotypeData-method}
 \title{Obtain SNP ID}
 \usage{
-getSnpID(object, valid = TRUE, ...)
+getSnpID(object, valid = TRUE, chr = NULL, ...)
 
-\S4method{getSnpID}{GbsrGenotypeData}(object, valid = TRUE)
+\S4method{getSnpID}{GbsrGenotypeData}(object, valid, chr)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{valid}{A logical value. See details.}
+
+\item{chr}{A index to spefcify chromosome to get information.}
 
 \item{...}{Unused.}
 }
@@ -30,11 +32,11 @@ labeled \code{TRUE} in the \link{ScanAnnotationDataFrame} slot will be returned.
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
-getSnpID(gdata)
+getSnpID(gds)
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }

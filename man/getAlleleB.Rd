@@ -5,14 +5,16 @@
 \alias{getAlleleB,GbsrGenotypeData-method}
 \title{Obtain alternative allele information of each SNP marker}
 \usage{
-getAlleleB(object, valid = TRUE, ...)
+getAlleleB(object, valid = TRUE, chr = NULL, ...)
 
-\S4method{getAlleleB}{GbsrGenotypeData}(object, valid = TRUE)
+\S4method{getAlleleB}{GbsrGenotypeData}(object, valid, chr)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{valid}{A logical value. See details.}
+
+\item{chr}{A index to spefcify chromosome to get information.}
 
 \item{...}{Unused.}
 }
@@ -31,11 +33,11 @@ labeled \code{TRUE} in the \link{ScanAnnotationDataFrame} slot will be returned.
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
-getAlleleB(gdata)
+getAlleleB(gds)
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }

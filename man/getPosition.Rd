@@ -5,14 +5,16 @@
 \alias{getPosition,GbsrGenotypeData-method}
 \title{Obtain physical position information of each SNP marker}
 \usage{
-getPosition(object, valid = TRUE, ...)
+getPosition(object, valid = TRUE, chr = NULL, ...)
 
-\S4method{getPosition}{GbsrGenotypeData}(object, valid = TRUE)
+\S4method{getPosition}{GbsrGenotypeData}(object, valid, chr)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{valid}{A logical value. See details.}
+
+\item{chr}{A index to spefcify chromosome to get information.}
 
 \item{...}{Unused.}
 }
@@ -30,11 +32,11 @@ are labeled \code{TRUE} in the \link{ScanAnnotationDataFrame} slot will be retur
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
-getPosition(gdata)
+getPosition(gds)
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }

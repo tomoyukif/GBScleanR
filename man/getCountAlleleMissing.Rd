@@ -7,7 +7,7 @@
 \usage{
 getCountAlleleMissing(object, target = "snp", valid = TRUE, prop = FALSE, ...)
 
-\S4method{getCountAlleleMissing}{GbsrGenotypeData}(object, target = "snp", valid = TRUE, prop = FALSE)
+\S4method{getCountAlleleMissing}{GbsrGenotypeData}(object, target, valid, prop)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
@@ -37,16 +37,16 @@ labeled \code{TRUE} in the \link{ScanAnnotationDataFrame} slot will be returned.
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Summarize the genotype count information and store them in the
-# [SnpAnnotationDataFrame] and [ScanAnnotationDataFrame] objects 
+# [SnpAnnotationDataFrame] and [ScanAnnotationDataFrame] objects
 # linked at the slots of the [GbsrGenotypeData] object.
-gdata <- countGenotype(gdata)
+gds <- countGenotype(gds)
 
-getCountAlleleMissing(gdata)
+getCountAlleleMissing(gds)
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }

@@ -5,9 +5,9 @@
 \alias{getInfo,GbsrGenotypeData-method}
 \title{Obtain information stored in the "annotation/info" node}
 \usage{
-getInfo(object, var, valid = TRUE, ...)
+getInfo(object, var, valid = TRUE, chr = NULL, ...)
 
-\S4method{getInfo}{GbsrGenotypeData}(object, var, valid = TRUE)
+\S4method{getInfo}{GbsrGenotypeData}(object, var, valid, chr)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
@@ -15,6 +15,8 @@ getInfo(object, var, valid = TRUE, ...)
 \item{var}{A string to indicate which annotation info should be retrieved.}
 
 \item{valid}{A logical value. See details.}
+
+\item{chr}{A index to spefcify chromosome to get information.}
 
 \item{...}{Unused.}
 }
@@ -33,11 +35,11 @@ labeled \code{TRUE} in the \link{ScanAnnotationDataFrame} slot will be returned.
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Get mapping qualities (MQ) of markers.
-mq <- getInfo(gdata, "MQ")
+mq <- getInfo(gds, "MQ")
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 }

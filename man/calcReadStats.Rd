@@ -4,11 +4,11 @@
 \alias{calcReadStats}
 \alias{calcReadStats,GbsrGenotypeData-method}
 \title{Calculate mean, standard deviation, and quantile values of
-reads per sample and per marker.}
+normalized read counts per sample and per marker.}
 \usage{
 calcReadStats(object, target = "both", q = NULL, ...)
 
-\S4method{calcReadStats}{GbsrGenotypeData}(object, target = "both", q = NULL)
+\S4method{calcReadStats}{GbsrGenotypeData}(object, target, q)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
@@ -23,10 +23,13 @@ calcReadStats(object, target = "both", q = NULL, ...)
 A \link{GbsrGenotypeData} object with read statistics information.
 }
 \description{
-This function calculates several summary statistics of read counts
-per marker and per sample. Those values will be stored
-in the SnpAnnotaionDataFrame slot and the \link{ScanAnnotationDataFrame} slot
-and obtained via getter functions, e.g.
+This function first calculates normalized allele read counts by dividing
+allele read counts at each marker in each sample by the total allele read
+of the sample followed by multiplication by 10^6. In other words, it
+calculates reads per million (rpm). Then, the function calculates
+mean, standard deviation, quantile values of rpm per marker and per sample.
+The results will be stored in the SnpAnnotaionDataFrame slot and the
+\link{ScanAnnotationDataFrame} slot and obtained via getter functions, e.g.
 \code{\link[=getMeanReadRef]{getMeanReadRef()}} and \code{\link[=getQtileReadAlt]{getQtileReadAlt()}}.
 }
 \details{
@@ -35,37 +38,38 @@ or the "annotation/format/AD/filt.data" node of the GDS file
 with \code{node = "raw"} or \code{node = "filt"}, respectively.
 The \code{\link[=setCallFilter]{setCallFilter()}} function generate filtered read count data
 in the "annotation/format/AD/filt.data" node which can be accessed as
-mentioned above.
+mentioned above. The calculation of mean, standard deviation, and quantile
+values omits 0 in the read count data.
 }
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Calculate means, standard deviations, quantiles of read counts
-# per marker and per sample with or without standardization of 
+# per marker and per sample with or without standardization of
 # the counts and store them in the
-# [SnpAnnotationDataFrame] and [ScanAnnotationDataFrame] objects 
+# [SnpAnnotationDataFrame] and [ScanAnnotationDataFrame] objects
 # linked at the slots of the [GbsrGenotypeData] object.
-gdata <- calcReadStats(gdata, q = 0.5)
+gds <- calcReadStats(gds, q = 0.5)
 
-# Get the means of reference allele read counts per marker.
-mean_reference_read_depth <- getMeanReadRef(gdata, target = "snp")
+# Get the means of reference allele read counts (rpm) per marker.
+mean_reference_read_depth <- getMeanReadRef(gds, target = "snp")
 
 # Get the 0.5 percentiles (medians) of the alternative allele
-# read counts per marker.
-median_reference_read_depth <- getQtileReadAlt(gdata,
+# read counts (rpm) per marker.
+median_reference_read_depth <- getQtileReadAlt(gds,
                                                target = "snp",
                                                q = 0.5)
-# Draw histograms of the means of reference allele read counts
-# per sample and marker.                      
-histGBSR(gdata, stats = "mean_ref")
+# Draw histograms of the means of reference allele read counts (rpm)
+# per sample and marker.
+histGBSR(gds, stats = "mean_ref")
 
-# Draw histograms of the 0.5 percentiles (medians) of 
-# alternative allele read counts per sample and marker.
-histGBSR(gdata, stats = "qtile_alt", q = 0.5)
+# Draw histograms of the 0.5 percentiles (medians) of
+# alternative allele read counts (rpm) per sample and marker.
+histGBSR(gds, stats = "qtile_alt", q = 0.5)
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }

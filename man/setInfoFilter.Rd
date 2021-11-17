@@ -17,16 +17,7 @@ setInfoFilter(
   ...
 )
 
-\S4method{setInfoFilter}{GbsrGenotypeData}(
-  object,
-  mq = 0,
-  fs = Inf,
-  qd = 0,
-  sor = Inf,
-  mqranksum = c(-Inf, Inf),
-  readposranksum = c(-Inf, Inf),
-  baseqranksum = c(-Inf, Inf)
-)
+\S4method{setInfoFilter}{GbsrGenotypeData}(object, mq, fs, qd, sor, mqranksum, readposranksum, baseqranksum)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
@@ -74,10 +65,10 @@ in \href{https://gatk.broadinstitute.org/hc/en-us}{GATK's web site}.
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
-gdata <- setInfoFilter(gdata, mq = 40, qd = 20)
+gds <- setInfoFilter(gds, mq = 40, qd = 20)
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 }

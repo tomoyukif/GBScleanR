@@ -26,12 +26,12 @@ Check if a GDS file has been opened or not.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 
 # Instantiation of [GbsrGenotypeData]
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Check connection to the GDS file
-isOpenGDS(gdata)
+isOpenGDS(gds)
 
 # Close the connection to the GDS file
-closeGDS(gdata) 
+closeGDS(gds)
 
 }

@@ -5,12 +5,14 @@
 \alias{getRead,GbsrGenotypeData-method}
 \title{Get read count data.}
 \usage{
-getRead(object, chr = NULL, node = "raw", parents = FALSE, ...)
+getRead(object, valid = TRUE, chr = NULL, node = "raw", parents = FALSE, ...)
 
-\S4method{getRead}{GbsrGenotypeData}(object, chr, node, parents)
+\S4method{getRead}{GbsrGenotypeData}(object, valid, chr, node, parents)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
+
+\item{valid}{A logical value. See details.}
 
 \item{chr}{A integer vector of indexes indicating
 chromosomes to get read count data.}
@@ -32,22 +34,27 @@ Read counts for reference allele and alternative allele are retrieved
 from the GDS file linked to the given \link{GbsrGenotypeData} object.
 }
 \details{
-Read count data can be obtained from the "annotation/format/AD/data" node
-or the "annotation/format/AD/filt.data" node of the GDS file with
-\code{node = "raw"} or \code{node = "filt"}, respectively.
-The \code{\link[=setCallFilter]{setCallFilter()}} function generate filtered read count data
+Read count data can be obtained from the "annotation/format/AD/data" node,
+the "annotation/format/AD/norm" node or the
+"annotation/format/AD/filt.data" node of the GDS file with
+\code{node = "raw"},  \code{node = "norm"}, or \code{node = "filt"}, respectively.
+The \code{\link[=calcReadStats]{calcReadStats()}} function generate normalized read count data
+in the "annotation/format/AD/norm" node, while \code{\link[=setCallFilter]{setCallFilter()}}
+function generate filtered read count data
 in the "annotation/format/AD/filt.data" node which can be accessed as
 mentioned above.
+If \code{valid = TRUE}, read counts for only valid marker and valid samples will
+be obtained.
 }
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
-read <- getRead(gdata)
+read <- getRead(gds)
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }
 \seealso{

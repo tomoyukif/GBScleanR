@@ -5,9 +5,9 @@
 \alias{countRead,GbsrGenotypeData-method}
 \title{Count reads per sample and per marker.}
 \usage{
-countRead(object, target = "both", node = "", ...)
+countRead(object, target = "both", node = "raw", ...)
 
-\S4method{countRead}{GbsrGenotypeData}(object, target = "both", node = "")
+\S4method{countRead}{GbsrGenotypeData}(object, target, node)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
@@ -39,23 +39,23 @@ mentioned above.
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Summarize the read count information and store them in the
-# [SnpAnnotationDataFrame] and [ScanAnnotationDataFrame] objects 
+# [SnpAnnotationDataFrame] and [ScanAnnotationDataFrame] objects
 # linked at the slots of the [GbsrGenotypeData] object.
-gdata <- countRead(gdata)
+gds <- countRead(gds)
 
 # Get the total read counts per marker
-read_depth_per_marker <- getCountRead(gdata, target = "snp")
+read_depth_per_marker <- getCountRead(gds, target = "snp")
 
 # Get the proportion of reference allele rads per marker.
-reference_read_freq <- getCountReadRef(gdata, target = "snp", prop = TRUE)
+reference_read_freq <- getCountReadRef(gds, target = "snp", prop = TRUE)
 
 # Draw histgrams of reference allele read counts per sample and marker.
-histGBSR(gdata, stats = "ad_ref")
+histGBSR(gds, stats = "ad_ref")
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }

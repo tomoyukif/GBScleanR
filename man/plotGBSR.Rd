@@ -11,14 +11,13 @@ plotGBSR(
   q = 0.5,
   lwd = 0.5,
   binwidth = NULL,
-  color = c(Marker = "darkblue", Ref = "darkgreen", Het = "magenta", Alt = "blue"),
-  ggargs = NULL
+  color = c(Marker = "darkblue", Ref = "darkgreen", Het = "magenta", Alt = "blue")
 )
 }
 \arguments{
 \item{x}{A \link{GbsrGenotypeData} object.}
 
-\item{stats}{A vector of strings to specify statistics to be drawn.}
+\item{stats}{A string to specify statistics to be drawn.}
 
 \item{coord}{A vector with two integer specifying the number of rows
 and columns to draw faceted line plots for chromosomes.}
@@ -29,16 +28,15 @@ and columns to draw faceted line plots for chromosomes.}
 \item{lwd}{A numeric value to specify the line width in plots.}
 
 \item{binwidth}{An integer to specify bin width of the histogram.
-This argument only work with \code{stats = "marker"} and is passed to the ggplot function.}
+This argument only work with \code{stats = "marker"} and is passed to the ggplot
+function.}
 
 \item{color}{A strings vector named "Marker", "Ref", "Het", "Alt"
-to specify line colors. \verb{stats = "geno} only requires "Ref", "Het" and "Alt", while others uses the value named "Marker".}
-
-\item{ggargs}{An expression to be internally passed to a ggplot
-object to be drawn.}
+to specify line colors. \verb{stats = "geno} only requires "Ref", "Het" and "Alt",
+while others uses the value named "Marker".}
 }
 \value{
-NULL.
+A ggplot object.
 }
 \description{
 Draw line plots of specified statistics
@@ -90,16 +88,17 @@ gdata <- loadGDS(gds_fn)
 # Summarize genotype count information to be used in `plotGBSR()`
 gdata <- countGenotype(gdata)
 
-# Draw line plots of missing rate, heterozygosity, proportion of genotype calls per SNP.
-plotGBSR(gdata, stats = c("missing", "het", "raf", "geno"))
+# Draw line plots of missing rate, heterozygosity, proportion of genotype
+# calls per SNP.
+plotGBSR(gdata, stats = "missing")
 
-# Calculate means, standard deviations, quantile values of read counts 
+# Calculate means, standard deviations, quantile values of read counts
 # to be used in `plotGBSR()`
 gdata <- calcReadStats(gdata, q = 0.9)
 
 # Draw line plots of 90 percentile values of reference read counts and
 # alternative read counts per SNP and per sample.
-plotGBSR(gdata, stats = c("qtile_ref", "qtile_alt"), q = 0.9)
+plotGBSR(gdata, stats = "qtile_ref", q = 0.9)
 
 # Close the connection to the GDS file
 closeGDS(gdata)

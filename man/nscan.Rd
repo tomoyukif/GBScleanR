@@ -7,7 +7,7 @@
 \usage{
 nscan(object, valid = TRUE, ...)
 
-\S4method{nscan}{GbsrGenotypeData}(object, valid = TRUE)
+\S4method{nscan}{GbsrGenotypeData}(object, valid)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
@@ -32,12 +32,12 @@ the number of over all samples, set \code{valid = FALSE}.
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
-nscan(gdata)
+nscan(gds)
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }
 \seealso{

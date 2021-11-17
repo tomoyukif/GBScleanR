@@ -5,17 +5,9 @@
 \alias{gbsrGDS2VCF,GbsrGenotypeData-method}
 \title{Write a VCF file based on data in a GDS file}
 \usage{
-gbsrGDS2VCF(
-  object,
-  out_fn,
-  node = "raw",
-  valid = TRUE,
-  out_fmt = NULL,
-  out_info = NULL,
-  ...
-)
+gbsrGDS2VCF(object, out_fn, node = "raw", incl_parents = TRUE, ...)
 
-\S4method{gbsrGDS2VCF}{GbsrGenotypeData}(object, out_fn, node, valid, out_fmt, out_info)
+\S4method{gbsrGDS2VCF}{GbsrGenotypeData}(object, out_fn, node, incl_parents)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
@@ -26,37 +18,32 @@ gbsrGDS2VCF(
 genotype data, filtered genotype data, or corrected genotype data,
 respectively.}
 
-\item{valid}{A logical value to specify whether to output valid markers
-and samples only or all.}
-
-\item{out_fmt}{A character vector to specify which variables in
-the annotation/format node should be output.}
-
-\item{out_info}{A character vector to specify which variables in
-the annotation/info node should be output.}
+\item{incl_parents}{A logical value to specify whether parental
+samples should be included in an output VCF file or not.}
 
 \item{...}{Unused.}
 }
 \value{
-Create a VCF file at location specified by out_fn.
-The connection to the GDS file in the input \link{GbsrGenotypeData}
-object will be automatically closed.
+The path to the VCF file.
 }
 \description{
 Write out a VCF file with raw, filtered, or corrected genotype data
 stored in a GDS file. The output VCF file contains only the GT filed,
 while other annotations, AD, DP and other information will be omitted.
 }
+\details{
+Create a VCF file at location specified by out_fn.
+The connection to the GDS file in the input \link{GbsrGenotypeData}
+object will be automatically closed.
+}
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Create a VCF file with data from the GDS file
-#  connected to the [GbsrGenotypeData] oobject. 
+#  connected to the [GbsrGenotypeData] oobject.
 out_fn <- tempfile("sample_out", fileext = ".vcf.gz")
-gbsrGDS2VCF(gdata, out_fn)
-
-# gbsrGDS2VCF() closes the connection to the GDS file of the gdata object.
+gbsrGDS2VCF(gds, out_fn)
 
 }

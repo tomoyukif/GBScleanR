@@ -7,7 +7,7 @@
 \usage{
 getCountAlleleAlt(object, target = "snp", valid = TRUE, prop = FALSE, ...)
 
-\S4method{getCountAlleleAlt}{GbsrGenotypeData}(object, target = "snp", valid = TRUE, prop = FALSE)
+\S4method{getCountAlleleAlt}{GbsrGenotypeData}(object, target, valid, prop)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
@@ -17,7 +17,8 @@ getCountAlleleAlt(object, target = "snp", valid = TRUE, prop = FALSE, ...)
 \item{valid}{A logical value. See details.}
 
 \item{prop}{A logical value whether to return values as proportions
-of total alternative allele counts to total non missing allele counts or not.}
+of total alternative allele counts to total non missing allele
+counts or not.}
 
 \item{...}{Unused.}
 }
@@ -36,9 +37,9 @@ labeled \code{TRUE} in the \link{ScanAnnotationDataFrame} slot will be returned.
 }
 \examples{
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
-gdata <- countGenotype(gdata)
-getCountAlleleAlt(gdata)
-closeGDS(gdata) # Close the connection to the GDS file
+gds <- loadGDS(gds_fn)
+gds <- countGenotype(gds)
+getCountAlleleAlt(gds)
+closeGDS(gds) # Close the connection to the GDS file
 
 }

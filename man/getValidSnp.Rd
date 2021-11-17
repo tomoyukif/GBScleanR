@@ -5,12 +5,14 @@
 \alias{getValidSnp,GbsrGenotypeData-method}
 \title{Return a logical vector indicating which are valid SNP markers.}
 \usage{
-getValidSnp(object, ...)
+getValidSnp(object, chr = NULL, ...)
 
-\S4method{getValidSnp}{GbsrGenotypeData}(object)
+\S4method{getValidSnp}{GbsrGenotypeData}(object, chr)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
+
+\item{chr}{A index to spefcify chromosome to get information.}
 
 \item{...}{Unused.}
 }
@@ -24,12 +26,12 @@ Return a logical vector indicating which are valid SNP markers.
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
-getValidSnp(gdata)
+getValidSnp(gds)
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }
 \seealso{

@@ -19,25 +19,23 @@ setCallFilter(
   snp_dp_qtile = c(0, 1),
   snp_ref_qtile = c(0, 1),
   snp_alt_qtile = c(0, 1),
-  omit_geno = NULL,
   ...
 )
 
 \S4method{setCallFilter}{GbsrGenotypeData}(
   object,
-  dp_count = c(0, Inf),
-  ref_count = c(0, Inf),
-  alt_count = c(0, Inf),
-  norm_dp_count = c(0, Inf),
-  norm_ref_count = c(0, Inf),
-  norm_alt_count = c(0, Inf),
-  scan_dp_qtile = c(0, 1),
-  scan_ref_qtile = c(0, 1),
-  scan_alt_qtile = c(0, 1),
-  snp_dp_qtile = c(0, 1),
-  snp_ref_qtile = c(0, 1),
-  snp_alt_qtile = c(0, 1),
-  omit_geno = NULL
+  dp_count,
+  ref_count,
+  alt_count,
+  norm_dp_count,
+  norm_ref_count,
+  norm_alt_count,
+  scan_dp_qtile,
+  scan_ref_qtile,
+  scan_alt_qtile,
+  snp_dp_qtile,
+  snp_ref_qtile,
+  snp_alt_qtile
 )
 }
 \arguments{
@@ -69,7 +67,8 @@ and upper limit of quantile of total read counts in each scan (sample).}
 and upper limit of quantile of reference read counts in each scan (sample).}
 
 \item{scan_alt_qtile}{A numeric vector with length two specifying lower
-and upper limit of quantile of alternative read counts in each scan (sample).}
+and upper limit of quantile of alternative read counts in each
+scan (sample).}
 
 \item{snp_dp_qtile}{A numeric vector with length two specifying lower
 and upper limit of quantile of total read counts in each SNP marker}
@@ -79,9 +78,6 @@ and upper limit of quantile of reference read counts in each SNP marker.}
 
 \item{snp_alt_qtile}{A numeric vector with length two specifying lower
 and upper limit of quantile of alternative read counts in each SNP marker.}
-
-\item{omit_geno}{A vector of string with combinations of "ref", "het",
-and "alt" to remove specified genotype calls.}
 
 \item{...}{Unused.}
 }
@@ -103,7 +99,8 @@ by the total read count of each sample. \code{scan_dp_qtile}, \code{scan_ref_qti
 and \code{scan_alt_qtile} work similarly but use quantile values of read counts
 of each sample to decide the lower and upper limit of read counts.
 This function generate two new nodes in the GDS file linked with
-the given \link{GbsrGenotypeData} object. The new nodes "filt.data" in the AD node
+the given \link{GbsrGenotypeData} object. The new nodes "filt.data"
+in the AD node
 and "filt.genotype" contains read count data and genotype data
 after filtering, respectively.
 To reset the filter applied by setCallFilter(), run \code{\link[=setRawGenotype]{setRawGenotype()}}.
@@ -115,19 +112,19 @@ gds_fn <- tempfile("sample", fileext = ".gds")
 gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
 
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Filter out genotype calls supported by less than 5 reads.
-gdata <- setCallFilter(gdata, dp_count = c(5, Inf))
+gds <- setCallFilter(gds, dp_count = c(5, Inf))
 
 # Filter out genotype calls supported by reads less than
 # the 20 percentile of read counts per marker in each sample.
-gdata <- setCallFilter(gdata, scan_dp_qtile = c(0.2, 1))
+gds <- setCallFilter(gds, scan_dp_qtile = c(0.2, 1))
 
 # Reset the filter
-gdata <- setRawGenotype(gdata)
+gds <- setRawGenotype(gds)
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }

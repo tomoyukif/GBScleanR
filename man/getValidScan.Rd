@@ -7,7 +7,7 @@
 \usage{
 getValidScan(object, parents = FALSE, ...)
 
-\S4method{getValidScan}{GbsrGenotypeData}(object, parents = FALSE)
+\S4method{getValidScan}{GbsrGenotypeData}(object, parents)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
@@ -28,12 +28,12 @@ Return a logical vector indicating which are valid scans (samples).
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
-getValidScan(gdata)
+getValidScan(gds)
 
 # Close the connection the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }
 \seealso{

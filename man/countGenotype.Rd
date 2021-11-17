@@ -5,9 +5,9 @@
 \alias{countGenotype,GbsrGenotypeData-method}
 \title{Count genotype calls and alleles per sample and per marker.}
 \usage{
-countGenotype(object, target = "both", node = "", ...)
+countGenotype(object, target = "both", node = "raw", ...)
 
-\S4method{countGenotype}{GbsrGenotypeData}(object, target = "both", node = "")
+\S4method{countGenotype}{GbsrGenotypeData}(object, target, node)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
@@ -25,7 +25,8 @@ A \link{GbsrGenotypeData} object with genotype count information.
 This function calculates several summary statistics of
 genotype calls and alleles per marker and per sample.
 Those values will be stored in the SnpAnnotaionDataFrame slot
-and the \link{ScanAnnotationDataFrame} slot and obtained via getter functions, e.g.s
+and the \link{ScanAnnotationDataFrame} slot and obtained via getter
+functions, e.g.s
 \code{\link[=getCountGenoRef]{getCountGenoRef()}}, \code{\link[=getCountAlleleRef]{getCountAlleleRef()}}, and \code{\link[=getMAF]{getMAF()}}.
 }
 \details{
@@ -41,25 +42,25 @@ via the \code{\link[=estGeno]{estGeno()}} function.
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Summarize the genotype count information and store them in the
-# [SnpAnnotationDataFrame] and [ScanAnnotationDataFrame] objects 
+# [SnpAnnotationDataFrame] and [ScanAnnotationDataFrame] objects
 # linked at the slots of the [GbsrGenotypeData] object.
-gdata <- countGenotype(gdata)
+gds <- countGenotype(gds)
 
 # Get the proportion of missing genotype per sample.
-sample_missing_rate <- getCountGenoMissing(gdata,
+sample_missing_rate <- getCountGenoMissing(gds,
                                            target = "scan",
                                            prop = TRUE)
-                                           
+
 # Get the minor allele frequency per marker.
-marker_minor_allele_freq <- getMAF(gdata, target = "snp")
+marker_minor_allele_freq <- getMAF(gds, target = "snp")
 
 # Draw histograms of the missing rate per sample and marker.
-histGBSR(gdata, stats = "missing")
+histGBSR(gds, stats = "missing")
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }

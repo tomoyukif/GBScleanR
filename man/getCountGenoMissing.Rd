@@ -7,7 +7,7 @@
 \usage{
 getCountGenoMissing(object, target = "snp", valid = TRUE, prop = FALSE, ...)
 
-\S4method{getCountGenoMissing}{GbsrGenotypeData}(object, target = "snp", valid = TRUE, prop = FALSE)
+\S4method{getCountGenoMissing}{GbsrGenotypeData}(object, target, valid, prop)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
@@ -37,9 +37,9 @@ labeled \code{TRUE} in the \link{ScanAnnotationDataFrame} slot will be returned.
 }
 \examples{
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
-gdata <- countGenotype(gdata)
-getCountGenoMissing(gdata)
-closeGDS(gdata) # Close the connection to the GDS file
+gds <- loadGDS(gds_fn)
+gds <- countGenotype(gds)
+getCountGenoMissing(gds)
+closeGDS(gds) # Close the connection to the GDS file
 
 }

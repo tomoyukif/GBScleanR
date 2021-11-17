@@ -14,8 +14,7 @@ pairsGBSR(
   alpha = 0.8,
   color = c(Marker = "darkblue", Sample = "darkblue"),
   fill = c(Marker = "skyblue", Sample = "skyblue"),
-  smooth = FALSE,
-  ggargs = NULL
+  smooth = FALSE
 )
 }
 \arguments{
@@ -45,9 +44,6 @@ and "Alt", while others uses the value named "Marker".}
 
 \item{smooth}{A logical value to indicate whether draw a smooth line for
 data points. See also \code{\link[ggplot2:geom_smooth]{ggplot2::stat_smooth()}}.}
-
-\item{ggargs}{An expression to be internally passed to a ggplot object
-to be drawn.}
 }
 \value{
 NULL.

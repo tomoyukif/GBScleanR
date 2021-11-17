@@ -5,12 +5,21 @@
 \alias{getGenotype,GbsrGenotypeData-method}
 \title{Get genotype call data.}
 \usage{
-getGenotype(object, chr = NULL, node = "raw", parents = FALSE, ...)
+getGenotype(
+  object,
+  valid = TRUE,
+  chr = NULL,
+  node = "raw",
+  parents = FALSE,
+  ...
+)
 
-\S4method{getGenotype}{GbsrGenotypeData}(object, chr, node, parents)
+\S4method{getGenotype}{GbsrGenotypeData}(object, valid, chr, node, parents)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
+
+\item{valid}{A logical value. See details.}
 
 \item{chr}{A integer vector of indexes indicating chromosomes
 to get read count data.}
@@ -41,16 +50,18 @@ The \code{\link[=setCallFilter]{setCallFilter()}} function generate filtered gen
 "filt.genotype" node which can be accessed as mentioned above.
 On the other hand, the "corrected.genotype" node can be generated
 via the \code{\link[=estGeno]{estGeno()}} function.
+If \code{valid = TRUE}, read counts for only valid marker and valid samples will
+be obtained.
 }
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
-geno <- getGenotype(gdata)
+geno <- getGenotype(gds)
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 
 }

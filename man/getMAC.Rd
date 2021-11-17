@@ -7,7 +7,7 @@
 \usage{
 getMAC(object, target = "snp", valid = TRUE, ...)
 
-\S4method{getMAC}{GbsrGenotypeData}(object, target = "snp", valid = TRUE)
+\S4method{getMAC}{GbsrGenotypeData}(object, target, valid)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
@@ -34,16 +34,16 @@ labeled \code{TRUE} in the \link{ScanAnnotationDataFrame} slot will be returned.
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Summarize the genotype count information and store them in the
-# [SnpAnnotationDataFrame] and [ScanAnnotationDataFrame] objects 
+# [SnpAnnotationDataFrame] and [ScanAnnotationDataFrame] objects
 # linked at the slots of the [GbsrGenotypeData] object.
-gdata <- countGenotype(gdata)
+gds <- countGenotype(gds)
 
-getMAC(gdata)
+getMAC(gds)
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }

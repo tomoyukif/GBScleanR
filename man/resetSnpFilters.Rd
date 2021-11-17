@@ -23,30 +23,30 @@ Remove "invalid" labels put on markers and make all markers valid.
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Check the number of markers.
-nsnp(gdata)
+nsnp(gds)
 
 # Summarize the information needed for filtering.
-gdata <- countGenotype(gdata)
-gdata <- countRead(gdata)
+gds <- countGenotype(gds)
+gds <- countRead(gds)
 
 # filter out some markers meeting the criteria.
-gdata <- setSnpFilter(gdata,
-                      id = getSnpID(gdata)[1:100],
+gds <- setSnpFilter(gds,
+                      id = getSnpID(gds)[1:100],
                       missing = 0.2,
                       dp = c(5, Inf))
 
 # Check the number of the retained markers.
-nsnp(gdata)
+nsnp(gds)
 
 # Reset all filters applied above.
-gdata <- resetSnpFilters(gdata)
+gds <- resetSnpFilters(gds)
 
 # Check the number of the markers again.
-nsnp(gdata)
+nsnp(gds)
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 }

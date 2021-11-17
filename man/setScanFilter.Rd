@@ -7,7 +7,7 @@
 \usage{
 setScanFilter(
   object,
-  id,
+  id = "",
   missing = 1,
   het = c(0, 1),
   mac = 0,
@@ -25,31 +25,31 @@ setScanFilter(
 \S4method{setScanFilter}{GbsrGenotypeData}(
   object,
   id,
-  missing = 1,
-  het = c(0, 1),
-  mac = 0,
-  maf = 0,
-  ad_ref = c(0, Inf),
-  ad_alt = c(0, Inf),
-  dp = c(0, Inf),
-  mean_ref = c(0, Inf),
-  mean_alt = c(0, Inf),
-  sd_ref = Inf,
-  sd_alt = Inf
+  missing,
+  het,
+  mac,
+  maf,
+  ad_ref,
+  ad_alt,
+  dp,
+  mean_ref,
+  mean_alt,
+  sd_ref,
+  sd_alt
 )
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
 
-\item{id}{A vector of strings match with scan ID which can
+\item{id}{A vector of strings matching with scan ID which can
 be retrieve by \code{getScanID()}. The samples with the specified IDs
 will be filtered out.}
 
 \item{missing}{A numeric value [0-1] to specify the maximum
 missing genotype call rate per sample.}
 
-\item{het}{A numeric value [0-1] to specify the maximum
-heterozygous genotype call rate per sample.}
+\item{het}{A vector of two numeric values [0-1] to specify
+the minimum and maximum heterozygous genotype call rate per sample.}
 
 \item{mac}{A integer value to specify the minimum minor
 allele count per sample.}
@@ -100,18 +100,18 @@ To check valid and invalid samples, run \code{\link[=getValidScan]{getValidScan(
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Summarize the information needed for filtering.
-gdata <- countGenotype(gdata)
-gdata <- countRead(gdata)
+gds <- countGenotype(gds)
+gds <- countRead(gds)
 
-gdata <- setScanFilter(gdata,
-                       id = getScanID(gdata)[1:10],
+gds <- setScanFilter(gds,
+                       id = getScanID(gds)[1:10],
                        missing = 0.2,
                        dp = c(5, Inf))
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }

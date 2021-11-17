@@ -5,14 +5,16 @@
 \alias{getAlleleA,GbsrGenotypeData-method}
 \title{Obtain reference allele information of each SNP marker}
 \usage{
-getAlleleA(object, valid = TRUE, ...)
+getAlleleA(object, valid = TRUE, chr = NULL, ...)
 
-\S4method{getAlleleA}{GbsrGenotypeData}(object, valid = TRUE)
+\S4method{getAlleleA}{GbsrGenotypeData}(object, valid, chr)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{valid}{A logical value. See details.}
+
+\item{chr}{A index to spefcify chromosome to get information.}
 
 \item{...}{Unused.}
 }
@@ -31,11 +33,11 @@ returned. \code{\link[=getValidSnp]{getValidSnp()}} tells you which samples are 
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
-getAlleleA(gdata)
+getAlleleA(gds)
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }

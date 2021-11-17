@@ -7,7 +7,7 @@
 \usage{
 getCountRead(object, target = "snp", valid = TRUE, ...)
 
-\S4method{getCountRead}{GbsrGenotypeData}(object, target = "snp", valid = TRUE)
+\S4method{getCountRead}{GbsrGenotypeData}(object, target, valid)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
@@ -35,11 +35,11 @@ labeled \code{TRUE} in the \link{ScanAnnotationDataFrame} slot will be returned.
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
-getCountRead(gdata)
+getCountRead(gds)
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }

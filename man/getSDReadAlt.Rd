@@ -8,7 +8,7 @@ SNP or per scan (sample)}
 \usage{
 getSDReadAlt(object, target = "snp", valid = TRUE, ...)
 
-\S4method{getSDReadAlt}{GbsrGenotypeData}(object, target = "snp", valid = TRUE)
+\S4method{getSDReadAlt}{GbsrGenotypeData}(object, target, valid)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
@@ -37,18 +37,18 @@ labeled \code{TRUE} in the \link{ScanAnnotationDataFrame} slot will be returned.
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Calculate means, standard deviations, quantiles of read counts
-# per marker and per sample with or without standardization of 
+# per marker and per sample with or without standardization of
 # the counts and store them in the
-# [SnpAnnotationDataFrame] and [ScanAnnotationDataFrame] objects 
+# [SnpAnnotationDataFrame] and [ScanAnnotationDataFrame] objects
 # linked at the slots of the [GbsrGenotypeData] object.
-gdata <- calcReadStats(gdata)
+gds <- calcReadStats(gds)
 
-getSDReadAlt(gdata)
+getSDReadAlt(gds)
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }

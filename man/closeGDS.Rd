@@ -24,9 +24,9 @@ Close the connection to the GDS file linked to the given
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Close the connection to the GDS file
-closeGDS(gdata) 
+closeGDS(gds)
 
 }

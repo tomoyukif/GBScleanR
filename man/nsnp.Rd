@@ -5,14 +5,16 @@
 \alias{nsnp,GbsrGenotypeData-method}
 \title{Return the number of SNPs.}
 \usage{
-nsnp(object, valid = TRUE, ...)
+nsnp(object, valid = TRUE, chr = NULL, ...)
 
-\S4method{nsnp}{GbsrGenotypeData}(object, valid = TRUE)
+\S4method{nsnp}{GbsrGenotypeData}(object, valid, chr)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{valid}{A logical value. See details.}
+
+\item{chr}{A index to spefcify chromosome to get information.}
 
 \item{...}{Unused.}
 }
@@ -32,12 +34,12 @@ which markers are valid.
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
-nsnp(gdata)
+nsnp(gds)
 
 # Close the connection to the GDS file.
-closeGDS(gdata) 
+closeGDS(gds)
 
 }
 \seealso{

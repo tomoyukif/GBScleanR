@@ -41,16 +41,16 @@ will be used to over write the validity information.
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Randomly remove samples.
-gdata <- setValidScan(gdata,
-                      update = sample(c(TRUE, FALSE), 
-                                      nscan(gdata), 
+gds <- setValidScan(gds,
+                      update = sample(c(TRUE, FALSE),
+                                      nscan(gds),
                                       replace = TRUE))
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }
 \seealso{

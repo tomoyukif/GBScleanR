@@ -47,27 +47,27 @@ gds_fn <- tempfile("sample", fileext = ".gds")
 gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
 
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
-# Filter out set zero to read counts and 
+# Filter out set zero to read counts and
 # missing to genotype calls of which meet the criteria.
-gdata <- setCallFilter(gdata, dp_count = c(5, Inf))
+gds <- setCallFilter(gds, dp_count = c(5, Inf))
 
 # Now any functions of [GBScleanR] reference the genotype data
 # stored in the "filt.genotype" node of the GDS file.
 
 # Close and reopen the connection to the GDS file.
-closeGDS(gdata)
-gdata <- loadGDS(genotypeData = gdata)
+closeGDS(gds)
+gds <- loadGDS(gds)
 
 # If the connection was closed once and re-loaded,
 # raw genotype data is referenced by the functions.
 
 # To set the "filt.genotype" node as genotype data again,
 # run the setFiltGenotype().
-gdata <- setFiltGenotype(gdata)
+gds <- setFiltGenotype(gds)
 
 # Close the connection to the GDS file
-closeGDS(gdata)
+closeGDS(gds)
 
 }

@@ -30,32 +30,32 @@ gds_fn <- tempfile("sample", fileext = ".gds")
 gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
 
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
-# `setCallFilter()` do not require summarized information of 
+# `setCallFilter()` do not require summarized information of
 # genotype counts and read counts.
-gdata <- setCallFilter(gdata, dp_count = c(5, Inf))
+gds <- setCallFilter(gds, dp_count = c(5, Inf))
 
-# `setScanFilter()` and `setSnpFilter()` needs information of 
+# `setScanFilter()` and `setSnpFilter()` needs information of
 # the genotype count summary and the read count summary.
-gdata <- countGenotype(gdata)
-gdata <- countRead(gdata)
+gds <- countGenotype(gds)
+gds <- countRead(gds)
 
-gdata <- setScanFilter(gdata,
-                       id = getScanID(gdata)[1:10],
+gds <- setScanFilter(gds,
+                       id = getScanID(gds)[1:10],
                        missing = 0.2,
                        dp = c(5, Inf))
-                       
-gdata <- setSnpFilter(gdata,
-                      id = getSnpID(gdata)[1:100],
+
+gds <- setSnpFilter(gds,
+                      id = getSnpID(gds)[1:100],
                       missing = 0.2,
                       dp = c(5, Inf))
-                      
-gdata <- setInfoFilter(gdata, mq = 40, qd = 20)
+
+gds <- setInfoFilter(gds, mq = 40, qd = 20)
 
 # Reset all filters applied above.
-gdata <- resetFilters(gdata)
+gds <- resetFilters(gds)
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 }

@@ -28,13 +28,13 @@ The function \code{\link[=loadGDS]{loadGDS()}} initialize those class objects in
 \section{Slots}{
 
 \describe{
-\item{\code{scheme}}{A \link{GbsrScheme} object.}
-
 \item{\code{data}}{A \link{GdsGenotypeReader} object.}
 
 \item{\code{snpAnnot}}{A \link{SnpAnnotationDataFrame} object.}
 
 \item{\code{scanAnnot}}{A \link{ScanAnnotationDataFrame} object.}
+
+\item{\code{scheme}}{A \link{GbsrScheme} object.}
 }}
 
 \examples{

@@ -10,14 +10,13 @@ boxplotGBSR(
   target = c("snp", "scan"),
   q = 0.5,
   color = c(Marker = "darkblue", Sample = "darkblue"),
-  fill = c(Marker = "skyblue", Sample = "skyblue"),
-  ggargs = NULL
+  fill = c(Marker = "skyblue", Sample = "skyblue")
 )
 }
 \arguments{
 \item{x}{A \link{GbsrGenotypeData} object.}
 
-\item{stats}{A vector of strings to specify statistics to be drawn.}
+\item{stats}{A string to specify statistics to be drawn.}
 
 \item{target}{Either or both of "snp" and "scan", e.g. \code{target = "snp"}
 to draw a histogram only for SNPs.}
@@ -30,12 +29,9 @@ border color of bins in the histograms.}
 
 \item{fill}{A named vector "Marker" and "Sample" to specify
 fill color of bins in the histograms.}
-
-\item{ggargs}{An expression to be internally passed to
-a ggplot object to be drawn.}
 }
 \value{
-NULL.
+A ggplot object.
 }
 \description{
 Draw boxplots of specified statistics
@@ -86,15 +82,15 @@ gdata <- loadGDS(gds_fn)
 # Summarize genotype count information to be used in `boxplotGBSR()`
 gdata <- countGenotype(gdata)
 
-boxplotGBSR(gdata, stats = c("missing", "het", "raf"))
+boxplotGBSR(gdata, stats = "missing")
 
-# Calculate means, standard deviations, quantile values of read counts 
+# Calculate means, standard deviations, quantile values of read counts
 # to be used in `boxplotGBSR()`
 gdata <- calcReadStats(gdata, q = 0.9)
 
 # Draw boxplots of 90 percentile values of reference read counts and
 # alternative read counts per SNP and per sample.
-boxplotGBSR(gdata, stats = c("qtile_ref", "qtile_alt"), q = 0.9)
+boxplotGBSR(gdata, stats = "qtile_ref", q = 0.9)
 
 # Close the connection to the GDS file
 closeGDS(gdata)

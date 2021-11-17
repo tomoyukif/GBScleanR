@@ -5,12 +5,14 @@
 \alias{getHaplotype,GbsrGenotypeData-method}
 \title{Get haplotype call data.}
 \usage{
-getHaplotype(object, chr = NULL, parents = FALSE, ...)
+getHaplotype(object, valid = TRUE, chr = NULL, parents = FALSE, ...)
 
 \S4method{getHaplotype}{GbsrGenotypeData}(object, chr, parents)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
+
+\item{valid}{A logical value. See details.}
 
 \item{chr}{A integer vector of indexes indicating chromosomes
 to get read count data.}
@@ -38,44 +40,46 @@ Haplotype calls are retrieved from the GDS file linked to the given
 Haplotype call data can be obtained from the "estimated.haplotype" node of
 the GDS file which can be generated via the \code{\link[=estGeno]{estGeno()}} function.
 Thus, this function is valid only after having executed \code{\link[=estGeno]{estGeno()}}.
+If \code{valid = TRUE}, read counts for only valid marker and valid samples will
+be obtained.
 }
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Find the IDs of parental samples.
-parents <- grep("Founder", getScanID(gdata), value = TRUE)
+parents <- grep("Founder", getScanID(gds), value = TRUE)
 
-# Set the parents and flip allele information 
+# Set the parents and flip allele information
 # if the reference sample (Founder1 in our case) has homozygous
-# alternative genotype at some markers of which alleles will 
-# be swapped to make the reference sample have homozygous 
+# alternative genotype at some markers of which alleles will
+# be swapped to make the reference sample have homozygous
 # reference genotype.
-gdata <- setParents(gdata, parents = parents, flip = TRUE)
+gds <- setParents(gds, parents = parents, flip = TRUE)
 
 # Initialize a scheme object stored in the slot of the GbsrGenotypeData.
 # We chose `crosstype = "pair"` because two inbred founders were mated
 # in our breeding scheme.
-# We also need to specify the mating matrix which has two rows and 
-# one column with integers 1 and 2 indicating a sample (founder) 
+# We also need to specify the mating matrix which has two rows and
+# one column with integers 1 and 2 indicating a sample (founder)
 # with the memberID 1 and a sample (founder) with the memberID 2
 # were mated.
-gdata <- initScheme(gdata, crosstype = "pair", mating = cbind(c(1:2)))
+gds <- initScheme(gds, crosstype = "pair", mating = cbind(c(1:2)))
 
 # Add information of the next cross conducted in our scheme.
 # We chose 'crosstype = "selfing"', which do not require a
 # mating matrix.
-gdata <- addScheme(gdata, crosstype = "selfing")
+gds <- addScheme(gds, crosstype = "selfing")
 
-# Execute error correction by estimating genotype and haplotype of 
+# Execute error correction by estimating genotype and haplotype of
 # founders and offspring.
-gdata <- estGeno(gdata)
+gds <- estGeno(gds)
 
-hap <- getHaplotype(gdata)
+hap <- getHaplotype(gds)
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }
 \seealso{

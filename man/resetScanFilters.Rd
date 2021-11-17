@@ -28,21 +28,21 @@ gds_fn <- tempfile("sample", fileext = ".gds")
 gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
 
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Summarize the information needed for filtering.
-gdata <- countGenotype(gdata)
-gdata <- countRead(gdata)
+gds <- countGenotype(gds)
+gds <- countRead(gds)
 
-gdata <- setScanFilter(gdata,
-                       id = getScanID(gdata)[1:10],
+gds <- setScanFilter(gds,
+                       id = getScanID(gds)[1:10],
                        missing = 0.2,
                        dp = c(5, Inf))
 
 # Reset all filters applied above.
-gdata <- resetScanFilters(gdata)
+gds <- resetScanFilters(gds)
 
 # Close the connection to the GDS file
-closeGDS(gdata)
+closeGDS(gds)
 
 }

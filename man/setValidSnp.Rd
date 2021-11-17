@@ -41,16 +41,16 @@ over write the validity information.
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Randomly remove SNP markers.
-gdata <- setValidSnp(gdata,
+gds <- setValidSnp(gds,
                      update = sample(c(TRUE, FALSE),
-                                     nsnp(gdata), 
+                                     nsnp(gds),
                                      replace = TRUE))
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }
 \seealso{

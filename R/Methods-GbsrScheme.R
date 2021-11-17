@@ -8,10 +8,12 @@ setMethod("initScheme",
                                      c("pairing", "random"),
                                      FALSE)
               if (length(parents) / 2 != ncol(mating)) {
-                  stop('The number of mating combinations should match with half the number of parents.')
+                  stop('The number of mating combinations ",
+                       "should match with half the number of parents.')
               }
               if (!all(parents %in% mating)) {
-                  stop('All parents should be listed in the matrix specified as the "mating" argument.')
+                  stop('All parents should be listed in the matrix ",
+                       "specified as the "mating" argument.')
               }
               if (length(parents) != length(mating) &
                   crosstype == "pairing") {
@@ -45,13 +47,14 @@ setMethod("addScheme",
           "GbsrScheme",
           function(object, crosstype, mating, pop_size) {
               crosstype <- match.arg(crosstype,
-                                     c("pairing", "selfing", "sibling", "random"),
+                                     c("pairing", "selfing",
+                                       "sibling", "random"),
                                      FALSE)
-              
+
               last_gen <- unlist(tail(object@progenies, 1))
               last_id <- max(last_gen)
               n_last <- length(last_gen)
-              
+
               if (crosstype == "random" & is.na(pop_size)) {
                   stop('"pop_size" is required for crosstype = "random".')
               }
@@ -67,7 +70,7 @@ setMethod("addScheme",
                       mating <- matrix(last_id, 2, 1)
                   }
               }
-              
+
               object@crosstype <- c(object@crosstype, crosstype)
               object@pop_size <- c(object@pop_size, pop_size)
               object@mating <- c(object@mating, list(mating))
@@ -87,7 +90,8 @@ setMethod("addScheme",
           })
 
 #'
-#' @param parents_name A vector of strings to indicate names of parental samples.
+#' @param parents_name A vector of strings to indicate names
+#' of parental samples.
 #' @rdname showScheme
 #'
 setMethod("showScheme",

@@ -5,15 +5,17 @@
 \alias{getFlipped,GbsrGenotypeData-method}
 \title{Get a logical vector indicating flipped SNP markers.}
 \usage{
-getFlipped(object, valid = TRUE, ...)
+getFlipped(object, valid = TRUE, chr = NULL, ...)
 
-\S4method{getFlipped}{GbsrGenotypeData}(object, valid = TRUE)
+\S4method{getFlipped}{GbsrGenotypeData}(object, valid, chr)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{valid}{A logical value to specify flip alleles
 only of valid markers. see also\code{\link[=setSnpFilter]{setSnpFilter()}}.}
+
+\item{chr}{A index to spefcify chromosome to get information.}
 
 \item{...}{Unused.}
 }
@@ -36,31 +38,31 @@ in the given data. \code{\link[=setParents]{setParents()}} will automatically la
 those markers "flipped". The SnpAnnotatoinDataFrame slot sores this
 information and accessible via \code{\link[=getFlipped]{getFlipped()}} which gives you
 a logical vector indicating which markers are labeled as flipped
-\code{TRUE} or not flipped \code{FALSE}. \code{\link[=haveFlipped]{haveFlipped()}} just tells you
+\code{TRUE} or not flipped \code{FALSE}. \code{\link[=hasFlipped]{hasFlipped()}} just tells you
 whether the SnpAnnotatoinDataFrame slot has the information of
 flipped markers or not.
 }
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Find the IDs of parental samples.
-parents <- grep("Founder", getScanID(gdata), value = TRUE)
+parents <- grep("Founder", getScanID(gds), value = TRUE)
 
-# Set the parents and flip allele information 
+# Set the parents and flip allele information
 # if the reference sample (Founder1 in our case) has homozygous
-# alternative genotype at some markers of which alleles will 
-# be swapped to make the reference sample have homozygous 
+# alternative genotype at some markers of which alleles will
+# be swapped to make the reference sample have homozygous
 # reference genotype.
-gdata <- setParents(gdata, parents = parents, flip = TRUE)
+gds <- setParents(gds, parents = parents, flip = TRUE)
 
-getFlipped(gdata)
+getFlipped(gds)
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }
 \seealso{
-\code{\link[=setParents]{setParents()}} and \code{\link[=haveFlipped]{haveFlipped()}}.
+\code{\link[=setParents]{setParents()}} and \code{\link[=hasFlipped]{hasFlipped()}}.
 }

@@ -5,14 +5,16 @@
 \alias{getPloidy,GbsrGenotypeData-method}
 \title{Obtain ploidy information of each SNP marker}
 \usage{
-getPloidy(object, valid = TRUE, ...)
+getPloidy(object, valid = TRUE, chr = NULL, ...)
 
-\S4method{getPloidy}{GbsrGenotypeData}(object, valid = TRUE)
+\S4method{getPloidy}{GbsrGenotypeData}(object, valid, chr)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{valid}{A logical value. See details.}
+
+\item{chr}{A index to spefcify chromosome to get information.}
 
 \item{...}{Unused.}
 }
@@ -32,11 +34,11 @@ labeled \code{TRUE} in the \link{ScanAnnotationDataFrame} slot will be returned.
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
-getPloidy(gdata)
+getPloidy(gds)
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }

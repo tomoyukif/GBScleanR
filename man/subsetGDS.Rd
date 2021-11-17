@@ -5,15 +5,17 @@
 \alias{subsetGDS,GbsrGenotypeData-method}
 \title{Create a GDS file with subset data of the current GDS file}
 \usage{
-subsetGDS(object, out_fn, snp_incl, scan_incl, incl_parents = TRUE, ...)
-
-\S4method{subsetGDS}{GbsrGenotypeData}(
+subsetGDS(
   object,
   out_fn = "./susbet.gds",
   snp_incl,
   scan_incl,
-  incl_parents = TRUE
+  incl_parents = TRUE,
+  verbose = TRUE,
+  ...
 )
+
+\S4method{subsetGDS}{GbsrGenotypeData}(object, out_fn, snp_incl, scan_incl, incl_parents, verbose)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
@@ -30,6 +32,8 @@ The values obtained via \code{\link[=getValidScan]{getValidScan()}} are used.}
 
 \item{incl_parents}{A logical value to specify whether parental
 samples should be included in a subset data or not.}
+
+\item{verbose}{if TRUE, show information.}
 
 \item{...}{Unused.}
 }
@@ -57,21 +61,21 @@ gds_fn <- tempfile("sample", fileext = ".gds")
 gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
 
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Summarize genotype count information to be used in `setSnpFilter()`
-gdata <- countGenotype(gdata)
+gds <- countGenotype(gds)
 
 # Filter out markers meeting the criteia.
-gdata <- setSnpFilter(gdata, missing = 0.2, het = c(0.1, 0.9), maf = 0.05)
+gds <- setSnpFilter(gds, missing = 0.2, het = c(0.1, 0.9), maf = 0.05)
 
-# Create a new GDS file with the subset data obtained by applying 
+# Create a new GDS file with the subset data obtained by applying
 # the filter maed via `setSnpFilter()`.
 subsetgds_fn <- tempfile("sample_subset", fileext = ".gds")
-subset_gdata <- subsetGDS(gdata, out_fn = subsetgds_fn)
+subset_gds <- subsetGDS(gds, out_fn = subsetgds_fn)
 
 # Close the connection to the GDS files.
-closeGDS(subset_gdata)
-closeGDS(gdata)
+closeGDS(subset_gds)
+closeGDS(gds)
 
 }

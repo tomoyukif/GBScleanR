@@ -5,12 +5,15 @@
 \alias{getParents,GbsrGenotypeData-method}
 \title{Get parental sample information}
 \usage{
-getParents(object, ...)
+getParents(object, bool = FALSE, ...)
 
-\S4method{getParents}{GbsrGenotypeData}(object)
+\S4method{getParents}{GbsrGenotypeData}(object, bool)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
+
+\item{bool}{If TRUE, the function returns a logical vector indicating
+which scans (samples) have been set as parents.ぼ}
 
 \item{...}{Unused.}
 }
@@ -26,19 +29,19 @@ original VCF file. Member IDs are serial numbers assigned by \code{\link[=setPar
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Find the IDs of parental samples.
-parents <- grep("Founder", getScanID(gdata), value = TRUE)
+parents <- grep("Founder", getScanID(gds), value = TRUE)
 
 # Set the parents.
-gdata <- setParents(gdata, parents = parents, flip = TRUE)
+gds <- setParents(gds, parents = parents, flip = TRUE)
 
 # Get the information of parents.
-getParents(gdata)
+getParents(gds)
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 
 }

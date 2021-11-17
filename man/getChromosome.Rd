@@ -7,7 +7,7 @@
 \usage{
 getChromosome(object, valid = TRUE, levels = FALSE, name = FALSE, ...)
 
-\S4method{getChromosome}{GbsrGenotypeData}(object, valid = TRUE, levels = FALSE, name = FALSE)
+\S4method{getChromosome}{GbsrGenotypeData}(object, valid, levels, name)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
@@ -40,11 +40,11 @@ are labeled \code{TRUE} in the \link{ScanAnnotationDataFrame} slot will be retur
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
-getChromosome(gdata)
+getChromosome(gds)
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }

@@ -7,7 +7,7 @@
 \usage{
 thinMarker(object, range = 150, ...)
 
-\S4method{thinMarker}{GbsrGenotypeData}(object, range = 150)
+\S4method{thinMarker}{GbsrGenotypeData}(object, range)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
@@ -29,12 +29,6 @@ independency of markers each other.
 This function only retains the first marker or
 the least missing rate marker
 from the markers locating within the specified stretch.
-
-\preformatted{        \} else if(is.vector(allele))\{
-          valid <- getAlleleA(object) == allele
-          flipped <- getAlleleB(object) == allele
-          invalid <- !valid & !flipped
-}
 }
 \details{
 This function search valid markers from the first marker
@@ -51,29 +45,15 @@ and the third marker will be checked and
 this cycle is repeated until reaching the
 end of each chromosome. Run \code{\link[=getValidSnp]{getValidSnp()}}
 to check the valid SNP markers.
-
-\preformatted{        \} else \{
-          stop('Specify either of allele and genome.')
-        \}
-        message(paste0(sum(invalid), ' SNPs were found as invalid markers which were found to have the 3rd alleles in your genotype data.'))
-        message(paste0(sum(flipped), ' SNPs were found as flipped markers.'))
-
-        object <- setValidSnp(object, update = !invalid)
-        flipped <- flipped[!invalid]
-        # Find markers of which reference allele was called as alternative allele.
-        object <- .setFlipped(object, flipped)
-        return(object)
-      \})
-}
 }
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Summarize genotype count information to be used in thinMarker().
-gdata <- countGenotype(gdata)
-gdata <- thinMarker(gdata, range = 150)
+gds <- countGenotype(gds)
+gds <- thinMarker(gds, range = 150)
 
-closeGDS(gdata) # Close the connection to the GDS file
+closeGDS(gds) # Close the connection to the GDS file
 }

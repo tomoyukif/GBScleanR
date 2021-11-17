@@ -9,8 +9,8 @@ plotReadRatio(
   x,
   coord = NULL,
   chr = NULL,
-  ind = NULL,
-  valid_only = TRUE,
+  ind = 1,
+  node = "raw",
   dot_fill = "blue"
 )
 }
@@ -22,16 +22,16 @@ columns to draw faceted line plots for chromosomes.}
 
 \item{chr}{A vector of indexes to specify chromosomes to be drawn.}
 
-\item{ind}{A vector of indexes to specify samples to be drawn.}
+\item{ind}{An index to specify samples to be drawn.}
 
-\item{valid_only}{A logical value whether to draw a plot only for valid
-markers and samples. You can get validity with \code{getValidSnp()}
-and \code{getValidScan}.}
+\item{node}{Either one of "raw", "filt", and "cor" to output raw
+genotype data, filtered genotype data, or corrected genotype data,
+respectively.}
 
 \item{dot_fill}{A string to indicate the dot color in a plot.}
 }
 \value{
-NULL.
+Invisibly returns a ggplot object.
 }
 \description{
 This function calculate a proportion of reference allele read
