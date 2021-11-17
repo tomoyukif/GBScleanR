@@ -1169,9 +1169,35 @@ setMethod("show",
 #' @rdname closeGDS
 setMethod("closeGDS",
           "GbsrGenotypeData",
-          function(object){
+          function(object, verbose){
             closefn.gds(.getGdsfmtObj(object))
-            message('The connection to the GDS file was closed.')
+            if(verbose){
+              message('The connection to the GDS file was closed.')
+            }
+          })
+
+## Close the connection to the GDS file.
+#' @rdname openGDS
+#' @importClassesFrom GWASTools GenotypeData GdsGenotypeReader
+#' @importFrom GWASTools GdsGenotypeReader GenotypeData
+#' @importMethodsFrom GWASTools getSnpAnnotation getScanAnnotation
+setMethod("openGDS",
+          "GbsrGenotypeData",
+          function(object){
+            if(isOpenGDS(object)){
+              closeGDS(object, FALSE)
+            }
+            genotype_var <- .getGenotypeVar(object)
+            gds <- openfn.gds(.getGDSFileName(object), FALSE)
+            gds <- GdsGenotypeReader(gds, "scan,snp")
+            gds <- GenotypeData(gds,
+                                getSnpAnnotation(object),
+                                getScanAnnotation(object))
+            object <- new("GbsrGenotypeData", gds)
+            if(genotype_var == "filt.genotype"){
+              object <- setFiltGenotype(object)
+            }
+            return(object)
           })
 
 ## Save the data in the SnpAnnotationDataFrame to the GDS file.
@@ -2452,8 +2478,11 @@ setMethod("subsetGDS",
               }
             }
 
-            .gds_decomp(object)
-            file.copy(.getGDSFileName(object), out_fn)
+            closeGDS(object, FALSE)
+            if(!file.copy(.getGDSFileName(object), out_fn)){
+              stop("Failed to create a new file to the following path \n",
+                   out_fn, call. = FALSE)
+            }
             newgds <- openfn.gds(out_fn, FALSE)
 
             all_data_node <- ls.gdsn(newgds,
@@ -2500,7 +2529,6 @@ setMethod("subsetGDS",
             .gds_comp(newgds)
             closefn.gds(newgds)
 
-            .gds_comp(object)
             output <- loadGDS(newgds$filename, verbose=verbose)
             if(.getGenotypeVar(object) == "filt.genotype"){
               output <- setFiltGenotype(output)
@@ -2518,10 +2546,6 @@ setMethod("gbsrGDS2VCF",
                    out_fn,
                    node,
                    incl_parents){
-
-            .gds_decomp(object)
-            on.exit({.gds_comp(object)})
-
             gds_fn_tmp <- tempfile(fileext = "gds")
             tmp_gds <- subsetGDS(object,
                                  gds_fn_tmp,
@@ -2550,7 +2574,6 @@ setMethod("gbsrGDS2VCF",
             .insertHaplotype(tmp_gds, out_gds)
             closefn.gds(out_gds)
             on.exit({
-              .gds_comp(object)
               closefn.gds(.getGdsfmtObj(tmp_gds))
               unlink(gds_fn_tmp)
               unlink(out_fn_tmp)

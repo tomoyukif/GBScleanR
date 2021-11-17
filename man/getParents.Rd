@@ -13,7 +13,7 @@ getParents(object, bool = FALSE, ...)
 \item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{bool}{If TRUE, the function returns a logical vector indicating
-which scans (samples) have been set as parents.ぼ}
+which scans (samples) have been set as parents.}
 
 \item{...}{Unused.}
 }

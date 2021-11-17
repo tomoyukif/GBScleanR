@@ -507,6 +507,14 @@ subset_gds <- loadGDS(subset_gds, verbose = FALSE)
 ```
 \ 
 
+The function `subsetGDS()` automatically close the connection to the GDS file of the input `GbsrGenotypeData` object for internal file handling. Please use `openGDS()` to open the connection again. If you use `loadGDS()`, summary statistics and filtering information will be discarded.
+```{r}
+gds <- openGDS(gds)
+```
+
+
+\ 
+
 ## Reset filtering
 We can reset filtering as following.
 ```{r}
@@ -718,6 +726,12 @@ The function `gbsrGDS2VCF()` generate a VCF file containing the estimated genoty
 out_fn <- tempfile("sample_est", fileext = ".vcf.gz")
 gbsrGDS2VCF(gds, out_fn)
 ```
+\ 
+Same with `subsetGDS()`, `gbsrGDS2VCF` automatically close the connection to the GDS file of the input `GbsrGenotypeData` object for internal file handling. Please use `openGDS()` to open the connection again if you need.
+```{r}
+gds <- openGDS(gds)
+```
+
 
 # Closing the connection
 To safely close the connection to the GDS file, use `closeGDS()`.

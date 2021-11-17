@@ -5,12 +5,14 @@
 \alias{closeGDS,GbsrGenotypeData-method}
 \title{Close the connection to the GDS file}
 \usage{
-closeGDS(object, ...)
+closeGDS(object, verbose = TRUE, ...)
 
-\S4method{closeGDS}{GbsrGenotypeData}(object)
+\S4method{closeGDS}{GbsrGenotypeData}(object, verbose)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
+
+\item{verbose}{if TRUE, show information.}
 
 \item{...}{Unused.}
 }

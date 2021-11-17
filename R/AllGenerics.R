@@ -1,3 +1,34 @@
+#' Open the connection to the GDS file.
+#'
+#'
+#' @param object A [GbsrGenotypeData] object.
+#'
+#' @details The GbsrGenotypeData object stores the file path of the GDS file
+#' even after closing the connection the file. This function open again the
+#' connection to the GDS file at the file path stored in the GbsrGenotypeData
+#' object. If the GbsrGenotypeData object witch has an open connection to
+#' the GDS file, this function will reopen the connection. The data stored in
+#' the SnpAnnotationDataFrame and ScanAnnotationDataFrame will not be changed.
+#' Thus, you can open a connection with the GDS file with keeping information
+#' of filtering and summary statistics.
+#'
+#' @return A [GbsrGenotypeData] object.
+#' @param ... Unused.
+#'
+#' @export
+#'
+#' @examples
+#' # Use a GDS file of example data.
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+#'
+#' # Instantiation of [GbsrGenotypeData]
+#' gds <- loadGDS(gds_fn)
+#'
+#' # Close the connection to the GDS file
+#' closeGDS(gds)
+#'
+#' gds <- openGDS(gds)
+#'
 setGeneric("openGDS", function(object, ...) standardGeneric("openGDS"))
 
 
@@ -34,6 +65,7 @@ setGeneric("isOpenGDS", function(object, ...)
 #'  [GbsrGenotypeData] object.
 #'
 #' @param object A [GbsrGenotypeData] object.
+#' @param verbose if TRUE, show information.
 #' @param ... Unused.
 #'
 #' @return NULL.
@@ -48,7 +80,7 @@ setGeneric("isOpenGDS", function(object, ...)
 #'
 #'@export
 #'
-setGeneric("closeGDS", function(object, ...)
+setGeneric("closeGDS", function(object, verbose = TRUE, ...)
     standardGeneric("closeGDS"))
 
 
@@ -227,8 +259,10 @@ setGeneric("loadScanAnnot", function(object, ...)
 #' @return The path to the VCF file.
 #'
 #' @details Create a VCF file at location specified by out_fn.
-#' The connection to the GDS file in the input [GbsrGenotypeData]
-#' object will be automatically closed.
+#' The connection to the GDS file of the input [GbsrGenotypeData] object will be
+#' automatically closed for internal file handling in this function. Please use
+#' [openGDS()] to open the connection again. If you use [loadGDS()], summary
+#' statistics and filtering information will be discarded.
 #'
 #' @importFrom SeqArray seqSNP2GDS seqGDS2VCF seqOpen
 #'
@@ -2610,6 +2644,10 @@ setGeneric("thinMarker", function(object, range = 150, ...)
 #' of each category of data, e.g.
 #' genotype, SNP ID, scan ID, read counts,
 #' and quality metrics of SNP markers.
+#' The connection to the GDS file of the input [GbsrGenotypeData] object will
+#' be automatically closed for internal file handling in this function. Please
+#' use [openGDS()] to open the connection again. If you use [loadGDS()],
+#' summary statistics and filtering information will be discarded.
 #'
 #' @return A [GbsrGenotypeData] object linking to
 #' the new GDS file storing subset data.
@@ -2636,7 +2674,6 @@ setGeneric("thinMarker", function(object, range = 150, ...)
 #'
 #' # Close the connection to the GDS files.
 #' closeGDS(subset_gds)
-#' closeGDS(gds)
 #'
 #' @export
 #'

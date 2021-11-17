@@ -1,17 +1,19 @@
 library(GBScleanR)
-vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
-gds_fn <- tempfile("sample", fileext = ".gds")
-gbsrVCF2GDS(vcf_fn, gds_fn, TRUE, FALSE)
-on.exit({unlink(gds_fn)})
-gds <- loadGDS(gds_fn)
 
 test_that("Subset", {
+    vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
+    gds_fn <- tempfile("sample", fileext = ".gds")
+    gbsrVCF2GDS(vcf_fn, gds_fn, TRUE, FALSE)
+    on.exit({unlink(gds_fn)})
+    gds <- loadGDS(gds_fn)
+
     valid_snp <- sample(c(TRUE, FALSE), nsnp(gds), replace = TRUE)
     valid_scan <- sample(c(TRUE, FALSE), nscan(gds), replace = TRUE)
     gds <- setValidSnp(gds, valid_snp)
     gds <- setValidScan(gds, valid_scan)
     out_fn <- tempfile("subset", fileext = ".gds")
     subset_gds <- subsetGDS(gds, out_fn)
+    gds <- openGDS(gds)
     expect_equal(nsnp(subset_gds), nsnp(gds))
     expect_equal(nscan(subset_gds), nscan(gds))
     expect_equal(getScanID(subset_gds), getScanID(gds))
@@ -22,8 +24,15 @@ test_that("Subset", {
 
 
 test_that("gbsrGDS2VCF", {
+    vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
+    gds_fn <- tempfile("sample", fileext = ".gds")
+    gbsrVCF2GDS(vcf_fn, gds_fn, TRUE, FALSE)
+    on.exit({unlink(gds_fn)})
+    gds <- loadGDS(gds_fn)
+
     out_fn <- tempfile("out", fileext = ".vcf")
     gbsrGDS2VCF(gds, out_fn)
+    gds <- openGDS(gds)
     new_gds <- tempfile("newgds", fileext = ".gds")
     gbsrVCF2GDS(out_fn, new_gds)
     newgds <- loadGDS(new_gds)
@@ -33,13 +42,14 @@ test_that("gbsrGDS2VCF", {
     expect_equal(getGenotype(newgds), getGenotype(gds))
     unlink(out_fn)
     unlink(new_gds)
-    
+
     valid_snp <- sample(c(TRUE, FALSE), nsnp(gds), replace = TRUE)
     valid_scan <- sample(c(TRUE, FALSE), nscan(gds), replace = TRUE)
     gds <- setValidSnp(gds, valid_snp)
-    gds <- setValidScan(gds, valid_scan) 
+    gds <- setValidScan(gds, valid_scan)
     out_fn <- tempfile("out", fileext = ".vcf")
     gbsrGDS2VCF(gds, out_fn)
+    gds <- openGDS(gds)
     new_gds <- tempfile("newgds", fileext = ".gds")
     gbsrVCF2GDS(out_fn, new_gds)
     newgds <- loadGDS(new_gds)

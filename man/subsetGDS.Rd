@@ -53,6 +53,10 @@ A resultant subset data in a new GDS file includes subsets
 of each category of data, e.g.
 genotype, SNP ID, scan ID, read counts,
 and quality metrics of SNP markers.
+The connection to the GDS file of the input \link{GbsrGenotypeData} object will
+be automatically closed for internal file handling in this function. Please
+use \code{\link[=openGDS]{openGDS()}} to open the connection again. If you use \code{\link[=loadGDS]{loadGDS()}},
+summary statistics and filtering information will be discarded.
 }
 \examples{
 #' # Create a GDS file from a sample VCF file.
@@ -76,6 +80,5 @@ subset_gds <- subsetGDS(gds, out_fn = subsetgds_fn)
 
 # Close the connection to the GDS files.
 closeGDS(subset_gds)
-closeGDS(gds)
 
 }

@@ -33,8 +33,10 @@ while other annotations, AD, DP and other information will be omitted.
 }
 \details{
 Create a VCF file at location specified by out_fn.
-The connection to the GDS file in the input \link{GbsrGenotypeData}
-object will be automatically closed.
+The connection to the GDS file of the input \link{GbsrGenotypeData} object will be
+automatically closed for internal file handling in this function. Please use
+\code{\link[=openGDS]{openGDS()}} to open the connection again. If you use \code{\link[=loadGDS]{loadGDS()}}, summary
+statistics and filtering information will be discarded.
 }
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
