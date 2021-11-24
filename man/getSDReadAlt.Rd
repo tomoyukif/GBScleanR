@@ -9,6 +9,8 @@ SNP or per scan (sample)}
 getSDReadAlt(object, target = "snp", valid = TRUE, ...)
 
 \S4method{getSDReadAlt}{GbsrGenotypeData}(object, target, valid)
+
+\S4method{getSDReadAlt}{GbsrGenotypeData}(object, target, valid)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

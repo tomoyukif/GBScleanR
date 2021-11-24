@@ -8,6 +8,8 @@
 thinMarker(object, range = 150, ...)
 
 \S4method{thinMarker}{GbsrGenotypeData}(object, range)
+
+\S4method{thinMarker}{GbsrGenotypeData}(object, range)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

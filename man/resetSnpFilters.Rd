@@ -8,6 +8,8 @@
 resetSnpFilters(object, ...)
 
 \S4method{resetSnpFilters}{GbsrGenotypeData}(object)
+
+\S4method{resetSnpFilters}{GbsrGenotypeData}(object)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

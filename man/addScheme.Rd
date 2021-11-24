@@ -11,6 +11,8 @@ addScheme(object, crosstype, mating, pop_size, ...)
 
 \S4method{addScheme}{GbsrGenotypeData}(object, crosstype, mating, pop_size)
 
+\S4method{addScheme}{GbsrGenotypeData}(object, crosstype, mating, pop_size)
+
 \S4method{addScheme}{GbsrScheme}(object, crosstype, mating, pop_size)
 }
 \arguments{

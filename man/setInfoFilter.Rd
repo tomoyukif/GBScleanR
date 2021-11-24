@@ -18,6 +18,8 @@ setInfoFilter(
 )
 
 \S4method{setInfoFilter}{GbsrGenotypeData}(object, mq, fs, qd, sor, mqranksum, readposranksum, baseqranksum)
+
+\S4method{setInfoFilter}{GbsrGenotypeData}(object, mq, fs, qd, sor, mqranksum, readposranksum, baseqranksum)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

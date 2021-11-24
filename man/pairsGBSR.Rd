@@ -46,7 +46,7 @@ and "Alt", while others uses the value named "Marker".}
 data points. See also \code{\link[ggplot2:geom_smooth]{ggplot2::stat_smooth()}}.}
 }
 \value{
-NULL.
+A ggplot object.
 }
 \description{
 Draw a scatter plot of a pair of specified statistics

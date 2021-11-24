@@ -8,6 +8,8 @@
 getCountAlleleMissing(object, target = "snp", valid = TRUE, prop = FALSE, ...)
 
 \S4method{getCountAlleleMissing}{GbsrGenotypeData}(object, target, valid, prop)
+
+\S4method{getCountAlleleMissing}{GbsrGenotypeData}(object, target, valid, prop)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

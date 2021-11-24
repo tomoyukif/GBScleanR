@@ -8,6 +8,8 @@
 closeGDS(object, verbose = TRUE, ...)
 
 \S4method{closeGDS}{GbsrGenotypeData}(object, verbose)
+
+\S4method{closeGDS}{GbsrGenotypeData}(object, verbose)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

@@ -31,7 +31,7 @@ respectively.}
 \item{dot_fill}{A string to indicate the dot color in a plot.}
 }
 \value{
-Invisibly returns a ggplot object.
+A ggplot object.
 }
 \description{
 This function calculate a proportion of reference allele read

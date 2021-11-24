@@ -8,6 +8,8 @@
 countGenotype(object, target = "both", node = "raw", ...)
 
 \S4method{countGenotype}{GbsrGenotypeData}(object, target, node)
+
+\S4method{countGenotype}{GbsrGenotypeData}(object, target, node)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

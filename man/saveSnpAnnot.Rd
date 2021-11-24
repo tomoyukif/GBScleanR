@@ -8,6 +8,8 @@
 saveSnpAnnot(object, ...)
 
 \S4method{saveSnpAnnot}{GbsrGenotypeData}(object)
+
+\S4method{saveSnpAnnot}{GbsrGenotypeData}(object)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object}

@@ -11,6 +11,8 @@ showScheme(object, ...)
 
 \S4method{showScheme}{GbsrGenotypeData}(object)
 
+\S4method{showScheme}{GbsrGenotypeData}(object)
+
 \S4method{showScheme}{GbsrScheme}(object, parents_name)
 }
 \arguments{

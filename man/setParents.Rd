@@ -9,6 +9,8 @@ parents of the population to be subjected to error correction.}
 setParents(object, parents, flip = FALSE, mono = FALSE, bi = FALSE, ...)
 
 \S4method{setParents}{GbsrGenotypeData}(object, parents, flip, mono, bi)
+
+\S4method{setParents}{GbsrGenotypeData}(object, parents, flip, mono, bi)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

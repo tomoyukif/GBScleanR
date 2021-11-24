@@ -539,8 +539,7 @@ plotGBSR  <- function(x,
 #' contains those values supplied via SNP calling tools like
 #' [GATK](https://gatk.broadinstitute.org/hc/en-us).
 #'
-#'
-#' @return NULL.
+#' @return A ggplot object.
 #'
 #' @export
 #' @import ggplot2
@@ -896,7 +895,7 @@ pairsGBSR  <- function(x,
 #' # Close the connection to the GDS file
 #' closeGDS(gdata)
 #'
-#' @return Invisibly returns a ggplot object.
+#' @return A ggplot object.
 #' @export
 #' @import ggplot2
 plotDosage <- function(x,
@@ -963,7 +962,7 @@ plotDosage <- function(x,
 #' # Close the connection to the GDS file
 #' closeGDS(gdata)
 #'
-#' @return Invisibly returns a ggplot object.
+#' @return A ggplot object.
 #' @export
 #' @import ggplot2
 plotReadRatio <- function(x,

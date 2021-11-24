@@ -8,6 +8,8 @@
 setFiltGenotype(object, ...)
 
 \S4method{setFiltGenotype}{GbsrGenotypeData}(object)
+
+\S4method{setFiltGenotype}{GbsrGenotypeData}(object)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

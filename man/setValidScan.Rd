@@ -8,6 +8,8 @@
 setValidScan(object, new, update, ...)
 
 \S4method{setValidScan}{GbsrGenotypeData}(object, new, update)
+
+\S4method{setValidScan}{GbsrGenotypeData}(object, new, update)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

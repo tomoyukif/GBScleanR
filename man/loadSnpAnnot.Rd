@@ -8,6 +8,8 @@
 loadSnpAnnot(object, ...)
 
 \S4method{loadSnpAnnot}{GbsrGenotypeData}(object)
+
+\S4method{loadSnpAnnot}{GbsrGenotypeData}(object)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object}

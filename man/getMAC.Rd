@@ -8,6 +8,8 @@
 getMAC(object, target = "snp", valid = TRUE, ...)
 
 \S4method{getMAC}{GbsrGenotypeData}(object, target, valid)
+
+\S4method{getMAC}{GbsrGenotypeData}(object, target, valid)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

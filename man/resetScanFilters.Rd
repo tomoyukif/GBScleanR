@@ -8,6 +8,8 @@
 resetScanFilters(object, ...)
 
 \S4method{resetScanFilters}{GbsrGenotypeData}(object)
+
+\S4method{resetScanFilters}{GbsrGenotypeData}(object)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

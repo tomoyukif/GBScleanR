@@ -8,6 +8,8 @@
 getAlleleB(object, valid = TRUE, chr = NULL, ...)
 
 \S4method{getAlleleB}{GbsrGenotypeData}(object, valid, chr)
+
+\S4method{getAlleleB}{GbsrGenotypeData}(object, valid, chr)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

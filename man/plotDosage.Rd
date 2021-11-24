@@ -33,7 +33,7 @@ respectively.}
 \item{line_color}{A string to indicate the line color in the plot.}
 }
 \value{
-Invisibly returns a ggplot object.
+A ggplot object.
 }
 \description{
 This function counts a reference allele dosage per marker per sample and

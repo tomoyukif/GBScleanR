@@ -9,6 +9,8 @@ normalized read counts per sample and per marker.}
 calcReadStats(object, target = "both", q = NULL, ...)
 
 \S4method{calcReadStats}{GbsrGenotypeData}(object, target, q)
+
+\S4method{calcReadStats}{GbsrGenotypeData}(object, target, q)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

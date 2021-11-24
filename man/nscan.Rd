@@ -8,6 +8,8 @@
 nscan(object, valid = TRUE, ...)
 
 \S4method{nscan}{GbsrGenotypeData}(object, valid)
+
+\S4method{nscan}{GbsrGenotypeData}(object, valid)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

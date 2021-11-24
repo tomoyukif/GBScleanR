@@ -8,6 +8,8 @@
 setRawGenotype(object, ...)
 
 \S4method{setRawGenotype}{GbsrGenotypeData}(object)
+
+\S4method{setRawGenotype}{GbsrGenotypeData}(object)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

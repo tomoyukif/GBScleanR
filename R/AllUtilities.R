@@ -35,10 +35,10 @@ print.GbsrGenotypeData <- function(x) {
 #' vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
 #' gds_fn <- tempfile("sample", fileext = ".gds")
 #' gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
-#' 
+#'
 #' # Load data in the GDS file and instantiate a `GbsrGenotypeData` object.
 #' gdata <- loadGDS(gds_fn)
-#' 
+#'
 #' # Close the connection to the GDS file.
 #' closeGDS(gdata)
 #'
@@ -52,8 +52,7 @@ gbsrVCF2GDS <- function(vcf_fn,
                         force = FALSE,
                         verbose = TRUE) {
   if (file.exists(out_fn)) {
-    msg <- paste0(out_fn, ' exists!')
-    message(msg)
+    message(out_fn, ' exists!')
     while (TRUE) {
       if (force) {
         file.remove(out_fn)
@@ -69,7 +68,7 @@ gbsrVCF2GDS <- function(vcf_fn,
       }
     }
   }
-  
+
   # Create GDS file formatted in the SeqArray style.
   str_opt <- seqStorageOption(mode=c('annotation/format/AD'="uint32"))
   tmp_fn <- tempfile(fileext="gds")
@@ -87,7 +86,7 @@ gbsrVCF2GDS <- function(vcf_fn,
   if(verbose){
     message('Reformatting genotype data.')
   }
-  
+
   out_fn <- seqGDS2SNP(tmp_fn, out_fn, verbose=verbose)
   tmp_gds <- openfn.gds(tmp_fn, FALSE)
   on.exit({closefn.gds(tmp_gds)})
@@ -95,16 +94,16 @@ gbsrVCF2GDS <- function(vcf_fn,
   on.exit({closefn.gds(out_gds)}, TRUE)
   .gds_decomp(tmp_gds)
   .gds_decomp(out_gds)
-  
+
   snp_ano <- addfolder.gdsn(out_gds, "annotation")
   addfolder.gdsn(snp_ano, "info")
   addfolder.gdsn(snp_ano, "format")
-  
+
   .insertAnnot(tmp_gds, out_gds)
-  
+
   chr_node <-.getNodeIndex(out_gds, "snp.chromosome")
   rename.gdsn(chr_node, "snp.chromosome.name")
-  
+
   chr <- read.gdsn(chr_node)
   chr <- factor(chr, levels = unique(chr))
   add.gdsn(out_gds, "snp.chromosome", as.integer(chr), "int8", replace=TRUE)
@@ -120,14 +119,14 @@ gbsrVCF2GDS <- function(vcf_fn,
 
 .insertAnnot <- function(tmp_gds, out_gds){
   info_node_list <- .getNodeList(tmp_gds, "annotation/info")
-  
+
   # Copy INFO data to new GDS file.
   out_info <- index.gdsn(out_gds, "annotation/info")
   for (gdsn_i in info_node_list){
     i_node <- index.gdsn(tmp_gds, gdsn_i)
     copyto.gdsn(out_info, i_node)
   }
-  
+
   # Copy FORMAT data to new GDS file.
   format_node_list <- .getNodeList(tmp_gds, "annotation/format")
   format_node_list <- grep("/data$", format_node_list, value=TRUE)
@@ -156,10 +155,10 @@ gbsrVCF2GDS <- function(vcf_fn,
   alleleA <- sub("/.*", "", allele)
   alleleB <- sub(".*/", "", allele)
   validMarker <- rep(TRUE, length(snpID))
-  data <- data.frame(snpID, chromosome, chromosome.name, position, 
+  data <- data.frame(snpID, chromosome, chromosome.name, position,
                      alleleA, alleleB, validMarker,
                      ploidy=2L, stringsAsFactors=FALSE)
-  
+
   return(SnpAnnotationDataFrame(data))
 }
 
@@ -180,7 +179,7 @@ gbsrVCF2GDS <- function(vcf_fn,
 #' GBScleanR handles only one class `GbsrGenotypeData` and
 #' conducts all data manipulation via class methods for it.
 #'
-#' @param x A string of the path to an input GDS file or 
+#' @param x A string of the path to an input GDS file or
 #' a `GbsrGenotypeData` object to reload.
 #' @param verbose if TRUE, show information.
 #'
@@ -198,7 +197,7 @@ gbsrVCF2GDS <- function(vcf_fn,
 #' vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
 #' gds_fn <- tempfile("sample", fileext = ".gds")
 #' gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
-#' 
+#'
 #' # Load data in the GDS file and instantiate a `GbsrGenotypeData` object.
 #' gdata <- loadGDS(gds_fn)
 #'
@@ -207,24 +206,28 @@ gbsrVCF2GDS <- function(vcf_fn,
 #'
 #' # Close the connection to the GDS file.
 #' closeGDS(gdata)
-#' 
-loadGDS <- function(x, 
+#'
+loadGDS <- function(x,
                     verbose = TRUE) {
   if(verbose){ message('Loading GDS file.') }
   if(inherits(x, "GbsrGenotypeData")){
     if(isOpenGDS(x)){
         closeGDS(x)
     }
+    # Leave the following connection open to build the GdsGenotypeReader object
+    # with `readonly=FALSE` mode.
     x <- openfn.gds(.getGDSFileName(x), FALSE)
-    
+
   } else if(is.character(x)){
+    # Leave the following connection open to build the GdsGenotypeReader object
+    # with `readonly=FALSE` mode.
     x <- openfn.gds(x, FALSE)
-    
+
   } else {
     stop("x must be a file path or a GbsrGenotypeData object",
          call. = FALSE)
   }
-  
+
   gds <- GdsGenotypeReader(x, "scan,snp")
   snp_ann <- .buildSnpAnnot(gds)
   scan_ann <- .buildScanAnnot(gds)

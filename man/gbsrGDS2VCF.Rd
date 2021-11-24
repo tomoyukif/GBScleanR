@@ -8,6 +8,8 @@
 gbsrGDS2VCF(object, out_fn, node = "raw", incl_parents = TRUE, ...)
 
 \S4method{gbsrGDS2VCF}{GbsrGenotypeData}(object, out_fn, node, incl_parents)
+
+\S4method{gbsrGDS2VCF}{GbsrGenotypeData}(object, out_fn, node, incl_parents)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
