@@ -82,11 +82,11 @@ test_that("Mean alternative read", {
 })
 
 test_that("SD of reference read", {
-    expect_equal(round(getSDReadRef(gds, "snp")),
-                 round(apply(ref, 2, sd, na.rm = TRUE)),
+    expect_equal(as.integer(getSDReadRef(gds, "snp")),
+                 as.integer(apply(ref, 2, sd, na.rm = TRUE)),
                  ignore_attr = TRUE)
-    expect_equal(round(getSDReadRef(gds, "scan")),
-                 round(apply(ref, 1, sd, na.rm = TRUE)),
+    expect_equal(as.integer(getSDReadRef(gds, "scan")),
+                 as.integer(apply(ref, 1, sd, na.rm = TRUE)),
                  ignore_attr = TRUE)
 
     valid_snp <- sample(c(TRUE, FALSE), nsnp(gds), TRUE)
@@ -104,21 +104,21 @@ test_that("SD of reference read", {
 
     valid_ref <- ref[valid_scan, valid_snp]
     valid_ref[valid_ref == 0] <- NA
-    expect_equal(round(getSDReadRef(gds, "snp", valid = TRUE)),
-                 round(apply(valid_ref, 2, sd, na.rm = TRUE)),
+    expect_equal(as.integer(getSDReadRef(gds, "snp", valid = TRUE)),
+                 as.integer(apply(valid_ref, 2, sd, na.rm = TRUE)),
                  ignore_attr = TRUE)
 
-    expect_equal(round(getSDReadRef(gds, "scan", valid = TRUE)),
-                 round(apply(valid_ref, 1, sd, na.rm = TRUE)),
+    expect_equal(as.integer(getSDReadRef(gds, "scan", valid = TRUE)),
+                 as.integer(apply(valid_ref, 1, sd, na.rm = TRUE)),
                  ignore_attr = TRUE)
 })
 
 test_that("SD of alternative read", {
-    expect_equal(round(getSDReadAlt(gds, "snp")),
-                 round(apply(alt, 2, sd, na.rm = TRUE)),
+    expect_equal(as.integer(getSDReadAlt(gds, "snp")),
+                 as.integer(apply(alt, 2, sd, na.rm = TRUE)),
                  ignore_attr = TRUE)
-    expect_equal(round(getSDReadAlt(gds, "scan")),
-                 round(apply(alt, 1, sd, na.rm = TRUE)),
+    expect_equal(as.integer(getSDReadAlt(gds, "scan")),
+                 as.integer(apply(alt, 1, sd, na.rm = TRUE)),
                  ignore_attr = TRUE)
 
     valid_snp <- sample(c(TRUE, FALSE), nsnp(gds), TRUE)
@@ -136,21 +136,21 @@ test_that("SD of alternative read", {
 
     valid_alt <- alt[valid_scan, valid_snp]
     valid_alt[valid_alt == 0] <- NA
-    expect_equal(round(getSDReadAlt(gds, "snp", valid = TRUE)),
-                 round(apply(valid_alt, 2, sd, na.rm = TRUE)),
+    expect_equal(as.integer(getSDReadAlt(gds, "snp", valid = TRUE)),
+                 as.integer(apply(valid_alt, 2, sd, na.rm = TRUE)),
                  ignore_attr = TRUE)
 
-    expect_equal(round(getSDReadAlt(gds, "scan", valid = TRUE)),
-                 round(apply(valid_alt, 1, sd, na.rm = TRUE)),
+    expect_equal(as.integer(getSDReadAlt(gds, "scan", valid = TRUE)),
+                 as.integer(apply(valid_alt, 1, sd, na.rm = TRUE)),
                  ignore_attr = TRUE)
 })
 
 test_that("Quantile of reference read", {
-    expect_equal(round(getQtileReadRef(gds, "snp")),
-                 round(apply(ref, 2, quantile, probs = q, na.rm = TRUE)),
+    expect_equal(as.integer(getQtileReadRef(gds, "snp")),
+                 as.integer(apply(ref, 2, quantile, probs = q, na.rm = TRUE)),
                  ignore_attr = TRUE)
-    expect_equal(round(getQtileReadRef(gds, "scan")),
-                 round(apply(ref, 1, quantile, probs = q, na.rm = TRUE)),
+    expect_equal(as.integer(getQtileReadRef(gds, "scan")),
+                 as.integer(apply(ref, 1, quantile, probs = q, na.rm = TRUE)),
                  ignore_attr = TRUE)
 
     valid_snp <- sample(c(TRUE, FALSE), nsnp(gds), TRUE)
@@ -168,22 +168,22 @@ test_that("Quantile of reference read", {
 
     valid_ref <- ref[valid_scan, valid_snp]
     valid_ref[valid_ref == 0] <- NA
-    expect_equal(round(getQtileReadRef(gds, "snp", valid = TRUE)),
-                 round(apply(valid_ref, 2, quantile, probs = q, na.rm = TRUE)),
+    expect_equal(as.integer(getQtileReadRef(gds, "snp", valid = TRUE)),
+                 as.integer(apply(valid_ref, 2, quantile, probs = q, na.rm = TRUE)),
                  ignore_attr = TRUE)
 
-    expect_equal(round(getQtileReadRef(gds, "scan", valid = TRUE)),
-                 round(apply(valid_ref, 1, quantile, probs = q, na.rm = TRUE)),
+    expect_equal(as.integer(getQtileReadRef(gds, "scan", valid = TRUE)),
+                 as.integer(apply(valid_ref, 1, quantile, probs = q, na.rm = TRUE)),
                  ignore_attr = TRUE)
 })
 
 
 test_that("Quantile of alternative read", {
-    expect_equal(round(getQtileReadAlt(gds, "snp")),
-                 round(apply(alt, 2, quantile, probs = q, na.rm = TRUE)),
+    expect_equal(as.integer(getQtileReadAlt(gds, "snp")),
+                 as.integer(apply(alt, 2, quantile, probs = q, na.rm = TRUE)),
                  ignore_attr = TRUE)
-    expect_equal(round(getQtileReadAlt(gds, "scan")),
-                 round(apply(alt, 1, quantile, probs = q, na.rm = TRUE)),
+    expect_equal(as.integer(getQtileReadAlt(gds, "scan")),
+                 as.integer(apply(alt, 1, quantile, probs = q, na.rm = TRUE)),
                  ignore_attr = TRUE)
 
     valid_snp <- sample(c(TRUE, FALSE), nsnp(gds), TRUE)
@@ -201,11 +201,11 @@ test_that("Quantile of alternative read", {
 
     valid_alt <- alt[valid_scan, valid_snp]
     valid_alt[valid_alt == 0] <- NA
-    expect_equal(round(getQtileReadAlt(gds, "snp", valid = TRUE)),
-                 round(apply(valid_alt, 2, quantile, probs = q, na.rm = TRUE)),
+    expect_equal(as.integer(getQtileReadAlt(gds, "snp", valid = TRUE)),
+                 as.integer(apply(valid_alt, 2, quantile, probs = q, na.rm = TRUE)),
                  ignore_attr = TRUE)
 
-    expect_equal(round(getQtileReadAlt(gds, "scan", valid = TRUE)),
-                 round(apply(valid_alt, 1, quantile, probs = q, na.rm = TRUE)),
+    expect_equal(as.integer(getQtileReadAlt(gds, "scan", valid = TRUE)),
+                 as.integer(apply(valid_alt, 1, quantile, probs = q, na.rm = TRUE)),
                  ignore_attr = TRUE)
 })
