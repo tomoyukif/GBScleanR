@@ -29,6 +29,9 @@
 #'
 #' gds <- openGDS(gds)
 #'
+#' # Close the connection to the GDS file
+#' closeGDS(gds)
+
 setGeneric("openGDS", function(object, ...) standardGeneric("openGDS"))
 
 
