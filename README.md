@@ -11,19 +11,29 @@ function of this package is `estGeno()` which estimates the true genotypes of
 samples from given read counts for genotype markers using a hidden Markov model 
 with incorporating uneven observation ratio of allele reads. This implementation
 gives robust genotype estimation even in noisy genotype data usually observed in
-Genotyping-By-Sequnencing (GBS) and similar methods, e.g. RADseq. GBScleanR 
-currenly only supports genotype data of biparental populations.
+Genotyping-By-Sequnencing (GBS) and similar methods, e.g. RADseq. 
+The current implementation accepts genotype data of a 
+diploid population at any generation of multi-parental cross, e.g. biparental
+F2 from inbred parents, biparental F2 from outbred parents, and 8-way 
+recombinant inbred lines (8-way RILs) which can be refered to as MAGIC 
+population.
 
 ## Installation
 You can install `GBScleanR` from the Bioconductor repository with running the 
-following code on an R console.  
- \* Currently not available from Bioconductor, please install from the GitHub 
- repository.
+following code on an R console. Currently `GBScleanR` is listed in the 
+developmental package repository of Bioconductor. You need to set to use Bioc 
+devel as shown below. On the other hand, `GBScleanR` on the GitHub repository
+provide you the latest package with some developmental functions. If you need 
+the stable release version of the package, please install the one on 
+Bioconductor.
 
 From Bioconductor:
 ```
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
+    
+# The following initializes usage of Bioc devel
+BiocManager::install(version='devel')
 
 BiocManager::install("GBScleanR")
 ```

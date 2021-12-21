@@ -511,8 +511,6 @@ The function `subsetGDS()` automatically close the connection to the GDS file of
 ```{r}
 gds <- openGDS(gds)
 ```
-
-
 \ 
 
 ## Reset filtering
@@ -673,14 +671,54 @@ gds <- initScheme(gds, crosstype = "pairing", mating = matrix(1:2, 2))
 gds <- addScheme(gds, crosstype = "selfing")
 ```
 \ 
-The function `initScheme()` initializes the scheme object with information about founders. You need to specify a matrix indicating combinations of `mating`, in which each column shows a pair of parental samples. For example, if you have only two parents, the `mating` matrix should be `mating = matrix(1:2, nrow = 2, ncol = 1)` or equivalents. The indices used in the matrix should match with the IDs labeled to parental samples by `setParents()`. The created `GbsrScheme` object is set in the `scheme` slot of the `GbsrGenotypeData` object.
-\ 
+The function `initScheme()` initializes the scheme object with information about founders. You need to specify a matrix indicating combinations of `mating`, in which each column shows a pair of parental samples. For example, if you have only two parents, the `mating` matrix should be `mating = matrix(1:2, nrow = 2, ncol = 1)` or equivalents. The indices used in the matrix should match with the IDs labeled to parental samples by `setParents()`. To confirm the IDs for parental samples, run the following code.
+```{r}
+getParents(gds)
+```
+The created `GbsrScheme` object is set in the `scheme` slot of the `GbsrGenotypeData` object.
+The function `addScheme()` adds the information about the next breeding step of your population. In the case of our example data, the second step was selfing to produce F2 individuals from the F1 obtained via the first founder crossing.
+\  
+If your population was derived from a 4-way or 8-way cross, you need to add more `paring` steps. In the case of 8-way RILs developed by three pairing crosses followed by five selfing cycles, the scheme object should be built as following. First we need to initialize the scheme object with specifying the first mating scheme. The crosstype argument should be "pairing" and the mating argument should be given as a matrix in which each pairing combination of parents are shown in each column. The following case indicates the pairing of parent 1 and 2 as well as 3 and 4, 5 and 6, and 7 and 8.
+```{r eval=FALSE}
+gds <- initScheme(gds, crosstype = "pair", mating = cbind(c(1:2), c(3:4), c(5:6), c(7:8)))
+```
+\  
+Now the progenies of the crosses above have member ID 9, 10, 11,
+and 12 for each combination of mating. You can check IDs with showScheme().
+```{r eval=FALSE}
+showScheme(gds)
+```
+\  
+Then, add the step to make 4-way crosses.
+```{r eval=FALSE}
+gds <- addScheme(gds, crosstype = "pair", mating = cbind(c(9:10), c(11:12)))
 
-The function `addScheme()` adds the information about the next breeding step of your population. In the case of our example data, the second step was selfing to produce F2 individuals from the F1 obtained via the first founder crossing. If your population was derived from a 4-way or 8-way cross, you need to add more `paring` steps.
+# Check IDs.
+showScheme(gds)
+```
+\  
+Add the last generation of the paring step .
+```{r eval=FALSE}
+gds <- addScheme(gds, crosstype = "pair", mating = cbind(c(13:14)))
 
-\ 
+#' # Check IDs.
+showScheme(gds)
+```
+\  
+Now we have the scheme information of a 8-way cross.
+The follwoing steps add the selfing cycles.
+```{r eval=FALSE}
+# Inbreeding by five times selfing.
+gds <- addScheme(gds, crosstype = "self")
+gds <- addScheme(gds, crosstype = "self")
+gds <- addScheme(gds, crosstype = "self")
+gds <- addScheme(gds, crosstype = "self")
+gds <- addScheme(gds, crosstype = "self")
+```
+You can set `crosstype = "sibling"` or `crosstype = "random"`, if your population was developed through sibling crosses or random crosses, respectively.｀
 
 ### Execute genotype estimation
+The following codes suppose that you built the scheme object for the example data that is a biparental F2 population derived from a cross between inbred parents, not for the 8-way RILs explained above.
 Now we can execute genotype estimation for error correction. `r Biocpkg("GBScleanR")` estimates error pattern via iterative optimization of parameters for genotype estimation. We could not guess the best number of iterations, but our simulation tests showed `iter = 4` usually saturates the improvement of estimation accuracy.
 ```{r message=FALSE}
 gds <- estGeno(gds, iter = 4)
