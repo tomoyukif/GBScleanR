@@ -8,8 +8,6 @@
 openGDS(object, ...)
 
 \S4method{openGDS}{GbsrGenotypeData}(object)
-
-\S4method{openGDS}{GbsrGenotypeData}(object)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
@@ -44,4 +42,6 @@ closeGDS(gds)
 
 gds <- openGDS(gds)
 
+# Close the connection to the GDS file
+closeGDS(gds)
 }

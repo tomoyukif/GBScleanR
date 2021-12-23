@@ -8,8 +8,6 @@
 getCountAlleleRef(object, target = "snp", valid = TRUE, prop = FALSE, ...)
 
 \S4method{getCountAlleleRef}{GbsrGenotypeData}(object, target, valid, prop)
-
-\S4method{getCountAlleleRef}{GbsrGenotypeData}(object, target, valid, prop)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

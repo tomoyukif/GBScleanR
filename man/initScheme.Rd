@@ -11,8 +11,6 @@ initScheme(object, crosstype, mating, ...)
 
 \S4method{initScheme}{GbsrGenotypeData}(object, crosstype, mating)
 
-\S4method{initScheme}{GbsrGenotypeData}(object, crosstype, mating)
-
 \S4method{initScheme}{GbsrScheme}(object, crosstype, mating, parents)
 }
 \arguments{

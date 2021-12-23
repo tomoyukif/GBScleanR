@@ -8,8 +8,6 @@
 getValidSnp(object, chr = NULL, ...)
 
 \S4method{getValidSnp}{GbsrGenotypeData}(object, chr)
-
-\S4method{getValidSnp}{GbsrGenotypeData}(object, chr)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

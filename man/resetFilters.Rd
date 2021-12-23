@@ -9,8 +9,6 @@ and \code{\link[=setCallFilter]{setCallFilter()}}.}
 resetFilters(object, ...)
 
 \S4method{resetFilters}{GbsrGenotypeData}(object)
-
-\S4method{resetFilters}{GbsrGenotypeData}(object)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

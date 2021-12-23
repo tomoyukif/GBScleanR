@@ -9,8 +9,6 @@ per SNP or per scan (sample)}
 getMeanReadAlt(object, target = "snp", valid = TRUE, ...)
 
 \S4method{getMeanReadAlt}{GbsrGenotypeData}(object, target, valid)
-
-\S4method{getMeanReadAlt}{GbsrGenotypeData}(object, target, valid)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

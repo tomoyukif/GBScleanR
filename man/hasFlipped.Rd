@@ -9,8 +9,6 @@ whether information exists.}
 hasFlipped(object, ...)
 
 \S4method{hasFlipped}{GbsrGenotypeData}(object)
-
-\S4method{hasFlipped}{GbsrGenotypeData}(object)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

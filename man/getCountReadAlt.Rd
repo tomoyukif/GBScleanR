@@ -8,8 +8,6 @@
 getCountReadAlt(object, target = "snp", valid = TRUE, prop = FALSE, ...)
 
 \S4method{getCountReadAlt}{GbsrGenotypeData}(object, target, valid, prop)
-
-\S4method{getCountReadAlt}{GbsrGenotypeData}(object, target, valid, prop)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

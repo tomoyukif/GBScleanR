@@ -37,22 +37,6 @@ setCallFilter(
   snp_ref_qtile,
   snp_alt_qtile
 )
-
-\S4method{setCallFilter}{GbsrGenotypeData}(
-  object,
-  dp_count,
-  ref_count,
-  alt_count,
-  norm_dp_count,
-  norm_ref_count,
-  norm_alt_count,
-  scan_dp_qtile,
-  scan_ref_qtile,
-  scan_alt_qtile,
-  snp_dp_qtile,
-  snp_ref_qtile,
-  snp_alt_qtile
-)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

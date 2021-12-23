@@ -9,8 +9,6 @@ SNP or per scan (sample)}
 getMeanReadRef(object, target = "snp", valid = TRUE, ...)
 
 \S4method{getMeanReadRef}{GbsrGenotypeData}(object, target, valid)
-
-\S4method{getMeanReadRef}{GbsrGenotypeData}(object, target, valid)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

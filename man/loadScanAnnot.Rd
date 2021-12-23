@@ -8,8 +8,6 @@
 loadScanAnnot(object, ...)
 
 \S4method{loadScanAnnot}{GbsrGenotypeData}(object)
-
-\S4method{loadScanAnnot}{GbsrGenotypeData}(object)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object}

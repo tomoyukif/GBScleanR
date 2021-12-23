@@ -8,8 +8,6 @@
 getScanID(object, valid = TRUE, ...)
 
 \S4method{getScanID}{GbsrGenotypeData}(object, valid)
-
-\S4method{getScanID}{GbsrGenotypeData}(object, valid)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

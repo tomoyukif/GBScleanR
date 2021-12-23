@@ -15,8 +15,6 @@ getGenotype(
 )
 
 \S4method{getGenotype}{GbsrGenotypeData}(object, valid, chr, node, parents)
-
-\S4method{getGenotype}{GbsrGenotypeData}(object, valid, chr, node, parents)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

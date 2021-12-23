@@ -8,8 +8,6 @@
 countRead(object, target = "both", node = "raw", ...)
 
 \S4method{countRead}{GbsrGenotypeData}(object, target, node)
-
-\S4method{countRead}{GbsrGenotypeData}(object, target, node)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

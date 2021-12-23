@@ -8,8 +8,6 @@
 isOpenGDS(object, ...)
 
 \S4method{isOpenGDS}{GbsrGenotypeData}(object)
-
-\S4method{isOpenGDS}{GbsrGenotypeData}(object)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

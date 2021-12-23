@@ -8,8 +8,6 @@
 getHaplotype(object, valid = TRUE, chr = NULL, parents = FALSE, ...)
 
 \S4method{getHaplotype}{GbsrGenotypeData}(object, chr, parents)
-
-\S4method{getHaplotype}{GbsrGenotypeData}(object, chr, parents)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

@@ -9,8 +9,6 @@ SNP or per scan (sample)}
 getQtileReadAlt(object, target = "snp", q = 0.5, valid = TRUE, ...)
 
 \S4method{getQtileReadAlt}{GbsrGenotypeData}(object, target, q, valid)
-
-\S4method{getQtileReadAlt}{GbsrGenotypeData}(object, target, q, valid)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

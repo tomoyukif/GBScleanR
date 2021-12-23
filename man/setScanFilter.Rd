@@ -37,22 +37,6 @@ setScanFilter(
   sd_ref,
   sd_alt
 )
-
-\S4method{setScanFilter}{GbsrGenotypeData}(
-  object,
-  id,
-  missing,
-  het,
-  mac,
-  maf,
-  ad_ref,
-  ad_alt,
-  dp,
-  mean_ref,
-  mean_alt,
-  sd_ref,
-  sd_alt
-)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

@@ -8,8 +8,6 @@
 getValidScan(object, parents = FALSE, ...)
 
 \S4method{getValidScan}{GbsrGenotypeData}(object, parents)
-
-\S4method{getValidScan}{GbsrGenotypeData}(object, parents)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

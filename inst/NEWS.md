@@ -12,4 +12,8 @@ Changes in version 0.99.27 (2021-12-21)
 
 Changes in version 0.99.28 (2021-12-21)
 + Added a code to close the file connection to GDS after opening file via 
-openGDS() called in the exmple section of the openGDS function.
++ openGDS() called in the exmple section of the openGDS function.
+
+Changes in version 0.99.29 (2021-12-23)
++ Fixed a bug in getRead() to get read counts of specified chromosome only.
++ Removed duplicated entries in Methods-GbsrGenotypeData.R.

@@ -8,8 +8,6 @@
 getParents(object, bool = FALSE, ...)
 
 \S4method{getParents}{GbsrGenotypeData}(object, bool)
-
-\S4method{getParents}{GbsrGenotypeData}(object, bool)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

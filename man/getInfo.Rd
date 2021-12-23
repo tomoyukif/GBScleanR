@@ -8,8 +8,6 @@
 getInfo(object, var, valid = TRUE, chr = NULL, ...)
 
 \S4method{getInfo}{GbsrGenotypeData}(object, var, valid, chr)
-
-\S4method{getInfo}{GbsrGenotypeData}(object, var, valid, chr)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

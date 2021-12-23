@@ -16,8 +16,6 @@ subsetGDS(
 )
 
 \S4method{subsetGDS}{GbsrGenotypeData}(object, out_fn, snp_incl, scan_incl, incl_parents, verbose)
-
-\S4method{subsetGDS}{GbsrGenotypeData}(object, out_fn, snp_incl, scan_incl, incl_parents, verbose)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

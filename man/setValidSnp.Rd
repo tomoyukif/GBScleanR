@@ -8,8 +8,6 @@
 setValidSnp(object, new, update, ...)
 
 \S4method{setValidSnp}{GbsrGenotypeData}(object, new, update)
-
-\S4method{setValidSnp}{GbsrGenotypeData}(object, new, update)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

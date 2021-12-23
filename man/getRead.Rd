@@ -8,8 +8,6 @@
 getRead(object, valid = TRUE, chr = NULL, node = "raw", parents = FALSE, ...)
 
 \S4method{getRead}{GbsrGenotypeData}(object, valid, chr, node, parents)
-
-\S4method{getRead}{GbsrGenotypeData}(object, valid, chr, node, parents)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}

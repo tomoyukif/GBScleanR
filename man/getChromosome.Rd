@@ -8,8 +8,6 @@
 getChromosome(object, valid = TRUE, levels = FALSE, name = FALSE, ...)
 
 \S4method{getChromosome}{GbsrGenotypeData}(object, valid, levels, name)
-
-\S4method{getChromosome}{GbsrGenotypeData}(object, valid, levels, name)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
