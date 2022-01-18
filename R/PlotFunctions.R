@@ -463,7 +463,7 @@ plotGBSR  <- function(x,
         color <- color[2:4]
     }
     if(stats == "marker"){
-        stats <- color[1]
+        color <- color[1]
     }
 
     df <- .df.maker(x, stats, q, "snp", TRUE)
