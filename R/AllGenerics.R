@@ -2211,7 +2211,7 @@ setGeneric("setCallFilter", function(object,
                                      snp_ref_qtile = c(0, 1),
                                      snp_alt_qtile = c(0, 1),
                                      ...)
-             standardGeneric("setCallFilter"))
+           standardGeneric("setCallFilter"))
 
 
 #' Filter out scans (samples)
@@ -2292,7 +2292,7 @@ setGeneric("setScanFilter", function(object,
                                      sd_ref = Inf,
                                      sd_alt = Inf,
                                      ...)
-             standardGeneric("setScanFilter"))
+           standardGeneric("setScanFilter"))
 
 
 #' Filter out markers
@@ -2373,7 +2373,7 @@ setGeneric("setSnpFilter", function(object,
                                     sd_ref = Inf,
                                     sd_alt = Inf,
                                     ...)
-             standardGeneric("setSnpFilter"))
+           standardGeneric("setSnpFilter"))
 
 
 #' Filter out markers based on marker quality metrics
@@ -2900,6 +2900,43 @@ setGeneric("estGeno", function(object,
                                n_threads = NULL,
                                ...)
     standardGeneric("estGeno"))
+
+#' Add genotype data into the GDS file
+#'
+#' @param object A [GbsrGenotypeData] object.
+#' @param id A character vector.
+#' @param genotype A numeric vector or matrix indicating genotypes at markers
+#' of given samples. The length or the number of columns should match with the
+#' number of markers recorded in the GDS file, which can be obtained via
+#' nsnp() with `valid = FALSE`.
+#' @param reads A numeric vector of matrix indicating read counts at markers of
+#' given samples. The length or the number of columns should match with twice
+#' the number of markers recorded in the GDS file, which can be obtained via
+#' nsnp() with `valid = FALSE`.
+#'
+#' @examples
+#' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+#' gds <- loadGDS(gds_fn)
+#'
+#' id <- "Dummy1"
+#' genotype <- sample(c(0:3), nsnp(gds))
+#' reads <- round(rexp(nsnp(gdata) * 2, 1/5))
+#' missing_pos <- which(genotype == 3)
+#' reads[c(missing_pos, missing_pos + 1)] <- 0
+#' ref_pos <- which(genotype == 2)
+#' reads[ref_pos + 1] <- 0
+#' alt_pos <- which(genotype == 0)
+#' reads[alt_pos] <- 0
+#'
+#' addScan(gds, id, genotype, reads)
+#'
+#' # Close the connection to the GDS file
+#' closeGDS(gds)
+#'
+#' @export
+setGeneric("addScan", function(object, id, genotype, reads, ...)
+    standardGeneric("addScan"))
 
 
 #' Build a [GbsrScheme] object
