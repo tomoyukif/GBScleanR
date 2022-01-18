@@ -1889,9 +1889,7 @@ setMethod("setCallFilter",
     }))
 
     if(check2){
-        for(i in which(getValidSnp(object))){
-            .callFilterSnp(object, i, filt_list)
-        }
+        .callFilterSnp(object, i, filt_list)
         set_filt <- set_filt | TRUE
 
     } else {
@@ -1968,7 +1966,7 @@ setMethod("setCallFilter",
     write.gdsn(callfilt, i_callfilt, c(i, 1),  c(1, -1))
 }
 
-.callFilterSnp <- function(object, i, filt_list){
+.callFilterSnp <- function(object, filt_list){
     ad_data_node <- .getNodeIndex(object, "annotation/format/AD/data")
     callfilt <- .getNodeIndex(object, "callfilt")
     qtile_default = c(0, 1)
@@ -1979,13 +1977,13 @@ setMethod("setCallFilter",
         ref <- x[, c(TRUE, FALSE)]
         alt <- x[, c(FALSE, TRUE)]
         dp <- ref + alt
-        invalid_snp <- !getValidScan(object)
-        ref[invalid_snp] <- NA
-        alt[invalid_snp] <- NA
-        dp[invalid_snp] <- NA
+        invalid_scan <- !getValidScan(object)
+        ref[invalid_scan] <- NA
+        alt[invalid_scan] <- NA
+        dp[invalid_scan] <- NA
 
         if(hasFlipped(object)){
-            flipped <- getFlipped(object, FALSE)
+            flipped <- getFlipped(object, FALSE)[i]
             tmp <- ref[flipped]
             ref[flipped] <- alt[flipped]
             alt[flipped] <- tmp
@@ -2692,7 +2690,7 @@ setMethod("addScan", "GbsrGenotypeData",
               }
 
               n_snp <- nsnp(object, FALSE)
-              if(length(id == 1)){
+              if(length(id) == 1){
                   if(!is.numeric(genotype)){
                       stop("genotype can be an integer vector or matrix.")
                   }
@@ -2710,7 +2708,7 @@ setMethod("addScan", "GbsrGenotypeData",
                   }
               }
 
-              if(length(id > 1)){
+              if(length(id) > 1){
                   if(!is.numeric(genotype)){
                       stop("genotype can be an integer vector or matrix.")
                   }
@@ -2718,13 +2716,17 @@ setMethod("addScan", "GbsrGenotypeData",
                       stop("reads can be an integer vector or matrix.")
                   }
                   message(length(id), " sample was given to add.")
-                  if(nrow(genotype) != n_snp){
+                  if(ncol(genotype) != n_snp){
                       stop("The number of columns of genotype should match",
                            " with the number of marekrs.")
                   }
-                  if(nrow(reads) != n_snp * 2){
+                  if(ncol(reads) != n_snp * 2){
                       stop("The number of columns of reads should match",
                            " with twice the number of marekrs.")
+                  }
+                  if(length(id) != nrow(genotype) | length(id) != nrow(reads)){
+                      stop("The number of specified IDs and the numbers of ",
+                           "rows of genotype and reads should be same.")
                   }
               }
 
@@ -2734,9 +2736,13 @@ setMethod("addScan", "GbsrGenotypeData",
               tmp <- read.gdsn(gt_node)
               tmp <- rbind(tmp, genotype)
               gt_attr <- get.attr.gdsn(gt_node)
-              add.gdsn(.getGdsfmtObj(object), "genotype", tmp, "bit2",
-                       c(nscan(object) + length(id), nsnp(object)), "",
-                       replace = TRUE)
+              gt_node <- add.gdsn(.getGdsfmtObj(object),
+                                  "genotype",
+                                  tmp,
+                                  "bit2",
+                                  c(nscan(object) + length(id), nsnp(object)),
+                                  "",
+                                  replace = TRUE)
               for(i in seq_along(gt_attr)){
                   put.attr.gdsn(gt_node, names(gt_attr)[i], val = gt_attr[[i]])
               }
@@ -2744,10 +2750,14 @@ setMethod("addScan", "GbsrGenotypeData",
               ad_attr <- get.attr.gdsn(ad_node)
               tmp <- read.gdsn(ad_node)
               tmp <- rbind(tmp, reads)
-              add.gdsn(.getNodeIndex(object, "annotation/format/AD"),
-                       "data", tmp, "float32",
-                       c(nscan(object) + length(id), nsnp(object) * 2), "",
-                       replace = TRUE)
+              ad_node <- add.gdsn(.getNodeIndex(object, "annotation/format/AD"),
+                                  "data",
+                                  tmp,
+                                  "float32",
+                                  c(nscan(object) + length(id),
+                                    nsnp(object) * 2),
+                                  "",
+                                  replace = TRUE)
               for(i in seq_along(ad_attr)){
                   put.attr.gdsn(ad_node, names(ad_attr)[i], val = ad_attr[[i]])
               }

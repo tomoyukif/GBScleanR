@@ -459,6 +459,13 @@ plotGBSR  <- function(x,
     }
     stats <- match.arg(stats, stats_list)
 
+    if(stats == "geno"){
+        color <- color[2:4]
+    }
+    if(stats == "marker"){
+        stats <- color[1]
+    }
+
     df <- .df.maker(x, stats, q, "snp", TRUE)
     p <- ggplot(df)
     p <- .plot.maker(p, stats, binwidth, lwd, coord)
@@ -658,12 +665,11 @@ pairsGBSR  <- function(x,
 # Internal function to build a data.frame passed to ggplot().
 .df.maker <- function(x, stats, q, target, pos = FALSE) {
     Ref <- NULL
-    Missing <- NULL
+    Alt <- NULL
     if (stats == "geno") {
-        snp <-data.frame(Ref = getCountGenoRef(x, "snp", TRUE, TRUE),
+        snp <- data.frame(Ref = getCountGenoRef(x, "snp", TRUE, TRUE),
                          Het = getCountGenoHet(x, "snp", TRUE, TRUE),
                          Alt = getCountGenoAlt(x, "snp", TRUE, TRUE),
-                         Missing = getCountGenoMissing(x, "snp", TRUE, TRUE),
                          chr = getChromosome(x),
                          pos = getPosition(x) * 10^-6,
                          stringsAsFactors=FALSE)
@@ -671,7 +677,7 @@ pairsGBSR  <- function(x,
             msg <- paste0('No data for the statistic: ', stats)
             stop(msg)
         }
-        snp <- pivot_longer(snp, Ref:Missing,
+        snp <- pivot_longer(snp, Ref:Alt,
                             names_to="genotype", values_to="val")
         scan <- NULL
 
@@ -840,7 +846,7 @@ pairsGBSR  <- function(x,
     val <- genotype <- target <- pos <- NULL
     if ("geno" %in% stats) {
         p <-p +
-            geom_line(aes(x=pos, y=val, color=genotype, group=genotype),
+            geom_line(aes(x=pos, y=val, color=genotype),
                       size=lwd) +
             facet_wrap(~ chr, coord[1], coord[2], "free_x",
                        dir="v", strip.position="right")
