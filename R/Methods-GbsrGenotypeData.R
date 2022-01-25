@@ -2592,11 +2592,39 @@ setMethod("gbsrGDS2VCF",
                   unlink(out_fn_tmp)
               })
 
+              .checkDataLen(out_gds)
+
               seqGDS2VCF(gdsfile = seqOpen(out_gds$filename),
                          vcf.fn = out_fn,
                          verbose = FALSE)
               return(out_fn)
           })
+
+.checkDataLen <- function(out_gds){
+    gds <- openfn.gds(out_gds$filename, readonly = FALSE)
+    geno_node <- .getNodeIndex(gds, "genotype/data")
+    data_dim <- objdesp.gdsn(geno_node)$dim
+    for(i in .getNodeList(gds, "annotation/info")){
+        i_gdsn <- .getNodeIndex(gds, i)
+        if(objdesp.gdsn(i_gdsn)$dim != data_dim[3]){
+            warning("The node ", i, " has invalid data length.")
+            delete.gdsn(i_gdsn, TRUE)
+        }
+    }
+
+    for(i in .getNodeList(gds, "annotation/format")){
+        i_gdsn <- .getNodeIndex(gds, i)
+        if(grepl("/tmp", i)){
+            delete.gdsn(i_gdsn, TRUE)
+        } else {
+            if(any(objdesp.gdsn(i_gdsn)$dim != data_dim[2:3])){
+                warning("The node ", i, " has invalid data length.")
+                delete.gdsn(i_gdsn, TRUE)
+            }
+        }
+    }
+    closefn.gds(gds)
+}
 
 .formatAnnot <- function(out_gds){
     format_node_list <- .getNodeList(out_gds, "annotation/format")
