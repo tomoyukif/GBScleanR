@@ -2758,9 +2758,9 @@ setMethod("addScan", "GbsrGenotypeData",
                   }
               }
 
-              .gds_decomp(gdata)
-              append.gdsn(.getNodeIndex(gdata, "sample.id"), id)
-              gt_node <- .getNodeIndex(gdata, "genotype")
+              .gds_decomp(object)
+              append.gdsn(.getNodeIndex(object, "sample.id"), id)
+              gt_node <- .getNodeIndex(object, "genotype")
               tmp <- read.gdsn(gt_node)
               tmp <- rbind(tmp, genotype)
               gt_attr <- get.attr.gdsn(gt_node)
@@ -2774,7 +2774,7 @@ setMethod("addScan", "GbsrGenotypeData",
               for(i in seq_along(gt_attr)){
                   put.attr.gdsn(gt_node, names(gt_attr)[i], val = gt_attr[[i]])
               }
-              ad_node <- .getNodeIndex(gdata, "annotation/format/AD/data")
+              ad_node <- .getNodeIndex(object, "annotation/format/AD/data")
               ad_attr <- get.attr.gdsn(ad_node)
               tmp <- read.gdsn(ad_node)
               tmp <- rbind(tmp, reads)
