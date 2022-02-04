@@ -2913,6 +2913,7 @@ setGeneric("estGeno", function(object,
 #' given samples. The length or the number of columns should match with twice
 #' the number of markers recorded in the GDS file, which can be obtained via
 #' nsnp() with `valid = FALSE`.
+#' @param ... Unused.
 #'
 #' @examples
 #' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
@@ -2920,8 +2921,8 @@ setGeneric("estGeno", function(object,
 #' gds <- loadGDS(gds_fn)
 #'
 #' id <- "Dummy1"
-#' genotype <- sample(c(0:3), nsnp(gds))
-#' reads <- round(rexp(nsnp(gdata) * 2, 1/5))
+#' genotype <- sample(c(0:3), nsnp(gds), replace = TRUE)
+#' reads <- round(rexp(nsnp(gds) * 2, 1/5))
 #' missing_pos <- which(genotype == 3)
 #' reads[c(missing_pos, missing_pos + 1)] <- 0
 #' ref_pos <- which(genotype == 2)

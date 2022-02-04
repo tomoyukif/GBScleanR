@@ -520,7 +520,7 @@ setMethod("estGeno",
                             n_f = param_list$n_parents,
                             n_o = param_list$n_samples,
                             n_m = param_list$n_snp,
-                            nohet = param_list$het_parent,
+                            het = param_list$het_parent,
                             possiblehap = param_list$pat$possiblehap - 1,
                             possiblegeno = param_list$pat$possiblegeno - 1,
                             p_geno_fix = param_list$p_geno_fix - 1)

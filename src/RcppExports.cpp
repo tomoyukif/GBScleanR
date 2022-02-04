@@ -11,8 +11,8 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // run_viterbi
-List run_viterbi(NumericMatrix p_ref, NumericMatrix p_alt, NumericMatrix ref, NumericMatrix alt, NumericVector eseq_in, NumericVector bias, NumericMatrix mismap, NumericMatrix trans_prob, NumericVector init_prob, int& n_p, int& n_h, int& n_o, int& n_f, int& n_m, LogicalVector nohet, IntegerVector possiblehap, IntegerVector possiblegeno, IntegerVector p_geno_fix);
-RcppExport SEXP _GBScleanR_run_viterbi(SEXP p_refSEXP, SEXP p_altSEXP, SEXP refSEXP, SEXP altSEXP, SEXP eseq_inSEXP, SEXP biasSEXP, SEXP mismapSEXP, SEXP trans_probSEXP, SEXP init_probSEXP, SEXP n_pSEXP, SEXP n_hSEXP, SEXP n_oSEXP, SEXP n_fSEXP, SEXP n_mSEXP, SEXP nohetSEXP, SEXP possiblehapSEXP, SEXP possiblegenoSEXP, SEXP p_geno_fixSEXP) {
+List run_viterbi(NumericMatrix p_ref, NumericMatrix p_alt, NumericMatrix ref, NumericMatrix alt, NumericVector eseq_in, NumericVector bias, NumericMatrix mismap, NumericMatrix trans_prob, NumericVector init_prob, int& n_p, int& n_h, int& n_o, int& n_f, int& n_m, LogicalVector het, IntegerVector possiblehap, IntegerVector possiblegeno, IntegerVector p_geno_fix);
+RcppExport SEXP _GBScleanR_run_viterbi(SEXP p_refSEXP, SEXP p_altSEXP, SEXP refSEXP, SEXP altSEXP, SEXP eseq_inSEXP, SEXP biasSEXP, SEXP mismapSEXP, SEXP trans_probSEXP, SEXP init_probSEXP, SEXP n_pSEXP, SEXP n_hSEXP, SEXP n_oSEXP, SEXP n_fSEXP, SEXP n_mSEXP, SEXP hetSEXP, SEXP possiblehapSEXP, SEXP possiblegenoSEXP, SEXP p_geno_fixSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -30,11 +30,11 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int& >::type n_o(n_oSEXP);
     Rcpp::traits::input_parameter< int& >::type n_f(n_fSEXP);
     Rcpp::traits::input_parameter< int& >::type n_m(n_mSEXP);
-    Rcpp::traits::input_parameter< LogicalVector >::type nohet(nohetSEXP);
+    Rcpp::traits::input_parameter< LogicalVector >::type het(hetSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type possiblehap(possiblehapSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type possiblegeno(possiblegenoSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type p_geno_fix(p_geno_fixSEXP);
-    rcpp_result_gen = Rcpp::wrap(run_viterbi(p_ref, p_alt, ref, alt, eseq_in, bias, mismap, trans_prob, init_prob, n_p, n_h, n_o, n_f, n_m, nohet, possiblehap, possiblegeno, p_geno_fix));
+    rcpp_result_gen = Rcpp::wrap(run_viterbi(p_ref, p_alt, ref, alt, eseq_in, bias, mismap, trans_prob, init_prob, n_p, n_h, n_o, n_f, n_m, het, possiblehap, possiblegeno, p_geno_fix));
     return rcpp_result_gen;
 END_RCPP
 }

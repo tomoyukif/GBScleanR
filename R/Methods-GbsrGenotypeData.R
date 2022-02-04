@@ -1889,7 +1889,7 @@ setMethod("setCallFilter",
     }))
 
     if(check2){
-        .callFilterSnp(object, i, filt_list)
+        .callFilterSnp(object, filt_list)
         set_filt <- set_filt | TRUE
 
     } else {
@@ -2467,7 +2467,7 @@ setMethod("subsetGDS",
               if(missing(scan_incl)){
                   scan_incl <- getValidScan(object)
                   if(incl_parents){
-                      if(hasSnpVariable(object, "parents")){
+                      if(hasScanVariable(object, "parents")){
                           scan_incl[getParents(object, TRUE)] <- TRUE
                       }
                   }
@@ -2711,6 +2711,7 @@ setMethod("gbsrGDS2VCF",
 
 ################################################################################
 ## Functions to modify GDS file.
+#' @rdname addScan
 setMethod("addScan", "GbsrGenotypeData",
           function(object, id, genotype, reads){
               if(any(id == "")){
