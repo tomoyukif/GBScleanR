@@ -2111,9 +2111,11 @@ setMethod("setScanFilter",
                    mean_alt,
                    sd_ref,
                    sd_alt){
-              filt_list <- list(id = id, missing = missing, het = het, mac = mac,
+              filt_list <- list(id = id, missing = missing,
+                                het = het, mac = mac,
                                 maf = maf, ad_ref = ad_ref, ad_alt = ad_alt,
-                                dp = dp, mean_ref = mean_ref, mean_alt = mean_alt,
+                                dp = dp, mean_ref = mean_ref,
+                                mean_alt = mean_alt,
                                 sd_ref = sd_ref, sd_alt = sd_alt)
               update <- .makeStatsFilter(object, filt_list, "scan")
               object <- setValidScan(object, update=update)

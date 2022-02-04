@@ -193,7 +193,7 @@ vector<double> calcGenoprob(const double & ref,
   vector<double> prob(3);
   const double dp = ref + alt;
 
-  if(dp > 10){
+  if(dp > 5){
     const double ratio = ref / dp;
     prob[0] = calcpdf(ratio, eseq0);
     prob[1] = calcpdf(ratio, w1);
