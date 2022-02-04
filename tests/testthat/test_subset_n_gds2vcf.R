@@ -57,4 +57,18 @@ test_that("gbsrGDS2VCF", {
     expect_equal(nscan(newgds), nscan(gds))
     expect_equal(getRead(newgds), getRead(gds), ignore_attr = TRUE)
     expect_equal(getGenotype(newgds), getGenotype(gds), ignore_attr = TRUE)
+
+
+    gds <- setCallFilter(gds, scan_dp_qtile = c(0, 0.8))
+    gbsrGDS2VCF(gds, out_fn, "filt")
+    gds <- openGDS(gds)
+    new_gds <- tempfile("newgds", fileext = ".gds")
+    gbsrVCF2GDS(out_fn, new_gds)
+    newgds <- loadGDS(new_gds)
+    expect_equal(nsnp(newgds), nsnp(gds))
+    expect_equal(nscan(newgds), nscan(gds))
+    expect_equal(getRead(newgds), getRead(gds, node = "filt"),
+                 ignore_attr = TRUE)
+    expect_equal(getGenotype(newgds), getGenotype(gds, node = "filt"),
+                 ignore_attr = TRUE)
 })

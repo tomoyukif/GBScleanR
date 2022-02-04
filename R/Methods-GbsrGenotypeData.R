@@ -2708,6 +2708,13 @@ setMethod("gbsrGDS2VCF",
         newgt <- .getNodeIndex(object, node)
         rename.gdsn(newgt, "genotype")
         put.attr.gdsn(newgt, names(gt_attr)[1], gt_attr[[1]])
+
+        if(node == "filt.genotype"){
+            ad <- .getNodeIndex(object, "annotation/format/AD/data")
+            delete.gdsn(ad)
+            newad <- .getNodeIndex(object, "annotation/format/AD/filt.data")
+            rename.gdsn(newad, "data")
+        }
     }
 }
 
