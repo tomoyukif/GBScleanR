@@ -21,7 +21,8 @@ population.
 ## Installation
 You can install `GBScleanR` from the Bioconductor repository with running the 
 following code on an R console. Currently `GBScleanR` is listed in the 
-developmental package repository of Bioconductor. You need to set to use Bioc 
+developmental package repository of Bioconductor(https://doi.org/doi:10.18129/B9.bioc.GBScleanR). 
+You need to set to use Bioc 
 devel as shown below. On the other hand, `GBScleanR` on the GitHub repository
 provide you the latest package with some developmental functions. If you need 
 the stable release version of the package, please install the one on 
