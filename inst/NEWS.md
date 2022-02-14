@@ -17,3 +17,10 @@ Changes in version 0.99.28 (2021-12-21)
 Changes in version 0.99.29 (2021-12-23)
 + Fixed a bug in getRead() to get read counts of specified chromosome only.
 + Removed duplicated entries in Methods-GbsrGenotypeData.R.
+
+Changes in version 0.99.30 (2022-1-15)
++ Fixed a bug in gbsrGDS2VCF().
++ Reorganized cpp script.
+
+Changes in version 0.99.31 (2022-2-14)
++ Reorganize scripts.
