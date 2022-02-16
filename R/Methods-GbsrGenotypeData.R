@@ -2672,8 +2672,8 @@ setMethod("gbsrGDS2VCF",
 
         info_gdsn <- .getNodeIndex(out_gds, "annotation/info")
         pgt_node <- add.gdsn(info_gdsn, "PGT", storage = "string", replace=TRUE)
-        put.attr.gdsn(pgt_node, "Number", "1")
-        put.attr.gdsn(pgt_node, "Type", "String")
+        put.attr.gdsn(pgt_node, "Number", ".")
+        put.attr.gdsn(pgt_node, "Type", "Integer")
         put.attr.gdsn(pgt_node, "Description",
                       "Genotype of each haplotype estimated by GBScleanR.")
 
