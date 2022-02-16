@@ -24,3 +24,7 @@ Changes in version 0.99.30 (2022-1-15)
 
 Changes in version 0.99.31 (2022-2-14)
 + Reorganize scripts.
+
+Changes in version 0.99.32 (2022-2-14)
++ Fix typo in gbsrGDS2VCF().
++ Removed the test script for unused function.
