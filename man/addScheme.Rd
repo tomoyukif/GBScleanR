@@ -67,7 +67,6 @@ slot of the \link{GbsrGenotypeData} object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gds <- loadGDS(gds_fn)
 
-############################################################################
 # Biparental F2 population.
 gds <- setParents(gds, parents = c("Founder1", "Founder2"))
 
@@ -79,56 +78,7 @@ gds <- initScheme(gds, crosstype = "pair", mating = cbind(c(1:2)))
 gds <- addScheme(gds, crosstype = "self")
 
 ############################################################################
-# 8-way RILs with sibling mating.
-# Our example data only have two foudners. Thus, we set first
-# eight samples as parents as example.
-gds <- setParents(gds, parents = getScanID(gds)[1:8])
-
-# We can check the member IDs assigned to the parents.
-getParents(gds)
-
-# We have eight members with IDs from 1 to 8, now.
-# If you made crosses of 1 x 2, 3 x 4, 5 x 6,
-# and 7 x 8, run the following.
-gds <- initScheme(gds,
-                    crosstype = "pair",
-                    mating = cbind(c(1:2), c(3:4), c(5:6), c(7:8)))
-
-# Now the progenies of the crosses above have member ID 9, 10, 11,
-# and 12 for each combination of mating.You can check IDs with showScheme().
-showScheme(gds)
-
-# Then, add the step of 4-way crosses.
-gds <- addScheme(gds,
-                   crosstype = "pair",
-                   mating = cbind(c(9:10), c(11:12)))
-
-# Check IDs.
-showScheme(gds)
-
-# 8-way crosses at the last generation of the paring step.
-gds <- addScheme(gds,
-                   crosstype = "pair",
-                   mating = cbind(c(13:14)))
-
-#' # Check IDs.
-showScheme(gds)
-
-# Inbreeding by 4 times selfing.
-gds <- addScheme(gds, crosstype = "self")
-gds <- addScheme(gds, crosstype = "self")
-gds <- addScheme(gds, crosstype = "self")
-gds <- addScheme(gds, crosstype = "self")
-
-############################################################################
-# Now you can exectute `estGeno()` which requires a [GbsrScheme] object.
-
-# Execute error correction by estimating genotype and haplotype of
-# founders and offspring.
-gds <- estGeno(gds, optim = FALSE)
-
-# `optime = FALSE` in `estGeno()` reduce the calculation time
-# with loosing robustness against error prone markers.
+# Now you can execute `estGeno()` which requires a [GbsrScheme] object.
 
 # Close the connection to the GDS file
 closeGDS(gds)
