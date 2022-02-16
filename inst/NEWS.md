@@ -25,6 +25,9 @@ Changes in version 0.99.30 (2022-1-15)
 Changes in version 0.99.31 (2022-2-14)
 + Reorganize scripts.
 
-Changes in version 0.99.32 (2022-2-14)
+Changes in version 0.99.32 (2022-2-16)
 + Fix typo in gbsrGDS2VCF().
 + Removed the test script for unused function.
+
+Changes in version 0.99.33 (2022-2-16)
++ Reduced the example codes for the Scheme object.
