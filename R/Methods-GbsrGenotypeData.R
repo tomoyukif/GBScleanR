@@ -2653,7 +2653,7 @@ setMethod("gbsrGDS2VCF",
         hap_fld <- addfolder.gdsn(.getNodeIndex(out_gds, "annotation/format"),
                                   "HAP")
         put.attr.gdsn(hap_fld, "Number", "1")
-        put.attr.gdsn(hap_fld, "Type", "Sting")
+        put.attr.gdsn(hap_fld, "Type", "String")
         put.attr.gdsn(hap_fld, "Description", "Haplotype estimated by GBScleanR.")
         hap_gdsn <- .getNodeIndex(tmp_gds, "estimated.haplotype")
         hap_dim <- objdesp.gdsn(hap_gdsn)$dim
