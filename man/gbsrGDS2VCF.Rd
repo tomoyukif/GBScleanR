@@ -28,8 +28,7 @@ The path to the VCF file.
 }
 \description{
 Write out a VCF file with raw, filtered, or corrected genotype data
-stored in a GDS file. The output VCF file contains only the GT filed,
-while other annotations, AD, DP and other information will be omitted.
+stored in a GDS file. The output VCF file contains the GT, AD, and DP fields.
 }
 \details{
 Create a VCF file at location specified by out_fn.

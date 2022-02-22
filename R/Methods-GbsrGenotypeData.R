@@ -969,15 +969,16 @@ setMethod("getMAC",
 
 ## Get the information of the parents.
 #' @rdname getParents
-#' @importMethodsFrom GWASTools getScanVariable
+#' @importMethodsFrom GWASTools getScanVariable hasScanVariable
 setMethod("getParents",
           "GbsrGenotypeData",
           function(object, bool){
-              parents <- getScanVariable(object, "parents")
-              if(is.null(parents)){
+              if(!hasScanVariable(object, "parents")){
+                  message("No parents specified.")
                   return(NULL)
               }
 
+              parents <- getScanVariable(object, "parents")
               if(bool){
                   return(parents != 0)
               }
@@ -2570,6 +2571,7 @@ setMethod("gbsrGDS2VCF",
 
               .gds_decomp(tmp_gds)
               .replaceGDSdata(tmp_gds, node)
+              .insertDP(tmp_gds)
 
               out_fn_tmp <- tempfile(fileext = "out.gds")
               closefn.gds(.getGdsfmtObj(tmp_gds))
@@ -2635,11 +2637,15 @@ setMethod("gbsrGDS2VCF",
         node_data <- index.gdsn(out_gds, gdsn_i)
         fld <- index.gdsn(out_gds, sub("/data$", "", gdsn_i))
         tmp <- add.gdsn(fld, "tmp", storage="string32", replace=TRUE)
-        apply.gdsn(node_data, 1, as.is="gdsnode", target.node=tmp, FUN=function(x){
-            ref <- x[c(TRUE, FALSE)]
-            alt <- x[c(FALSE, TRUE)]
-            return(paste(ref, alt, sep = ","))
-        })
+        if(grepl("AD", gdsn_i)){
+            apply.gdsn(node_data, 1, as.is="gdsnode", target.node=tmp, FUN=function(x){
+                ref <- x[c(TRUE, FALSE)]
+                alt <- x[c(FALSE, TRUE)]
+                return(paste(ref, alt, sep = ","))
+            })
+        } else if(grepl("DP", gdsn_i)){
+            apply.gdsn(node_data, 1, as.is="gdsnode", target.node=tmp, FUN=c)
+        }
         data_dim <- objdesp.gdsn(index.gdsn(out_gds, "genotype/data"))$dim
         setdim.gdsn(tmp, data_dim[3:2])
         node_data <- add.gdsn(fld, "data", storage="string32", replace=TRUE)
@@ -2654,7 +2660,7 @@ setMethod("gbsrGDS2VCF",
                                   "HAP")
         put.attr.gdsn(hap_fld, "Number", "1")
         put.attr.gdsn(hap_fld, "Type", "String")
-        put.attr.gdsn(hap_fld, "Description", "Haplotype estimated by GBScleanR.")
+        put.attr.gdsn(hap_fld, "Description", "Haplotype estimated by GBScleanR")
         hap_gdsn <- .getNodeIndex(tmp_gds, "estimated.haplotype")
         hap_dim <- objdesp.gdsn(hap_gdsn)$dim
         hap_dim[2] <- hap_dim[2] / 2
@@ -2675,7 +2681,7 @@ setMethod("gbsrGDS2VCF",
         put.attr.gdsn(pgt_node, "Number", ".")
         put.attr.gdsn(pgt_node, "Type", "Integer")
         put.attr.gdsn(pgt_node, "Description",
-                      "Genotype of each haplotype estimated by GBScleanR.")
+                      "Genotype of each haplotype estimated by GBScleanR")
 
         pgt_gdsn <- .getNodeIndex(tmp_gds, "parents.genotype")
         apply.gdsn(pgt_gdsn, 2, as.is="gdsnode", target.node=pgt_node,
@@ -2683,6 +2689,28 @@ setMethod("gbsrGDS2VCF",
                        return(paste(x, collapse=","))
                    })
     }
+}
+
+.insertDP <- function(tmp_gds){
+        dp_fld <- addfolder.gdsn(.getNodeIndex(tmp_gds, "annotation/format"),
+                                  "DP")
+        put.attr.gdsn(dp_fld, "Number", "1")
+        put.attr.gdsn(dp_fld, "Type", "Integer")
+        put.attr.gdsn(dp_fld, "Description", "Total Depth")
+        ad_node <- .getNodeIndex(tmp_gds, "annotation/format/AD/data")
+        ad_dim <- objdesp.gdsn(ad_node)$dim
+        ad_dim[2] <- ad_dim[2] / 2
+        tmp_data <- add.gdsn(dp_fld, "tmp", storage="int16", replace=TRUE)
+        apply.gdsn(ad_node, 1, as.is="gdsnode", target.node=tmp_data,
+                   FUN=function(x){
+                       x1 <- x[c(TRUE, FALSE)]
+                       x2 <- x[c(FALSE, TRUE)]
+                       return(x1 + x2)
+                   })
+        setdim.gdsn(tmp_data, ad_dim[2:1])
+        ad_data <- add.gdsn(dp_fld, "data", storage="int16",
+                             valdim=c(ad_dim[1], 0), replace=TRUE)
+        apply.gdsn(tmp_data, 1, c, as.is="gdsnode", target.node=ad_data)
 }
 
 .replaceGDSdata <- function(object, node){
@@ -2717,6 +2745,82 @@ setMethod("gbsrGDS2VCF",
         }
     }
 }
+
+###############################################################################
+## Function to output a VCF file data stored in the GDS file.
+
+#' @rdname gbsrGDS2CSV
+setMethod("gbsrGDS2CSV",
+          "GbsrGenotypeData",
+          function(object,
+                   out_fn,
+                   node,
+                   incl_parents,
+                   bp2cm,
+                   format,
+                   read){
+              if(is.null(bp2cm)){
+                  if(format == "qtl"){
+                      bp2cm <- 4e-06
+                  } else {
+                      bp2cm <- 1
+                  }
+              }
+              if(is.null(getParents(object))){
+                  incl_parents <- FALSE
+              }
+              node <- match.arg(node,
+                                c("raw", "filt.genotype", "corrected.genotype"))
+              if(format != "qtl" & node == "hap"){
+                  geno <- getHaplotype(object, parents = incl_parents)
+                  geno <- apply(geno, c(2, 3), paste, collapse = "|")
+              } else {
+                  geno <- getGenotype(object, node = node,
+                                      parents = incl_parents)
+              }
+              chr <- getChromosome(object)
+              pos <- getPosition(object)
+
+              if(format == "qtl"){
+                  geno[geno == 2] <- "A"
+                  geno[geno == 1] <- "H"
+                  geno[geno == 0] <- "B"
+                  geno <- rbind(paste(paste0("S", sprintf("%02d", chr)),
+                                      pos, sep = "_"), chr, pos * bp2cm, geno)
+                  geno <- cbind(rownames(geno), geno)
+                  geno[1:3, 1] <- c("id", "", "")
+                  write.table(geno, out_fn, quote = FALSE, row.names = FALSE,
+                              col.names = FALSE, sep = ",")
+
+              } else {
+                  if(read){
+                      if(grepl("filt", node)){
+                          node <- "filt"
+                      } else {
+                          node <- "raw"
+                      }
+                      read <- getRead(object, node = node,
+                                      parents = incl_parents)
+                      dim_geno <- dim(geno)
+                      geno <- vapply(seq_along(geno),
+                                     FUN.VALUE = character(1),
+                                     function(i){
+                                         paste(geno[i],
+                                               paste(read$ref[i],
+                                                     read$alt[i],
+                                                     sep = ","),
+                                               sep = ":")
+                                     })
+                      geno <- matrix(geno, dim_geno[1], dim_geno[2])
+                  }
+                  geno <- rbind(chr, pos * bp2cm, geno)
+                  rownames(geno) <- c("Chr", "Pos", getScanID(gds))
+                  write.table(geno, out_fn, quote = TRUE, row.names = TRUE,
+                              col.names = FALSE, sep = ",")
+              }
+
+              return(out_fn)
+          })
 
 ################################################################################
 ## Functions to modify GDS file.

@@ -246,8 +246,7 @@ setGeneric("loadScanAnnot", function(object, ...)
 #' Write a VCF file based on data in a GDS file
 #'
 #' Write out a VCF file with raw, filtered, or corrected genotype data
-#' stored in a GDS file. The output VCF file contains only the GT filed,
-#' while other annotations, AD, DP and other information will be omitted.
+#' stored in a GDS file. The output VCF file contains the GT, AD, and DP fields.
 #'
 #' @param object A [GbsrGenotypeData] object.
 #' @param out_fn A string to specify the path to an output VCF file.
@@ -286,6 +285,62 @@ setGeneric("gbsrGDS2VCF", function(object,
                                    ...)
     standardGeneric("gbsrGDS2VCF"))
 
+
+#' Write a CSV file based on data in a GDS file
+#'
+#' Write out a CSV file with raw, filtered, corrected genotype data or
+#' estimated haplotype data
+#' stored in a GDS file.
+#'
+#' @param object A [GbsrGenotypeData] object.
+#' @param out_fn A string to specify the path to an output VCF file.
+#' @param node Either one of "raw", "filt", "cor", and "hap" to output raw
+#' genotype data, filtered genotype data, corrected genotype data, estimated
+#' haplotype data, respectively.
+#' @param incl_parents A logical value to specify whether parental
+#' samples should be included in an output VCF file or not.
+#' @param bp2cm A numeric value to convert positions in basepairs (bp) to
+#' centiMorgan (cm). The specified here is used to multiply position values. The
+#' default is NULL and then internally sets `bp2cm = 4e-06` when
+#' `format = "qtl`. If not `format = "qtl`, 1 is set to `bp2cm` as default.
+#' @param format A string to indicate the output format. See details.
+#' @param read A logical value to indicate whether read counts should be output
+#' with genotype data or not. See details.
+#' @param ... Unused.
+#' @export
+#'
+#' @return The path to the CSV file.
+#'
+#' @details Create a CSV file at location specified by out_fn. The current
+#'  implementation only changes the behavior when `format = "qtl"` to export
+#'  the data in the r/qtl format that can be loaded using read.cross as
+#' `format = "csvs` with a phenotype data. Any other values are ignored and
+#' output a CSV file with the rows indicating chromosome ID and positions of
+#' markers followed by the rows indicating genotype or haplotype data of
+#' samples. If `read = TRUE`, the output of each genotype call would be in
+#' the form of `GT:ADR,ADA` where GT, ADR, and ADA represent genotype,
+#' referenece read count, and alternative read count, respectively.
+#' If `format = "qtl"`, `read = TRUE` will be ignored.
+#'
+#' @examples
+#' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+#' gds <- loadGDS(gds_fn)
+#'
+#' # Create a CSV file with data from the GDS file
+#' #  connected to the [GbsrGenotypeData] oobject.
+#' out_fn <- tempfile("sample_out", fileext = ".csv")
+#' gbsrGDS2CSV(gds, out_fn)
+#'
+setGeneric("gbsrGDS2CSV", function(object,
+                                   out_fn,
+                                   node = "raw",
+                                   incl_parents = TRUE,
+                                   bp2cm = NULL,
+                                   format = "",
+                                   read = FALSE,
+                                   ...)
+    standardGeneric("gbsrGDS2CSV"))
 
 #' Return the number of SNPs.
 #'
