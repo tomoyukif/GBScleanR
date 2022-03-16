@@ -31,3 +31,9 @@ Changes in version 0.99.32 (2022-2-16)
 
 Changes in version 0.99.33 (2022-2-16)
 + Reduced the example codes for the Scheme object.
+
+Changes in version 0.99.34 (2022-2-24)
++ Fix a bug in getGenotype not to flip corrected genotypes.
+
+Changes in version 0.99.35 (2022-3-16)
++ Fix a bug in the test script test_subset_n_gds2vcf.R.

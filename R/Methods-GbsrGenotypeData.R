@@ -572,7 +572,7 @@ setMethod("getGenotype",
               ploidy <- max(getPloidy(object))
               genotype[genotype > ploidy] <- NA
 
-              if(hasFlipped(object)){
+              if(hasFlipped(object) & node != "corrected.genotype"){
                   flipped <- getFlipped(object, valid, chr)
                   tmp <- genotype[, flipped]
                   flip_ref <- tmp == 0

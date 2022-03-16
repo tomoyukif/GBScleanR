@@ -60,6 +60,7 @@ test_that("gbsrGDS2VCF", {
 
 
     gds <- setCallFilter(gds, scan_dp_qtile = c(0, 0.8))
+    out_fn <- tempfile("out", fileext = ".vcf")
     gbsrGDS2VCF(gds, out_fn, "filt")
     gds <- openGDS(gds)
     new_gds <- tempfile("newgds", fileext = ".gds")
