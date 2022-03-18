@@ -332,6 +332,9 @@ setGeneric("gbsrGDS2VCF", function(object,
 #' out_fn <- tempfile("sample_out", fileext = ".csv")
 #' gbsrGDS2CSV(gds, out_fn)
 #'
+#' # Close the connection to the GDS file.
+#' closeGDS(gds)
+#'
 setGeneric("gbsrGDS2CSV", function(object,
                                    out_fn,
                                    node = "raw",

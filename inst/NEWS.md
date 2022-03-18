@@ -37,3 +37,6 @@ Changes in version 0.99.34 (2022-2-24)
 
 Changes in version 0.99.35 (2022-3-16)
 + Fix a bug in the test script test_subset_n_gds2vcf.R.
+
+Changes in version 0.99.36 (2022-3-18)
++ Add closeGDS(gds) at the end of sample script for gbsrGDS2CSV().
