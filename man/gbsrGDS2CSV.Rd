@@ -12,6 +12,7 @@ gbsrGDS2CSV(
   incl_parents = TRUE,
   bp2cm = NULL,
   format = "",
+  read = FALSE,
   ...
 )
 
@@ -36,10 +37,10 @@ default is NULL and then internally sets \code{bp2cm = 4e-06} when
 
 \item{format}{A string to indicate the output format. See details.}
 
-\item{...}{Unused.}
-
 \item{read}{A logical value to indicate whether read counts should be output
 with genotype data or not. See details.}
+
+\item{...}{Unused.}
 }
 \value{
 The path to the CSV file.
@@ -70,5 +71,8 @@ gds <- loadGDS(gds_fn)
 #  connected to the [GbsrGenotypeData] oobject.
 out_fn <- tempfile("sample_out", fileext = ".csv")
 gbsrGDS2CSV(gds, out_fn)
+
+# Close the connection to the GDS file.
+closeGDS(gds)
 
 }
