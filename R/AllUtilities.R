@@ -45,7 +45,9 @@ print.GbsrGenotypeData <- function(x) {
 #' @export
 #'
 #' @importFrom SeqArray seqVCF2GDS seqGDS2SNP seqStorageOption
-#' @import gdsfmt
+#' @importFrom gdsfmt index.gdsn addfolder.gdsn rename.gdsn
+#' @importFrom gdsfmt add.gdsn read.gdsn ls.gdsn copyto.gdsn get.attr.gdsn
+#' @importFrom gdsfmt put.attr.gdsn
 #'
 gbsrVCF2GDS <- function(vcf_fn,
                         out_fn,

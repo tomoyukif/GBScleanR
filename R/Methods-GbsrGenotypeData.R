@@ -16,6 +16,7 @@
 }
 
 ## Get the index of the specified path in the GDS file.
+#' @importFrom gdsfmt index.gdsn
 .getNodeIndex <- function(object, path){
     return(index.gdsn(.getGdsfmtObj(object), path))
 }
@@ -78,6 +79,7 @@
 
 ###############################################################################
 ## Interbally used getter functions which returns a boolean value.
+#' @importFrom gdsfmt exist.gdsn
 .existGdsNode <- function(object, path){
     return(exist.gdsn(.getGdsfmtObj(object), path))
 }
@@ -192,6 +194,7 @@
 ## Internally used functions to control the GDS file.
 
 ## Decompress GDS file nodes.
+#' @importFrom gdsfmt compression.gdsn
 .gds_decomp <- function(object){
     if(inherits(object, "GbsrGenotypeData")){
         root <- object@data@handler
@@ -208,6 +211,7 @@
 }
 
 ## Compress GDS file nodes.
+#' @importFrom gdsfmt readmode.gdsn
 .gds_comp <- function(object){
     if(inherits(object, "GbsrGenotypeData")){
         root <- object@data@handler
@@ -413,6 +417,7 @@ setMethod("getPloidy",
 
 ## Get the values of a variable in the "annotation/info" directory.
 #' @rdname getInfo
+#' @importFrom gdsfmt readex.gdsn
 setMethod("getInfo",
           "GbsrGenotypeData",
           function(object, var, valid, chr){
@@ -506,6 +511,7 @@ setMethod("getRead",
 ## `corrected.genotype`, or `parents.genotype` in the GDS file
 ## connected to the GbsrGenotypeData object.
 #' @rdname getGenotype
+#' @importFrom gdsfmt objdesp.gdsn
 #'
 setMethod("getGenotype",
           "GbsrGenotypeData",
@@ -996,6 +1002,7 @@ setMethod("getParents",
 
 ## Check if the connection to the GDS file is open.
 #' @rdname isOpenGDS
+#' @importFrom gdsfmt diagnosis.gds
 setMethod("isOpenGDS",
           "GbsrGenotypeData",
           function(object){
@@ -1151,6 +1158,7 @@ setMethod("setParents",
 ## Show the GbsrGenotypeData object.
 #' @importMethodsFrom GWASTools getSnpAnnotation
 #' @importMethodsFrom GWASTools getScanAnnotation
+#' @importFrom methods show
 setMethod("show",
           "GbsrGenotypeData",
           function(object){
@@ -1175,6 +1183,7 @@ setMethod("show",
 
 ## Close the connection to the GDS file.
 #' @rdname closeGDS
+#' @importFrom gdsfmt closefn.gds
 setMethod("closeGDS",
           "GbsrGenotypeData",
           function(object, verbose){
@@ -1189,6 +1198,7 @@ setMethod("closeGDS",
 #' @importClassesFrom GWASTools GenotypeData GdsGenotypeReader
 #' @importFrom GWASTools GdsGenotypeReader GenotypeData
 #' @importMethodsFrom GWASTools getSnpAnnotation getScanAnnotation
+#' @importFrom gdsfmt openfn.gds
 setMethod("openGDS",
           "GbsrGenotypeData",
           function(object){
@@ -1332,6 +1342,7 @@ setMethod("countGenotype",
               return(object)
           })
 
+#' @importFrom gdsfmt apply.gdsn
 .countGenotypeScan <- function(object, path, sel, has_flipped, valid_flipped){
     df <- apply.gdsn(path, 1, selection=sel, as.is="list",
                      FUN=function(x){
@@ -1532,6 +1543,7 @@ setMethod("calcReadStats",
               return(object)
           })
 
+#' @importFrom gdsfmt setdim.gdsn
 .calcNormRead <- function(object){
     ad_data_node <- .getNodeIndex(object, "annotation/format/AD/data")
     ad_node <- .getNodeIndex(object, "annotation/format/AD")
@@ -1899,6 +1911,7 @@ setMethod("setCallFilter",
     return(set_filt)
 }
 
+#' @importFrom gdsfmt write.gdsn
 .callFilterScan <- function(object, i, filt_list){
     ad_data_node <- .getNodeIndex(object, "annotation/format/AD/data")
     callfilt <- .getNodeIndex(object, "callfilt")
@@ -2014,6 +2027,7 @@ setMethod("setCallFilter",
     }
 }
 
+#' @importFrom gdsfmt assign.gdsn
 .makeCallFilterData <- function(object){
     ad_node <- .getNodeIndex(object, "annotation/format/AD")
     ad_data <- .getNodeIndex(object, "annotation/format/AD/data")
@@ -2452,6 +2466,7 @@ setMethod("setFiltGenotype",
 
 ## Create a new GDS file with subset data.
 #' @importMethodsFrom GWASTools hasSnpVariable
+#' @importFrom gdsfmt openfn.gds closefn.gds
 #' @rdname subsetGDS
 setMethod("subsetGDS",
           "GbsrGenotypeData",
@@ -2553,6 +2568,7 @@ setMethod("subsetGDS",
 ## Function to output a VCF file data stored in the GDS file.
 
 #' @rdname gbsrGDS2VCF
+#' @importFrom gdsfmt closefn.gds
 setMethod("gbsrGDS2VCF",
           "GbsrGenotypeData",
           function(object,
@@ -2604,6 +2620,7 @@ setMethod("gbsrGDS2VCF",
               return(out_fn)
           })
 
+#' @importFrom gdsfmt delete.gdsn openfn.gds closefn.gds
 .checkDataLen <- function(out_gds){
     gds <- openfn.gds(out_gds$filename, readonly = FALSE)
     geno_node <- .getNodeIndex(gds, "genotype/data")
@@ -2750,6 +2767,8 @@ setMethod("gbsrGDS2VCF",
 ## Function to output a VCF file data stored in the GDS file.
 
 #' @rdname gbsrGDS2CSV
+#' @importFrom utils write.table
+#'
 setMethod("gbsrGDS2CSV",
           "GbsrGenotypeData",
           function(object,
@@ -2814,7 +2833,7 @@ setMethod("gbsrGDS2CSV",
                       geno <- matrix(geno, dim_geno[1], dim_geno[2])
                   }
                   geno <- rbind(chr, pos * bp2cm, geno)
-                  rownames(geno) <- c("Chr", "Pos", getScanID(gds))
+                  rownames(geno) <- c("Chr", "Pos", getScanID(object))
                   write.table(geno, out_fn, quote = TRUE, row.names = TRUE,
                               col.names = FALSE, sep = ",")
               }
@@ -2825,6 +2844,7 @@ setMethod("gbsrGDS2CSV",
 ################################################################################
 ## Functions to modify GDS file.
 #' @rdname addScan
+#' @importFrom gdsfmt append.gdsn
 setMethod("addScan", "GbsrGenotypeData",
           function(object, id, genotype, reads){
               if(any(id == "")){

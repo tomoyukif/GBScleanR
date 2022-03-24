@@ -40,3 +40,12 @@ Changes in version 0.99.35 (2022-3-16)
 
 Changes in version 0.99.36 (2022-3-18)
 + Add closeGDS(gds) at the end of sample script for gbsrGDS2CSV().
+
+Changes in version 0.99.37 (2022-3-20)
++ No change, but just for version bump.
+
+Changes in version 0.99.38 (2022-3-20)
++ Change the man page for gbsrGDS2CSV().
+
+Changes in version 0.99.39 (2022-3-24)
++ Reorganized NAMESPACE.

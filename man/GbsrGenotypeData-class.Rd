@@ -41,7 +41,7 @@ The function \code{\link[=loadGDS]{loadGDS()}} initialize those class objects in
 # `loadGDS()` initialize objects in the slots of a `GbsrGenotypeData`
 # object internally.
 
-# Load data in the GDS file and instantiate 
+# Load data in the GDS file and instantiate
 # a `GbsrGenotypeData` object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gdata <- loadGDS(gds_fn)

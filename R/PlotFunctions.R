@@ -53,9 +53,8 @@
 #'
 #' @return A ggplot object.
 #'
-#' @import ggplot2
-#' @importFrom tidyr pivot_longer
-#' @import graphics
+#' @importFrom ggplot2 ggplot aes xlab ylab xlim scale_fill_manual
+#' @importFrom ggplot2 scale_color_manual theme element_text rel
 #'
 #' @examples
 #' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
@@ -213,9 +212,8 @@ histGBSR  <- function(x,
 #'
 #' @return A ggplot object.
 #'
-#' @import ggplot2
-#' @importFrom tidyr pivot_longer
-#' @import graphics
+#' @importFrom ggplot2 ggplot aes xlab ylab xlim scale_fill_manual
+#' @importFrom ggplot2 scale_color_manual theme element_text rel
 #'
 #' @examples
 #' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
@@ -366,9 +364,8 @@ boxplotGBSR <- function(x,
 #' [GATK](https://gatk.broadinstitute.org/hc/en-us).
 #'
 #' @export
-#' @import ggplot2
-#' @importFrom tidyr pivot_longer
-#' @import graphics
+#' @importFrom ggplot2 ggplot aes xlab ylab labs ylim scale_x_continuous
+#' @importFrom ggplot2 scale_color_manual theme element_text rel expansion
 #'
 #' @return A ggplot object.
 #'
@@ -549,9 +546,8 @@ plotGBSR  <- function(x,
 #' @return A ggplot object.
 #'
 #' @export
-#' @import ggplot2
-#' @importFrom tidyr pivot_longer
-#' @import graphics
+#' @importFrom ggplot2 ggplot aes xlab ylab xlim ylim scale_fill_manual
+#' @importFrom ggplot2 scale_color_manual theme stat_smooth element_text rel
 #'
 #' @examples
 #' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
@@ -663,6 +659,7 @@ pairsGBSR  <- function(x,
 
 
 # Internal function to build a data.frame passed to ggplot().
+#' @importFrom tidyr pivot_longer
 .df.maker <- function(x, stats, q, target, pos = FALSE) {
     Ref <- NULL
     Alt <- NULL
@@ -822,6 +819,7 @@ pairsGBSR  <- function(x,
 }
 
 # Internal function to draw a histogram.
+#' @importFrom ggplot2 geom_histogram facet_wrap
 .hist.maker <- function(p, stats, binwidth, color, fill) {
     val <- target <- NULL
     p <- p +
@@ -833,6 +831,7 @@ pairsGBSR  <- function(x,
 }
 
 # Internal function to draw a boxplot.
+#' @importFrom ggplot2 geom_histogram facet_wrap
 .boxplot.maker <- function(p, stats) {
     val <- NULL
     target <- NULL
@@ -842,6 +841,7 @@ pairsGBSR  <- function(x,
 }
 
 # Internal function to draw a line plot.
+#' @importFrom ggplot2 geom_line geom_histogram facet_wrap
 .plot.maker <- function(p, stats, binwidth, lwd, coord) {
     val <- genotype <- target <- pos <- NULL
     if ("geno" %in% stats) {
@@ -866,6 +866,7 @@ pairsGBSR  <- function(x,
 }
 
 # Internal function to draw a scatter plot.
+#' @importFrom ggplot2 geom_point facet_wrap
 .pairs.maker <- function(p, size, alpha) {
     val1 <- val2 <- target <- NULL
     p <- p +
@@ -903,7 +904,9 @@ pairsGBSR  <- function(x,
 #'
 #' @return A ggplot object.
 #' @export
-#' @import ggplot2
+#' @importFrom ggplot2 ggplot aes geom_point geom_line labs
+#' @importFrom ggplot2 ylim xlab ylab facet_wrap theme
+#'
 plotDosage <- function(x,
                        coord = NULL,
                        chr = NULL,
@@ -970,7 +973,8 @@ plotDosage <- function(x,
 #'
 #' @return A ggplot object.
 #' @export
-#' @import ggplot2
+#' @importFrom ggplot2 ggplot aes geom_point labs
+#' @importFrom ggplot2 ylim xlab ylab facet_wrap theme
 plotReadRatio <- function(x,
                           coord = NULL,
                           chr = NULL,
