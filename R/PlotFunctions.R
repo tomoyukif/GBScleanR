@@ -982,7 +982,6 @@ plotReadRatio <- function(x,
                           node = "raw",
                           dot_fill = "blue") {
     pos <- ad <- NULL
-    validmarker <- getValidSnp(x)
 
     if (is.null(chr)) {
         chr <- rep(TRUE, nscan(x))
@@ -995,8 +994,8 @@ plotReadRatio <- function(x,
     ref <- read$ref[ind, chr]
     alt <- read$alt[ind, chr]
 
-    df <- data.frame(chr = getChromosome(x)[validmarker],
-                     pos = getPosition(x)[validmarker],
+    df <- data.frame(chr = getChromosome(x)[chr],
+                     pos = getPosition(x)[chr],
                      ad = ref / (ref + alt))
 
     p <- ggplot(df, aes(x = pos * 10^-6, y = ad, group = chr, color = chr)) +

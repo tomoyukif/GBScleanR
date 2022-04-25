@@ -49,3 +49,6 @@ Changes in version 0.99.38 (2022-3-20)
 
 Changes in version 0.99.39 (2022-3-24)
 + Reorganized NAMESPACE.
+
+Changes in version 0.99.40 (2022-4-25)
++ Fix a bug in plotReadRatio().
