@@ -2973,6 +2973,8 @@ setGeneric("estGeno", function(object,
 #' nsnp() with `valid = FALSE`.
 #' @param ... Unused.
 #'
+#' @return A [GbsrGenotypeData] object.
+#'
 #' @examples
 #' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 #' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
@@ -2988,7 +2990,7 @@ setGeneric("estGeno", function(object,
 #' alt_pos <- which(genotype == 0)
 #' reads[alt_pos] <- 0
 #'
-#' addScan(gds, id, genotype, reads)
+#' gds <- addScan(gds, id, genotype, reads)
 #'
 #' # Close the connection to the GDS file
 #' closeGDS(gds)

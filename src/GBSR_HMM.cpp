@@ -179,8 +179,7 @@ double calcpdf(const double & ratio,
 }
 
 void setHetZero(vector<double> & prob){
-  double neg_inf = -numeric_limits<double>::infinity();
-  prob[1] = neg_inf;
+  prob[1] = 0;
 }
 
 vector<double> calcGenoprob(const double & ref,
@@ -319,7 +318,6 @@ vector<double> calcEmit(RMatrix<double> ref,
                         RVector<double> w2,
                         RVector<double> mismap1,
                         RVector<double> mismap2,
-                        RVector<int> possiblehap,
                         size_t & m,
                         size_t & sample_i,
                         int & het
@@ -401,7 +399,6 @@ struct ParInitVit : public Worker {
                                        w2,
                                        mismap1,
                                        mismap2,
-                                       possiblehap,
                                        m,
                                        sample_i,
                                        het);
@@ -572,7 +569,6 @@ struct ParCalcPathFounder : public Worker {
                                            w2,
                                            mismap1,
                                            mismap2,
-                                           possiblehap,
                                            m,
                                            sample_i,
                                            het);
@@ -639,7 +635,6 @@ struct ParCalcPathFounder : public Worker {
                                            w2,
                                            mismap1,
                                            mismap2,
-                                           possiblehap,
                                            m,
                                            sample_i,
                                            het);
@@ -806,7 +801,6 @@ struct ParVitOffspring : public Worker {
                                          w2,
                                          mismap1,
                                          mismap2,
-                                         possiblehap,
                                          m,
                                          sample_i,
                                          het);
@@ -1150,7 +1144,6 @@ struct ParFB : public Worker {
                                          w2,
                                          mismap1,
                                          mismap2,
-                                         possiblehap,
                                          m,
                                          sample_i,
                                          het);
