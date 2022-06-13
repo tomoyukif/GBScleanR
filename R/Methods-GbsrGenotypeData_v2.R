@@ -149,10 +149,10 @@ plotSmoothedRatio <- function(x,
     p <- ggplot(df, aes(x = pos * 10^-6, y = ad, group = chr, color = chr)) +
         geom_point(size=0.8, alpha=0.2, stroke=0) +
         geom_line(color=line_color) +
-        labs(title=paste0("Reference allele read ratio: ", id)) +
+        labs(title=paste0("Alternative allele read ratio: ", id)) +
         ylim(0, 1) +
         xlab("Position (Mb)") +
-        ylab("Reference allele read ratio")
+        ylab("Alternative allele read ratio")
 
     p <- p + facet_wrap(~ chr, coord[1], coord[2], "free_x",
                         dir="v", strip.position="right") +
@@ -237,7 +237,7 @@ setMethod("estDosage",
               chr <- unique(getChromosome(object))
               for (chr_i in chr) {
 
-                  n_mar_i <- nmar(object, FALSE, chr_i)
+                  n_mar_i <- nmar(object, TRUE, chr_i)
                   message("\nNow cleaning chr ", chr_i, "...")
 
                   best_dosage <- .cleanEachChr(object, chr_i, error_rate,

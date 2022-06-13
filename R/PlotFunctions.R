@@ -916,10 +916,10 @@ plotDosage <- function(x,
     p <- ggplot(df, aes( x = pos * 10^-6, y=geno, group=chr)) +
         geom_point(size=0.8, stroke=0, color=dot_fill) +
         geom_line(color=line_color) +
-        labs(title=paste0("Reference allele dosage: ", id)) +
+        labs(title=paste0("Alternative allele dosage: ", id)) +
         ylim(0, ploidy) +
         xlab("Physical position (Mb)") +
-        ylab("Reference allele dosage")
+        ylab("Alternative allele dosage")
 
     p <- p + facet_wrap(~ chr, coord[1], coord[2], "free_x",
                         dir="v", strip.position="right") +
@@ -989,10 +989,10 @@ plotReadRatio <- function(x,
 
     p <- ggplot(df, aes(x = pos * 10^-6, y = ad, group = chr, color = chr)) +
         geom_point(size=0.8, alpha=0.2, stroke=0) +
-        labs(title=paste0("Reference allele read ratio: ", id)) +
+        labs(title=paste0("Alternative allele read ratio: ", id)) +
         ylim(0, 1) +
         xlab("Position (Mb)") +
-        ylab("Reference allele read ratio")
+        ylab("Alternative allele read ratio")
 
     p <- p + facet_wrap(~ chr, coord[1], coord[2], "free_x",
                         dir="v", strip.position="right") +
