@@ -2,7 +2,7 @@
 #'
 #' @param x A [GbsrGenotypeData] object.
 #' @param stats A string to specify statistics to be drawn.
-#' @param target Either or both of "snp" and "scan", e.g. `target = "snp"`
+#' @param target Either or both of "marker" and "sample", e.g. `target = "marker"`
 #' to draw a histogram only for SNPs.
 #' @param q An integer to specify a quantile calculated via [calcReadStats()].
 #' @param binwidth An integer to specify bin width of the histogram.
@@ -42,10 +42,8 @@
 #' To draw histograms for "missing", "het", "raf", you need to run
 #' [countGenotype()] first to obtain statistics. Similary, "dp",
 #'  "ad_ref", "ad_alt", "rrf" requires values obtained via
-#'  [countRead()]. [calcReadStats()] should be executed before drawing
-#'  histograms of "mean_ref", "sd_ref", "qtile_ref", "mean_alt", "sd_alt",
-#' and "qtile_alt". "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
-#' and "baseqranksum" only work with `target = "snp"`, if your data
+#'  [countRead()]. "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
+#' and "baseqranksum" only work with `target = "marker"`, if your data
 #'  contains those values supplied via SNP calling tools like
 #' [GATK](https://gatk.broadinstitute.org/hc/en-us).
 #'
@@ -68,11 +66,6 @@
 #' # allele frequency per SNP and per sample.
 #' histGBSR(gdata, stats = "missing")
 #'
-#'
-#' # Calculate means, standard deviations, quantile values of read counts
-#' # to be used in `histGBSR()`
-#' gdata <- calcReadStats(gdata, q = 0.9)
-#'
 #' # Draw histograms of 90 percentile values of reference read counts
 #' # and alternative read counts per SNP and per sample.
 #' histGBSR(gdata, stats = "qtile_ref", q = 0.9)
@@ -81,7 +74,7 @@
 #' closeGDS(gdata)
 histGBSR  <- function(x,
                       stats = c("dp", "missing", "het"),
-                      target = c("snp", "scan"),
+                      target = c("marker", "sample"),
                       q = 0.5,
                       binwidth = NULL,
                       color = c(Marker = "darkblue", Sample = "darkblue"),
@@ -161,7 +154,7 @@ histGBSR  <- function(x,
 #'
 #' @param x A [GbsrGenotypeData] object.
 #' @param stats A string to specify statistics to be drawn.
-#' @param target Either or both of "snp" and "scan", e.g. `target = "snp"`
+#' @param target Either or both of "marker" and "sample", e.g. `target = "marker"`
 #' to draw a histogram only for SNPs.
 #' @param q An integer to specify a quantile calculated via
 #' [calcReadStats()].
@@ -201,10 +194,8 @@ histGBSR  <- function(x,
 #' To draw boxplots for "missing", "het", "raf", you need to run
 #' [countGenotype()] first to obtain statistics. Similary, "dp",
 #' "ad_ref", "ad_alt", "rrf" requires values obtained via [countRead()].
-#' [calcReadStats()] should be executed before drawing boxplots of
-#' "mean_ref", "sd_ref", "qtile_ref", "mean_alt", "sd_alt", and
-#' "qtile_alt". "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
-#' and "baseqranksum" only work with `target = "snp"`, if your data
+#' "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
+#' and "baseqranksum" only work with `target = "marker"`, if your data
 #' contains those values supplied via SNP calling tools like
 #' [GATK](https://gatk.broadinstitute.org/hc/en-us).
 #'
@@ -225,10 +216,6 @@ histGBSR  <- function(x,
 #'
 #' boxplotGBSR(gdata, stats = "missing")
 #'
-#' # Calculate means, standard deviations, quantile values of read counts
-#' # to be used in `boxplotGBSR()`
-#' gdata <- calcReadStats(gdata, q = 0.9)
-#'
 #' # Draw boxplots of 90 percentile values of reference read counts and
 #' # alternative read counts per SNP and per sample.
 #' boxplotGBSR(gdata, stats = "qtile_ref", q = 0.9)
@@ -238,7 +225,7 @@ histGBSR  <- function(x,
 #'
 boxplotGBSR <- function(x,
                         stats = "missing",
-                        target = c("snp", "scan"),
+                        target = c("marker", "sample"),
                         q = 0.5,
                         color = c(Marker = "darkblue", Sample = "darkblue"),
                         fill = c(Marker = "skyblue", Sample = "skyblue")) {
@@ -356,10 +343,8 @@ boxplotGBSR <- function(x,
 #' To draw line plots for "missing", "het", "raf", you need to run
 #' [countGenotype()] first to obtain statistics. Similary, "dp",
 #' "ad_ref", "ad_alt", "rrf" requires values obtained via [countRead()].
-#' [calcReadStats()] should be executed before drawing line plots of
-#' "mean_ref", "sd_ref", "qtile_ref", "mean_alt", "sd_alt", and
-#' "qtile_alt". "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
-#' #' and "baseqranksum" only work with `target = "snp"`, if your data
+#' "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
+#' #' and "baseqranksum" only work with `target = "marker"`, if your data
 #' contains those values supplied via SNP calling tools like
 #' [GATK](https://gatk.broadinstitute.org/hc/en-us).
 #'
@@ -380,10 +365,6 @@ boxplotGBSR <- function(x,
 #' # Draw line plots of missing rate, heterozygosity, proportion of genotype
 #' # calls per SNP.
 #' plotGBSR(gdata, stats = "missing")
-#'
-#' # Calculate means, standard deviations, quantile values of read counts
-#' # to be used in `plotGBSR()`
-#' gdata <- calcReadStats(gdata, q = 0.9)
 #'
 #' # Draw line plots of 90 percentile values of reference read counts and
 #' # alternative read counts per SNP and per sample.
@@ -463,7 +444,7 @@ plotGBSR  <- function(x,
         color <- color[1]
     }
 
-    df <- .df.maker(x, stats, q, "snp", TRUE)
+    df <- .df.maker(x, stats, q, "marker", TRUE)
     p <- ggplot(df)
     p <- .plot.maker(p, stats, binwidth, lwd, coord)
     p <- p + xlab("Physical position (Mb)") +
@@ -491,8 +472,8 @@ plotGBSR  <- function(x,
 #' @param x A [GbsrGenotypeData] object.
 #' @param stats1 A string to specify statistics to be drawn.
 #' @param stats2 A string to specify statistics to be drawn.
-#' @param target Either or both of "snp" and "scan", e.g.
-#' `target = "snp"` to draw a histogram only for SNPs.
+#' @param target Either or both of "marker" and "sample", e.g.
+#' `target = "marker"` to draw a histogram only for SNPs.
 #' @param q An integer to specify a quantile calculated via
 #' [calcReadStats()].
 #' @param size A numeric value to specify the dot size of a scatter plot.
@@ -536,10 +517,8 @@ plotGBSR  <- function(x,
 #' To draw scatter plots for "missing", "het", "raf", you need to run
 #' [countGenotype()] first to obtain statistics. Similary, "dp",
 #' "ad_ref", "ad_alt", "rrf" requires values obtained via [countRead()].
-#' [calcReadStats()] should be executed before drawing line plots of
-#' "mean_ref", "sd_ref", "qtile_ref", "mean_alt", "sd_alt", and
-#' "qtile_alt". "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
-#' and "baseqranksum" only work with `target = "snp"`, if your data
+#' "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
+#' and "baseqranksum" only work with `target = "marker"`, if your data
 #' contains those values supplied via SNP calling tools like
 #' [GATK](https://gatk.broadinstitute.org/hc/en-us).
 #'
@@ -567,7 +546,7 @@ plotGBSR  <- function(x,
 pairsGBSR  <- function(x,
                        stats1 = "dp",
                        stats2 = "missing",
-                       target = "snp",
+                       target = "marker",
                        q = 0.5,
                        size = 0.5,
                        alpha = 0.8,
@@ -664,9 +643,9 @@ pairsGBSR  <- function(x,
     Ref <- NULL
     Alt <- NULL
     if (stats == "geno") {
-        snp <- data.frame(Ref = getCountGenoRef(x, "snp", TRUE, TRUE),
-                         Het = getCountGenoHet(x, "snp", TRUE, TRUE),
-                         Alt = getCountGenoAlt(x, "snp", TRUE, TRUE),
+        snp <- data.frame(Ref = getCountGenoRef(x, "marker", TRUE, TRUE),
+                         Het = getCountGenoHet(x, "marker", TRUE, TRUE),
+                         Alt = getCountGenoAlt(x, "marker", TRUE, TRUE),
                          chr = getChromosome(x),
                          pos = getPosition(x) * 10^-6,
                          stringsAsFactors=FALSE)
@@ -686,22 +665,22 @@ pairsGBSR  <- function(x,
         scan <- NULL
 
     } else {
-        if ("snp" %in% target) {
+        if ("marker" %in% target) {
             snp <- switch(
                 stats,
-                "dp" = getCountRead(x, "snp"),
-                "missing" = getCountGenoMissing(x, "snp", TRUE, TRUE),
-                "het" = getCountGenoHet(x, "snp", TRUE, TRUE),
-                "raf" = getCountAlleleRef(x, "snp", TRUE, TRUE),
-                "rrf" = getCountReadRef(x, "snp", TRUE, TRUE),
-                "ad_ref" = getCountReadRef(x, "snp"),
-                "mean_ref" = getMeanReadRef(x, "snp"),
-                "sd_ref" = getSDReadRef(x, "snp"),
-                "qtile_ref" = getQtileReadRef(x, "snp", q),
-                "ad_alt" = getCountReadAlt(x, "snp"),
-                "mean_alt" = getMeanReadAlt(x, "snp"),
-                "sd_alt" = getSDReadAlt(x, "snp"),
-                "qtile_alt" = getQtileReadAlt(x, "snp", q),
+                "dp" = getCountRead(x, "marker"),
+                "missing" = getCountGenoMissing(x, "marker", TRUE, TRUE),
+                "het" = getCountGenoHet(x, "marker", TRUE, TRUE),
+                "raf" = getCountAlleleRef(x, "marker", TRUE, TRUE),
+                "rrf" = getCountReadRef(x, "marker", TRUE, TRUE),
+                "ad_ref" = getCountReadRef(x, "marker"),
+                "mean_ref" = getMeanReadRef(x, "marker"),
+                "sd_ref" = getSDReadRef(x, "marker"),
+                "qtile_ref" = getQtileReadRef(x, "marker", q),
+                "ad_alt" = getCountReadAlt(x, "marker"),
+                "mean_alt" = getMeanReadAlt(x, "marker"),
+                "sd_alt" = getSDReadAlt(x, "marker"),
+                "qtile_alt" = getQtileReadAlt(x, "marker", q),
                 "mq" = getInfo(x, "MQ"),
                 "fs" = getInfo(x, "FS"),
                 "qd" = getInfo(x, "QD"),
@@ -727,22 +706,22 @@ pairsGBSR  <- function(x,
         } else {
             snp <- NULL
         }
-        if ("scan" %in% target) {
+        if ("sample" %in% target) {
             scan <- switch(
                 stats,
-                "dp" = getCountRead(x, "scan"),
-                "missing" = getCountGenoMissing(x, "scan", TRUE, TRUE),
-                "het" = getCountGenoHet(x, "scan", TRUE, TRUE),
-                "raf" = getCountAlleleRef(x, "scan", TRUE, TRUE),
-                "rrf" = getCountReadRef(x, "scan", TRUE, TRUE),
-                "ad_ref" = getCountReadRef(x, "scan"),
-                "mean_ref" = getMeanReadRef(x, "scan"),
-                "sd_ref" = getSDReadRef(x, "scan"),
-                "qtile_ref" = getQtileReadRef(x, "scan", q),
-                "ad_alt" = getCountReadAlt(x, "scan"),
-                "mean_alt" = getMeanReadAlt(x, "scan"),
-                "sd_alt" = getSDReadAlt(x, "scan"),
-                "qtile_alt" = getQtileReadAlt(x, "scan", q)
+                "dp" = getCountRead(x, "sample"),
+                "missing" = getCountGenoMissing(x, "sample", TRUE, TRUE),
+                "het" = getCountGenoHet(x, "sample", TRUE, TRUE),
+                "raf" = getCountAlleleRef(x, "sample", TRUE, TRUE),
+                "rrf" = getCountReadRef(x, "sample", TRUE, TRUE),
+                "ad_ref" = getCountReadRef(x, "sample"),
+                "mean_ref" = getMeanReadRef(x, "sample"),
+                "sd_ref" = getSDReadRef(x, "sample"),
+                "qtile_ref" = getQtileReadRef(x, "sample", q),
+                "ad_alt" = getCountReadAlt(x, "sample"),
+                "mean_alt" = getMeanReadAlt(x, "sample"),
+                "sd_alt" = getSDReadAlt(x, "sample"),
+                "qtile_alt" = getQtileReadAlt(x, "sample", q)
             )
             if (is.null(scan)) {
                 msg <- paste0('No sample summary for the statistic: ', stats)
@@ -917,23 +896,28 @@ plotDosage <- function(x,
     pos <- na <- NULL
 
     if (is.null(chr)) {
-        chr <- rep(TRUE, nscan(x))
+        chr <- rep(TRUE, nsam(x))
     } else {
         chr <- getChromosome(x) %in% chr
     }
 
-    geno <- getGenotype(x, node=node, parents=TRUE)[ind, chr]
-    id <- getScanID(x, valid = FALSE)[ind]
+    if(is.null(slot(x, "sample")[["parents"]])){
+        parents <- FALSE
+    } else {
+        parents <- TRUE
+    }
+    geno <- getGenotype(x, node=node, parents=parents)[ind, chr]
+    id <- getSamID(x, valid = FALSE)[ind]
     df <- data.frame(chr = getChromosome(x)[chr],
                      pos = getPosition(x)[chr],
                      geno = geno)
     df <- df[!is.na(df$geno), ]
-
+    ploidy <- attributes(slot(x, "sample"))[["ploidy"]]
     p <- ggplot(df, aes( x = pos * 10^-6, y=geno, group=chr)) +
         geom_point(size=0.8, stroke=0, color=dot_fill) +
         geom_line(color=line_color) +
         labs(title=paste0("Reference allele dosage: ", id)) +
-        ylim(0, max(getPloidy(x))) +
+        ylim(0, ploidy) +
         xlab("Physical position (Mb)") +
         ylab("Reference allele dosage")
 
@@ -984,13 +968,18 @@ plotReadRatio <- function(x,
     pos <- ad <- NULL
 
     if (is.null(chr)) {
-        chr <- rep(TRUE, nscan(x))
+        chr <- rep(TRUE, nsam(x))
     } else {
         chr <- getChromosome(x) %in% chr
     }
 
-    id <- getScanID(x, FALSE)[ind]
-    read <- getRead(x, node=node, parents=TRUE)
+    id <- getSamID(x, FALSE)[ind]
+    if(is.null(slot(x, "sample")[["parents"]])){
+        parents <- FALSE
+    } else {
+        parents <- TRUE
+    }
+    read <- getRead(x, node=node, parents=parents)
     ref <- read$ref[ind, chr]
     alt <- read$alt[ind, chr]
 

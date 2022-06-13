@@ -7,7 +7,7 @@
 \usage{
 countRead(object, target = "both", node = "raw", ...)
 
-\S4method{countRead}{GbsrGenotypeData}(object, target, node)
+\S4method{countRead}{GbsrGenotypeData}(object, target, node, q)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
@@ -27,6 +27,14 @@ per marker and per sample. Those values will be stored
 in the SnpAnnotaionDataFrame slot and the \link{ScanAnnotationDataFrame} slot
 and obtained via getter functions, e.g.
 \code{\link[=getCountReadRef]{getCountReadRef()}} and \code{\link[=getCountReadAlt]{getCountReadAlt()}}.
+This function first calculates normalized allele read counts by dividing
+allele read counts at each marker in each sample by the total allele read
+of the sample followed by multiplication by 10^6. In other words, it
+calculates reads per million (rpm). Then, the function calculates
+mean, standard deviation, quantile values of rpm per marker and per sample.
+The results will be stored in the SnpAnnotaionDataFrame slot and the
+\link{ScanAnnotationDataFrame} slot and obtained via getter functions, e.g.
+\code{\link[=getMeanReadRef]{getMeanReadRef()}} and \code{\link[=getMedianReadAlt]{getMedianReadAlt()}}.
 }
 \details{
 Read count data can be obtained from the "annotation/format/AD/data" node
@@ -47,10 +55,10 @@ gds <- loadGDS(gds_fn)
 gds <- countRead(gds)
 
 # Get the total read counts per marker
-read_depth_per_marker <- getCountRead(gds, target = "snp")
+read_depth_per_marker <- getCountRead(gds, target = "marker")
 
 # Get the proportion of reference allele rads per marker.
-reference_read_freq <- getCountReadRef(gds, target = "snp", prop = TRUE)
+reference_read_freq <- getCountReadRef(gds, target = "marker", prop = TRUE)
 
 # Draw histgrams of reference allele read counts per sample and marker.
 histGBSR(gds, stats = "ad_ref")

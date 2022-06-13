@@ -1,338 +1,187 @@
 ###############################################################################
-## Internally used getter functions
-
-## Get the file name of the GDS file connected to the GbsrGenotypeData object.
-.getGDSFileName <- function(object){
-    return(object@data@handler$filename)
-}
-
-## Get the gds.class object in the GbsrGenotypeData object.
-.getGdsfmtObj <- function(object){
-    if(inherits(object, "gds.class")){
-        return(object)
-    } else {
-        return(object@data@handler)
-    }
-}
-
-## Get the index of the specified path in the GDS file.
-#' @importFrom gdsfmt index.gdsn
-.getNodeIndex <- function(object, path){
-    return(index.gdsn(.getGdsfmtObj(object), path))
-}
-
-## Get the scheme object in the GbsrGenotypeData object.
-.getSchemeObj <- function(object){
-    return(object@scheme)
-}
-
-## Get the genotypeVar value in the GenotypeData object in
-## the GbsrGenotypeData object.
-.getGenotypeVar <- function(object){
-    return(object@data@genotypeVar)
-}
-
-## Get the statistical summary values in the SnpAnnotationDataFrame and
-## the ScanAnnotationDataFrame.
-.getStatsData <- function(object, varname, target, valid){
-    if(target == "snp"){
-        f_has <- get("hasSnpVariable")
-        f_get <- get("getSnpVariable")
-        f_valid <- get("getValidSnp")
-
-    } else {
-        f_has <- get("hasScanVariable")
-        f_get <- get("getScanVariable")
-        f_valid <- get("getValidScan")
+#' @importFrom gdsfmt exist.gdsn apply.gdsn objdesp.gdsn
+#' @importFrom SeqArray seqSetFilter seqGetData
+.filtData <- function(object, node, filters, reduce = FALSE){
+    if(!exist.gdsn(object, node)){
+        stop("The GDS node ", node, " does not exists.")
     }
 
-    if(!f_has(object, varname)){return(NULL)}
-    out <- f_get(object, varname)
+    if(reduce){
+        if(any(sapply(filters, sum) == 0)){
+            stop('Nothing to return.')
+        }
+        obj <- objdesp.gdsn(index.gdsn(object, node))
+        dim1 <- obj$dim[1]
+        out <- apply.gdsn(index.gdsn(object, node), 3, colSums,
+                          list(rep(TRUE, dim1), filters$sam, filters$mar),
+                          "list")
+        out <- do.call("cbind", out)
+        out[out == 3*dim1] <- NA
 
-    if(valid){out <- out[f_valid(object)]}
+    } else {
+        seqSetFilter(object, filters$mar, filters$sam,
+                     action = "push+intersect", verbose = FALSE)
+        out <- seqGetData(object, node)
+        seqSetFilter(object, action = "pop", verbose = FALSE)
+        if(length(out) == 0){
+            stop('Nothing to return.')
+        }
+    }
     return(out)
 }
 
-## Commonly used code for getter functions.
-#' @importMethodsFrom GWASTools getSnpVariable
-.getterCommon <- function(object, varname, valid, chr){
-    if(!is.null(chr) & valid){
-        sel <- getValidSnp(object) & getChromosome(object, FALSE) %in% chr
+#' SeqArray seqGetData
+.makeFilter <- function(object, valid = FALSE, parents = FALSE, chr = NULL){
+    filt_mar <- rep(TRUE, nmar(object, FALSE))
+    filt_sam <- rep(TRUE, nsam(object, FALSE))
+    if(valid){
+        filt_mar <- validMar(object)
+        filt_sam <- validSam(object, parents)
 
-    } else if(is.null(chr) & valid){
-        sel <- getValidSnp(object)
-
-    } else if(!is.null(chr) & !valid){
-        sel <- getChromosome(object, FALSE) %in% chr
-
-    } else {
-        return(getSnpVariable(object, varname))
     }
-
-    if(all(!sel)){
-        stop("No markers in chromosome ", paste(chr, collapse = ", "),
-             call. = FALSE)
-    } else {
-        return(getSnpVariable(object, varname, sel))
+    if(parents == "only"){
+        filt_sam <- validSam(object, parents)
     }
-}
-
-###############################################################################
-## Interbally used getter functions which returns a boolean value.
-#' @importFrom gdsfmt exist.gdsn
-.existGdsNode <- function(object, path){
-    return(exist.gdsn(.getGdsfmtObj(object), path))
-}
-
-## Check if the GbsrScheme has valid information.
-.hasScheme <- function(object){
-    scheme <- .getSchemeObj(object)
-    return(length(scheme@crosstype) != 0)
-}
-###############################################################################
-## Internally used setter functions.
-
-## Set a new scheme object to the GbsrGenotypeData object.
-.setSchemeObj <- function(object, scheme){
-    object@scheme <- scheme
-    return(object)
-}
-
-## Set a new genotypeVar value to the GenotypeData object in
-## the GbsrGenotypeData object.
-.setGenotypeVar <- function(object, var){
-    object@data@genotypeVar <- var
-    return(object)
-}
-
-## Set values to SnpAnnotationDataFrame object.
-#' @importFrom GWASTools SnpAnnotationDataFrame
-#' @importMethodsFrom GWASTools getSnpAnnotation hasSnpVariable
-.setSnpVariable <- function(object, varname, values){
-    if(varname == "df"){
-        ann <- SnpAnnotationDataFrame(values)
-
-    } else {
-        ann <- getSnpAnnotation(object)
-        if(!hasSnpVariable(object, varname)){
-            ann[[varname]] <- values
-
-        } else {
-            if(is.null(values)){
-                ann[[varname]] <- values
-
-            } else if(length(values) == 1){
-                ann[[varname]] <- values
-
-            } else {
-                stopifnot(length(ann[[varname]]) == length(values))
-                ann[[varname]] <- values
-            }
+    if(!is.null(chr)){
+        if(length(chr) > 1){
+            warning("More than one values were specified to chr,",
+                    " but use the first one")
         }
+        filt_mar <- filt_mar & seqGetData(object, "chromosome") == chr[1]
     }
-    object@snpAnnot <- ann
-    return(object)
+    return(list(mar = filt_mar, sam = filt_sam))
 }
 
-## Set values to ScanAnnotationDataFrame object.
-#' @importFrom GWASTools ScanAnnotationDataFrame
-#' @importMethodsFrom GWASTools getScanAnnotation hasScanVariable
-.setScanVariable <- function(object, varname, values){
-    if(varname == "df"){
-        ann <- ScanAnnotationDataFrame(values)
-
-    } else {
-        ann <- getScanAnnotation(object)
-        if(!hasScanVariable(object, varname)){
-            ann[[varname]] <- values
-
-        } else {
-            if(is.null(values)){
-                ann[[varname]] <- values
-
-            } else if(length(values) == 1){
-                ann[[varname]] <- values
-
-            } else {
-                stopifnot(length(ann[[varname]]) == length(values))
-                ann[[varname]] <- values
-            }
-        }
+.getStatsData <- function(object, var, target, valid){
+    target <- match.arg(target, c("marker", "sample"))
+    stopifnot(is.logical(valid))
+    df <- slot(object, target)
+    out <- df[[var]]
+    if(valid){
+        out <- out[df$valid]
     }
-    object@scanAnnot <- ann
-    return(object)
+    return(out)
 }
-
-## Set logical values to indicate which marker has flipped alleles.
-.setFlipped <- function(object, flipped){
-    if(is.null(flipped)){
-        object <- .setSnpVariable(object, "flipped", NULL)
-    }
-
-    if(any(is.na(flipped))){
-        stop('NA is not allowed for a logical vector "flipped".', call. = FALSE)
-    }
-
-    if(nsnp(object, FALSE) == length(flipped)){
-        object <- .setSnpVariable(object, "flipped", flipped)
-
-    } else {
-        if(nsnp(object) == length(flipped)){
-            tmp <- rep(FALSE, nsnp(object, FALSE))
-            tmp[getValidSnp(object)] <- flipped
-            object <- .setSnpVariable(object, "flipped", tmp)
-
-        } else {
-            stop('The length of "flipped" does not match with the number of SNPs.',
-                 call. = FALSE)
-        }
-    }
-    return(object)
-}
-
 ###############################################################################
 ## Internally used functions to control the GDS file.
 
 ## Decompress GDS file nodes.
-#' @importFrom gdsfmt compression.gdsn
+#' @importFrom gdsfmt compression.gdsn ls.gdsn index.gdsn
 .gds_decomp <- function(object){
-    if(inherits(object, "GbsrGenotypeData")){
-        root <- object@data@handler
-
-    } else if(inherits(object, "gds.class")){
-        root <- object$root
-    }
-
-    ls_gdsn <- ls.gdsn(root, recursive = TRUE, include.dirs = FALSE)
+    ls_gdsn <- ls.gdsn(object, TRUE, TRUE, FALSE)
     for(i in ls_gdsn){
-        i_node <- index.gdsn(root, i)
-        compression.gdsn(i_node, "")
+        compression.gdsn(index.gdsn(object, i), "")
     }
 }
 
 ## Compress GDS file nodes.
-#' @importFrom gdsfmt readmode.gdsn
+#' @importFrom gdsfmt readmode.gdsn ls.gdsn index.gdsn compression.gdsn
 .gds_comp <- function(object){
-    if(inherits(object, "GbsrGenotypeData")){
-        root <- object@data@handler
-
-    } else if(inherits(object, "gds.class")){
-        root <- object$root
-    }
-
-    ls_gdsn <- ls.gdsn(root, FALSE, TRUE, FALSE)
+    ls_gdsn <- ls.gdsn(object, TRUE, TRUE, FALSE)
     for(i in ls_gdsn){
-        i_node <- index.gdsn(root, i)
+        i_node <- index.gdsn(object, i)
         compression.gdsn(i_node, "LZMA_RA")
-    }
-    for(i in ls_gdsn){
-        i_node <- index.gdsn(root, i)
         readmode.gdsn(i_node)
     }
 }
 
 ###############################################################################
-## Exported getter functions which return basic information of the data.
+## Exported getter and setter functions which return basic information of the data.
 
-## Get the number of SNPs.
-#' @rdname nsnp
-setMethod("nsnp",
-          "GbsrGenotypeData",
-          function(object, valid, chr){
-              out <- getValidSnp(object)
-              if(!is.null(chr)){
-                  out <- out[getChromosome(object, FALSE) == chr]
-                  if(length(out) == 0){
-                      stop("No markers in chromosome ", paste(chr, collapse = ", "),
-                           call. = FALSE)
-                  }
-              }
-              if(valid){
-                  out <- sum(out)
-              } else {
-                  out <- length(out)
-              }
-              return(out)
-          })
-
-## Get the number of scans (samples).
-#' @rdname nscan
-setMethod("nscan",
-          "GbsrGenotypeData",
-          function(object, valid){
-              out <- getValidScan(object)
-              if(valid){
-                  out <- sum(out)
-              } else {
-                  out <- length(out)
-              }
-              return(out)
-          })
-
-## Get the logical vector indicating valid SNPs.
-#' @rdname getValidSnp
-#' @importMethodsFrom GWASTools getSnpVariable
-setMethod("getValidSnp",
+## Get the logical vector indicating valid markers.
+#' @importFrom SeqArray seqGetData
+#' @rdname validMar
+setMethod("validMar",
           "GbsrGenotypeData",
           function(object, chr){
-              out <- getSnpVariable(object, "validMarker")
+              out <- slot(object, "marker")[["valid"]]
               if(!is.null(chr)){
-                  sel <- getChromosome(object, FALSE) %in% chr
-                  if(all(!sel)){
-                      stop("No markers in chromosome ", paste(chr, collapse = ", "),
-                           call. = FALSE)
-                  } else {
-                      out <- out[sel]
+                  if(length(chr) > 1){
+                      warning("More than one values were specified to chr,",
+                              " but use the first one")
                   }
+                  out <- out & seqGetData(object, "chromosome") == chr[1]
               }
               return(out)
           })
 
-## Get the logical vector indicating valid scans (samples).
-#' @rdname getValidScan
-#' @importMethodsFrom GWASTools getScanVariable
-setMethod("getValidScan",
+#' @rdname validMar
+setMethod("validMar<-",
+          "GbsrGenotypeData",
+          function(object, value){
+              if(length(value) != nmar(object, FALSE)){
+                  stop("The length of the given vector should match",
+                       " with the number of markers.", call. = FALSE)
+              }
+              slot(object, "marker")[["valid"]] <- value
+              return(object)
+          })
+
+## Get the logical vector indicating valid samples.
+#' @rdname validSam
+setMethod("validSam",
           "GbsrGenotypeData",
           function(object, parents){
               if(parents == "only"){
-                  return(getParents(object, TRUE))
-              }
-              if(parents){
-                  out <- getScanVariable(object, "validScan")
-                  out[getParents(object, TRUE)] <- TRUE
-                  return(out)
+                  if(is.null(slot(object, "sample")[["parents"]])){
+                      stop("No parents info.", call. = FALSE)
+                  } else {
+                      out <- slot(object, "sample")[["parents"]] != 0
+                  }
+
               } else {
-                  return(getScanVariable(object, "validScan"))
+                  out <- slot(object, "sample")[["valid"]]
+                  if(parents){
+                      if(is.null(slot(object, "sample")[["parents"]])){
+                          stop("No parents info.", call. = FALSE)
+                      } else {
+                          out[slot(object, "sample")[["parents"]]] <- TRUE
+                      }
+                  }
               }
+              return(out)
           })
 
-## Get the logical vector indicating flipped markers.
-#' @rdname getFlipped
-setMethod("getFlipped",
+#' @rdname validSam
+setMethod("validSam<-",
+          "GbsrGenotypeData",
+          function(object, value){
+              if(length(value) != nsam(object, FALSE)){
+                  stop("The length of the given vector should match",
+                       " with the number of samples", call. = FALSE)
+              }
+              slot(object, "sample")[["valid"]] <- value
+              return(object)
+          })
+
+## Get the number of SNPs.
+#' @rdname nmar
+setMethod("nmar",
           "GbsrGenotypeData",
           function(object, valid, chr){
-              if(!hasFlipped(object)){
-                  message('No data of flipped genotype markers.')
-                  return(NULL)
-              }
-              return(.getterCommon(object, "flipped", valid, chr))
+              out <- validMar(object, chr)
+              out <- ifelse(valid, sum(out), length(out))
+              return(out)
           })
+
+## Get the number of sams (samples).
+#' @rdname nsam
+setMethod("nsam",
+          "GbsrGenotypeData",
+          function(object, valid){
+              out <- validSam(object)
+              out <- ifelse(valid, sum(out), length(out))
+              return(out)
+          })
+
 
 ## Get the chromosome names in actual strings, indices, or levels.
 #' @rdname getChromosome
 setMethod("getChromosome",
           "GbsrGenotypeData",
-          function(object, valid, levels, name){
-              if(name){
-                  varname <- "chromosome.name"
-              } else {
-                  varname <- "chromosome"
-              }
-              out <- .getterCommon(object, varname, valid, NULL)
-
-              if(levels){
-                  out <- unique(out)
-              }
+          function(object, valid){
+              filters <- .makeFilter(object, valid = valid)
+              out <- .filtData(object, "chromosome", filters)
               return(out)
           })
 
@@ -341,104 +190,49 @@ setMethod("getChromosome",
 setMethod("getPosition",
           "GbsrGenotypeData",
           function(object, valid, chr){
-              return(.getterCommon(object, "position", valid, chr))
+              filters <- .makeFilter(object, valid = valid, chr = chr)
+              out <- .filtData(object, "position", filters)
+              return(out)
           })
 
 ## Get the reference alleles of markers.
-#' @rdname getAlleleA
-setMethod("getAlleleA",
+#' @rdname getAllele
+setMethod("getAllele",
           "GbsrGenotypeData",
           function(object, valid, chr){
-              out <- .getterCommon(object, "alleleA", valid, chr)
-
-              if(hasFlipped(object)){
-                  flipped <- getFlipped(object, valid, chr)
-                  b <- .getterCommon(object, "alleleB", valid, chr)
-                  out[flipped] <- b[flipped]
-              }
+              filters <- .makeFilter(object, valid = valid, chr = chr)
+              out <- .filtData(object, "allele", filters)
               return(out)
           })
 
-## Get the alternative alleles of markers.
-#' @rdname getAlleleB
-setMethod("getAlleleB",
+## Get the marker IDs.
+#' @rdname getMarID
+setMethod("getMarID",
           "GbsrGenotypeData",
           function(object, valid, chr){
-              out <- .getterCommon(object, "alleleB", valid, chr)
-
-              if(hasFlipped(object)){
-                  flipped <- getFlipped(object, valid, chr)
-                  b <- .getterCommon(object, "alleleA", valid, chr)
-                  out[flipped] <- b[flipped]
-              }
+              filters <- .makeFilter(object, valid = valid, chr = chr)
+              out <- .filtData(object, "variant.id", filters)
               return(out)
           })
 
-## Get the SNP marker IDs.
-#' @rdname getSnpID
-setMethod("getSnpID",
-          "GbsrGenotypeData",
-          function(object, valid, chr){
-              return(.getterCommon(object, "snpID", valid, chr))
-          })
-
-## Get the scan (sample) IDs.
-#' @rdname getScanID
-#' @importMethodsFrom GWASTools getScanVariable
-setMethod("getScanID",
+## Get the sample IDs.
+#' @rdname getSamID
+setMethod("getSamID",
           "GbsrGenotypeData",
           function(object, valid){
-              if(valid){
-                  out <- getScanVariable(object, "scanID", getValidScan(object))
-
-              } else {
-                  out <- getScanVariable(object, "scanID")
-              }
-              return(out)
-          })
-
-## Get the ploidies of markers.
-#' @rdname getPloidy
-#' @importFrom utils head
-setMethod("getPloidy",
-          "GbsrGenotypeData",
-          function(object, valid, chr){
-              out <- .getterCommon(object, "ploidy", valid, chr)
-              chr_i <- getChromosome(object, valid)
-              chr_l <- getChromosome(object, valid, TRUE)
-              if(!is.null(chr)){
-                  chr_i <- chr_i[chr_i %in% chr]
-                  chr_l <- chr_l[chr_l %in% chr]
-              }
-              out <- tapply(out, chr_i, head, n = 1)
-              names(out) <- chr_l
+              filters <- .makeFilter(object, valid = valid, parents = FALSE)
+              out <- .filtData(object, "sample.id", filters)
               return(out)
           })
 
 ## Get the values of a variable in the "annotation/info" directory.
 #' @rdname getInfo
-#' @importFrom gdsfmt readex.gdsn
 setMethod("getInfo",
           "GbsrGenotypeData",
           function(object, var, valid, chr){
-              path <- paste0("annotation/info/", var)
-
-              if(!.existGdsNode(object, path)){
-                  warning("No data at ", path)
-                  return(NULL)
-              }
-              info_node <- .getNodeIndex(object, path)
-              if(!is.null(chr)){
-                  chr <- getChromosome(object, FALSE) == chr
-              } else {
-                  chr <- TRUE
-              }
-              if(valid){
-                  out <- readex.gdsn(info_node, list(getValidSnp(object) & chr))
-
-              } else {
-                  out <- read.gdsn(info_node)
-              }
+              node <- paste0("annotation/info/", var)
+              filters <- .makeFilter(object, valid = valid, chr = chr)
+              out <- .filtData(object, node, filters)
               return(out)
           })
 
@@ -447,186 +241,112 @@ setMethod("getInfo",
 #' @rdname getRead
 setMethod("getRead",
           "GbsrGenotypeData",
-          function(object, valid, chr, node, parents){
+          function(object, node, parents, valid, chr){
+              node <- match.arg(node, c("raw", "filt.ad"))
+              if(node == "raw"){ node <- "annotation/format/AD" }
+              if(node == "filt.ad"){ node <- "annotation/format/FAD" }
 
-              if(node == "norm"){
-                  path <- paste0("annotation/format/AD/", "norm")
-              } else if(node == "filt"){
-                  path <- paste0("annotation/format/AD/", "filt.data")
-              } else {
-                  path <- paste0("annotation/format/AD/", "data")
-              }
-              if(!.existGdsNode(object, path)){
-                  stop("No data for ", node, call. = FALSE)
-              }
-              ad_node <- .getNodeIndex(object, path)
-
-              if(parents == "only"){
-                  valid_samples <- getParents(object, TRUE)
-
-              } else {
-                  if(valid){
-                      valid_samples <- getValidScan(object)
-
-                  } else {
-                      valid_samples <- rep(TRUE, nscan(object, valid))
-                  }
-                  if(parents){
-                      valid_samples[getParents(object, TRUE)] <- TRUE
-                  }
+              if(!exist.gdsn(object, node)){
+                  stop("The GDS node annotation/format/FAD does not exists.\n",
+                       "Run setCallFilter() if needed.")
               }
 
-              if(valid){
-                  valid_snp <- getValidSnp(object)
+              filters <- .makeFilter(object, parents = parents,
+                                     valid = valid, chr = chr)
 
-              } else {
-                  valid_snp <- rep(TRUE, nsnp(object, valid))
-              }
-
-              if(!is.null(chr)){
-                  chr_sel <- getChromosome(object, FALSE) %in% chr
-                  if(all(!chr_sel)){
-                      stop("No markers in chromosome ",
-                           paste(chr, collapse = ", "), call. = FALSE)
-                  }
-                  valid_snp <- valid_snp & chr_sel
-              }
-              sel <- list(valid_samples, rep(valid_snp, each=2))
-
-              ad <- readex.gdsn(ad_node, sel)
-              ref <- ad[, c(TRUE, FALSE)]
-              alt <- ad[, c(FALSE, TRUE)]
-
-              if(hasFlipped(object)){
-                  flipped <- getFlipped(object, valid, chr)
-                  flipped_ref <- ref[, flipped]
-                  ref[, flipped] <- alt[, flipped]
-                  alt[, flipped] <- flipped_ref
-              }
-
-              rownames(ref) <- getScanID(object, FALSE)[valid_samples]
-              rownames(alt) <- getScanID(object, FALSE)[valid_samples]
-              colnames(ref) <- getSnpID(object, FALSE)[valid_snp]
-              colnames(alt) <- getSnpID(object, FALSE)[valid_snp]
+              out <- .filtData(object, node, filters)
+              ref <- out$data[, c(TRUE, FALSE)]
+              alt <- out$data[, c(FALSE, TRUE)]
+              rownames(ref) <- rownames(alt) <- .filtData(object, "sample.id",
+                                                          filters)
+              colnames(ref) <- colnames(alt) <- .filtData(object, "variant.id",
+                                                          filters)
               return(list(ref = ref, alt = alt))
           })
 
-## Get read count data from one of the nodes `genotype`, `filt.genotype`,
+## Get read count data from one of the nodes `genotype`,
 ## `corrected.genotype`, or `parents.genotype` in the GDS file
 ## connected to the GbsrGenotypeData object.
+#' @importFrom SeqArray seqGetData
 #' @rdname getGenotype
-#' @importFrom gdsfmt objdesp.gdsn
-#'
 setMethod("getGenotype",
           "GbsrGenotypeData",
-          function(object, valid, chr, node, parents){
-              node <- match.arg(node,
-                                c("raw",
-                                  "parents.genotype",
-                                  "corrected.genotype",
-                                  "filt.genotype"))
-              if(node == "raw"){node <- "genotype"}
-              path <- ifelse(.existGdsNode(object, node),
-                             node,
-                             stop("No data for ", node, call. = FALSE))
+          function(object, node, parents, valid, chr){
+              node <- match.arg(arg = node,
+                                choices =  c("raw", "filt", "cor",
+                                             "parents", "ratio", "dosage"))
+              if(node == "raw"){node <- "genotype/data"}
+              if(node == "filt"){node <- "annotation/format/FGT/data"}
+              if(node == "cor"){node <- "annotation/format/CGT/data"}
+              if(node == "ratio"){node <- "annotation/format/ARR"}
+              if(node == "dosage"){node <- "annotation/format/EDS"}
 
-              genotype_node <- .getNodeIndex(object, path)
-              if(valid){
-                  valid_snp <- getValidSnp(object)
-
-              } else {
-                  valid_snp <- rep(TRUE, nsnp(object, valid))
-              }
-
-              if(!is.null(chr)){
-                  chr_sel <- getChromosome(object, FALSE) %in% chr
-                  if(all(!chr_sel)){
-                      stop("No markers in chromosome ",
-                           paste(chr, collapse = ", "), call. = FALSE)
+              if(node == "parents"){
+                  node <-  "annotation/info/PGT"
+                  if(!exist.gdsn(object, node)){
+                      stop("Nothing to return. Run estGeno() to obtain the ",
+                           "corrected genotype data.")
                   }
-                  valid_snp <- valid_snp & chr_sel
-              }
 
-              if(node == "parents.genotype"){
-                  n_row <- objdesp.gdsn(genotype_node)$dim[1]
-                  sel <- list(rep(TRUE, n_row), valid_snp)
-                  genotype <- readex.gdsn(genotype_node, sel)
-                  parent_i <- getParents(object, TRUE)
-                  p_id <- getScanID(object, FALSE)[parent_i]
-                  rownames(genotype) <- paste(rep(p_id, each=2),
-                                              seq_len(2), sep="_")
-                  colnames(genotype) <- getSnpID(object, FALSE)[valid_snp]
+                  filters <- .makeFilter(object, parents = parents,
+                                         valid = valid, chr = chr)
+                  out <- .filtData(object, node, filters)
+
+                  p_id <- getParents(object)
+                  ploidy <- attributes(slot(object, "sample"))$ploidy
+                  rownames(out) <- paste(rep(p_id$memberID, each=ploidy),
+                                         seq_len(ploidy), sep="_")
+                  colnames(out) <- .filtData(object, "variant.id", filters)
 
               } else {
-                  if(parents == "only"){
-                      valid_samples <- getParents(object, TRUE)
+                  if(!exist.gdsn(object, node)){
+                      if(grepl("FGT", node)){
+                          stop("Nothing to return.",
+                               " Run setCallFilter() if needed.")
+                      } else {
+                          stop("Nothing to return. Run estGeno() to obtain the",
+                               " corrected genotype data.")
+                      }
+                  }
+
+                  filters <- .makeFilter(object, parents = parents,
+                                         valid = valid, chr = chr)
+
+                  if(grepl("ARR|EDS", node)){
+                      out <- .filtData(object, node, filters, reduce = FALSE)
 
                   } else {
-                      if(valid){
-                          valid_samples <- getValidScan(object)
-
-                      } else {
-                          valid_samples <- rep(TRUE, nscan(object, valid))
-                      }
-                      if(parents){
-                          valid_samples[getParents(object, TRUE)] <- TRUE
-                      }
+                      out <- .filtData(object, node, filters, reduce = TRUE)
                   }
 
-                  sel <- list(valid_samples, valid_snp)
-                  genotype <- readex.gdsn(genotype_node, sel)
-                  rownames(genotype) <- getScanID(object, FALSE)[valid_samples]
-                  colnames(genotype) <- getSnpID(object, FALSE)[valid_snp]
+                  rownames(out) <- .filtData(object, "sample.id", filters)
+                  colnames(out) <- .filtData(object, "variant.id", filters)
+                  dimnames(out) <- list(dimnames(out)$allele,
+                                        dimnames(out)$variant)
               }
 
-              ploidy <- max(getPloidy(object))
-              genotype[genotype > ploidy] <- NA
-
-              if(hasFlipped(object) & node != "corrected.genotype"){
-                  flipped <- getFlipped(object, valid, chr)
-                  tmp <- genotype[, flipped]
-                  flip_ref <- tmp == 0
-                  flip_alt <- tmp == 2
-                  tmp[flip_ref] <- 2
-                  tmp[flip_alt] <- 0
-                  genotype[, flipped] <- tmp
-              }
-
-              return(genotype)
+              return(out)
           })
 
+#' @importFrom gdsfmt readex.gdsn index.gdsn
 #' @rdname getHaplotype
 setMethod("getHaplotype",
           "GbsrGenotypeData",
-          function(object, chr, parents){
-              if(!.existGdsNode(object, "estimated.haplotype")){
-                  stop('No haplotype data, Run clean() to estimate haplotype.',
-                       call. = FALSE)
+          function(object, parents, valid, chr){
+              node <-  "annotation/format/HAP/data"
+              if(!exist.gdsn(object, node)){
+                  stop("Nothing to return. Run estGeno() to obtain the ",
+                       "estimated haplotype data.")
               }
+              filters <- .makeFilter(object, parents = parents,
+                                     valid = valid, chr = chr)
+              ploidy <- attributes(slot(object, "sample"))[["ploidy"]]
+              out <- readex.gdsn(index.gdsn(object, node),
+                                 sel = list(rep(TRUE, ploidy),
+                                            filters$sam, filters$mar))
 
-              hap_node <- .getNodeIndex(object, "estimated.haplotype")
-              valid_samples <- getValidScan(object)
-              if(parents == "only"){
-                  valid_samples <- getParents(object, TRUE)
-
-              } else if(parents){
-                  valid_samples[getParents(object, TRUE)] <- TRUE
-              }
-
-              valid_snp <- getValidSnp(object)
-              if(!is.null(chr)){
-                  valid_snp[getChromosome(object) != chr] <- FALSE
-              }
-
-              sel <- list(valid_samples, rep(valid_snp, each=2))
-              hap <- readex.gdsn(hap_node, sel)
-              hap[hap == 0] <- NA
-              hap_dim <- c(2, sum(valid_snp), sum(valid_samples))
-              hap_names <- list(c("1", "2"),
-                                getSnpID(object, FALSE)[valid_snp],
-                                getScanID(object, FALSE)[valid_samples])
-              hap <- array(t(hap), hap_dim)
-              return(hap)
+              out[out == 0] <- NA
+              return(out)
           })
 
 ###############################################################################
@@ -639,12 +359,11 @@ setMethod("getHaplotype",
 setMethod("getCountReadRef",
           "GbsrGenotypeData",
           function(object, target, valid, prop){
-              stopifnot(target %in% c("snp", "scan"))
-              stopifnot(is.logical(valid))
-              stopifnot(is.logical(prop))
-
               out <- .getStatsData(object, "countReadRef", target, valid)
-              if(is.null(out)){return(NULL)}
+
+              if(is.null(out)){
+                  stop("Nothing to rerurn. Run countRead().")
+              }
 
               if(prop){
                   tmp <- .getStatsData(object, "countReadAlt", target, valid)
@@ -658,12 +377,11 @@ setMethod("getCountReadRef",
 setMethod("getCountReadAlt",
           "GbsrGenotypeData",
           function(object, target, valid, prop){
-              stopifnot(target %in% c("snp", "scan"))
-              stopifnot(is.logical(valid))
-              stopifnot(is.logical(prop))
-
               out <- .getStatsData(object, "countReadAlt", target, valid)
-              if(is.null(out)){return(NULL)}
+
+              if(is.null(out)){
+                  stop("Nothing to rerurn. Run countRead().")
+              }
 
               if(prop){
                   tmp <- .getStatsData(object, "countReadRef", target, valid)
@@ -677,13 +395,11 @@ setMethod("getCountReadAlt",
 setMethod("getCountRead",
           "GbsrGenotypeData",
           function(object, target, valid){
-              stopifnot(target %in% c("snp", "scan"))
-              stopifnot(is.logical(valid))
-
               ref <- .getStatsData(object, "countReadRef", target, valid)
               alt <- .getStatsData(object, "countReadAlt", target, valid)
-
-              if(is.null(ref) | is.null(alt)){return(NULL)}
+              if(is.null(ref)){
+                  stop("Nothing to rerurn. Run countRead().")
+              }
               out <- ref + alt
               return(out)
           })
@@ -694,19 +410,18 @@ setMethod("getCountRead",
 setMethod("getCountGenoRef",
           "GbsrGenotypeData",
           function(object, target, valid, prop){
-              stopifnot(target %in% c("snp", "scan"))
-              stopifnot(is.logical(valid))
-              stopifnot(is.logical(prop))
-
               out <- .getStatsData(object, "countGenoRef", target, valid)
-              if(is.null(out)){return(NULL)}
+              if(is.null(out)){
+                  stop("Nothing to rerurn. Run countGenotype().")
+              }
 
+              stopifnot(is.logical(prop))
               if(prop){
                   tmp <- .getStatsData(object, "countGenoMissing", target, valid)
-                  if(target == "snp"){
-                      nonmissing <- nscan(object, valid) - tmp
+                  if(target == "marker"){
+                      nonmissing <- nsam(object, valid) - tmp
                   } else {
-                      nonmissing <- nsnp(object, valid) - tmp
+                      nonmissing <- nmar(object, valid) - tmp
                   }
                   out <- out / nonmissing
               }
@@ -718,19 +433,18 @@ setMethod("getCountGenoRef",
 setMethod("getCountGenoHet",
           "GbsrGenotypeData",
           function(object, target, valid, prop){
-              stopifnot(target %in% c("snp", "scan"))
-              stopifnot(is.logical(valid))
-              stopifnot(is.logical(prop))
-
               out <- .getStatsData(object, "countGenoHet", target, valid)
-              if(is.null(out)){return(NULL)}
+              if(is.null(out)){
+                  stop("Nothing to rerurn. Run countGenotype().")
+              }
 
+              stopifnot(is.logical(prop))
               if(prop){
                   tmp <- .getStatsData(object, "countGenoMissing", target, valid)
-                  if(target == "snp"){
-                      nonmissing <- nscan(object, valid) - tmp
+                  if(target == "marker"){
+                      nonmissing <- nsam(object, valid) - tmp
                   } else {
-                      nonmissing <- nsnp(object, valid) - tmp
+                      nonmissing <- nmar(object, valid) - tmp
                   }
                   out <- out / nonmissing
               }
@@ -743,19 +457,19 @@ setMethod("getCountGenoHet",
 setMethod("getCountGenoAlt",
           "GbsrGenotypeData",
           function(object, target, valid, prop){
-              stopifnot(target %in% c("snp", "scan"))
-              stopifnot(is.logical(valid))
               stopifnot(is.logical(prop))
 
               out <- .getStatsData(object, "countGenoAlt", target, valid)
-              if(is.null(out)){return(NULL)}
+              if(is.null(out)){
+                  stop("Nothing to rerurn. Run countGenotype().")
+              }
 
               if(prop){
                   tmp <- .getStatsData(object, "countGenoMissing", target, valid)
-                  if(target == "snp"){
-                      nonmissing <- nscan(object, valid) - tmp
+                  if(target == "marker"){
+                      nonmissing <- nsam(object, valid) - tmp
                   } else {
-                      nonmissing <- nsnp(object, valid) - tmp
+                      nonmissing <- nmar(object, valid) - tmp
                   }
                   out <- out / nonmissing
               }
@@ -767,18 +481,18 @@ setMethod("getCountGenoAlt",
 setMethod("getCountGenoMissing",
           "GbsrGenotypeData",
           function(object, target, valid, prop){
-              stopifnot(target %in% c("snp", "scan"))
-              stopifnot(is.logical(valid))
               stopifnot(is.logical(prop))
 
               out <- .getStatsData(object, "countGenoMissing", target, valid)
-              if(is.null(out)){return(NULL)}
+              if(is.null(out)){
+                  stop("Nothing to rerurn. Run countGenotype().")
+              }
 
               if(prop){
-                  if(target == "snp"){
-                      out <- out / nscan(object, valid)
+                  if(target == "marker"){
+                      out <- out / nsam(object, valid)
                   } else {
-                      out <- out / nsnp(object, valid)
+                      out <- out / nmar(object, valid)
                   }
               }
               return(out)
@@ -789,19 +503,19 @@ setMethod("getCountGenoMissing",
 setMethod("getCountAlleleRef",
           "GbsrGenotypeData",
           function(object, target, valid, prop){
-              stopifnot(target %in% c("snp", "scan"))
-              stopifnot(is.logical(valid))
               stopifnot(is.logical(prop))
 
               out <- .getStatsData(object, "countAlleleRef", target, valid)
-              if(is.null(out)){return(NULL)}
+              if(is.null(out)){
+                  stop("Nothing to rerurn. Run countGenotype().")
+              }
 
               if(prop){
                   tmp <- .getStatsData(object, "countAlleleMissing", target, valid)
-                  if(target == "snp"){
-                      nonmissing <- nscan(object, valid) * 2 - tmp
+                  if(target == "marker"){
+                      nonmissing <- nsam(object, valid) * 2 - tmp
                   } else {
-                      nonmissing <- nsnp(object, valid) * 2 - tmp
+                      nonmissing <- nmar(object, valid) * 2 - tmp
                   }
                   out <- out / nonmissing
               }
@@ -813,19 +527,19 @@ setMethod("getCountAlleleRef",
 setMethod("getCountAlleleAlt",
           "GbsrGenotypeData",
           function(object, target, valid, prop){
-              stopifnot(target %in% c("snp", "scan"))
-              stopifnot(is.logical(valid))
               stopifnot(is.logical(prop))
 
               out <- .getStatsData(object, "countAlleleAlt", target, valid)
-              if(is.null(out)){return(NULL)}
+              if(is.null(out)){
+                  stop("Nothing to rerurn. Run countGenotype().")
+              }
 
               if(prop){
                   tmp <- .getStatsData(object, "countAlleleMissing", target, valid)
-                  if(target == "snp"){
-                      nonmissing <- nscan(object, valid) * 2 - tmp
+                  if(target == "marker"){
+                      nonmissing <- nsam(object, valid) * 2 - tmp
                   } else {
-                      nonmissing <- nsnp(object, valid) * 2 - tmp
+                      nonmissing <- nmar(object, valid) * 2 - tmp
                   }
                   out <- out / nonmissing
               }
@@ -837,18 +551,18 @@ setMethod("getCountAlleleAlt",
 setMethod("getCountAlleleMissing",
           "GbsrGenotypeData",
           function(object, target, valid, prop){
-              stopifnot(target %in% c("snp", "scan"))
-              stopifnot(is.logical(valid))
               stopifnot(is.logical(prop))
 
               out <- .getStatsData(object, "countAlleleMissing", target, valid)
-              if(is.null(out)){return(NULL)}
+              if(is.null(out)){
+                  stop("Nothing to rerurn. Run countGenotype().")
+              }
 
               if(prop){
-                  if(target == "snp"){
-                      out <- out / (nscan(object, valid) * 2)
+                  if(target == "marker"){
+                      out <- out / (nsam(object, valid) * 2)
                   } else {
-                      out <- out / (nsnp(object, valid) * 2)
+                      out <- out / (nmar(object, valid) * 2)
                   }
               }
               return(out)
@@ -859,11 +573,10 @@ setMethod("getCountAlleleMissing",
 setMethod("getMeanReadRef",
           "GbsrGenotypeData",
           function(object, target, valid){
-              stopifnot(target %in% c("snp", "scan"))
-              stopifnot(is.logical(valid))
-
               out <- .getStatsData(object, "meanReadRef", target, valid)
-              if(is.null(out)){return(NULL)}
+              if(is.null(out)){
+                  stop("Nothing to rerurn. Run countRead().")
+              }
 
               return(out)
           })
@@ -873,11 +586,10 @@ setMethod("getMeanReadRef",
 setMethod("getMeanReadAlt",
           "GbsrGenotypeData",
           function(object, target, valid){
-              stopifnot(target %in% c("snp", "scan"))
-              stopifnot(is.logical(valid))
-
               out <- .getStatsData(object, "meanReadAlt", target, valid)
-              if(is.null(out)){return(NULL)}
+              if(is.null(out)){
+                  stop("Nothing to rerurn. Run countRead().")
+              }
 
               return(out)
           })
@@ -887,11 +599,10 @@ setMethod("getMeanReadAlt",
 setMethod("getSDReadRef",
           "GbsrGenotypeData",
           function(object, target, valid){
-              stopifnot(target %in% c("snp", "scan"))
-              stopifnot(is.logical(valid))
-
               out <- .getStatsData(object, "sdReadRef", target, valid)
-              if(is.null(out)){return(NULL)}
+              if(is.null(out)){
+                  stop("Nothing to rerurn. Run countRead().")
+              }
 
               return(out)
           })
@@ -901,49 +612,46 @@ setMethod("getSDReadRef",
 setMethod("getSDReadAlt",
           "GbsrGenotypeData",
           function(object, target, valid){
-              stopifnot(target %in% c("snp", "scan"))
-              stopifnot(is.logical(valid))
-
               out <- .getStatsData(object, "sdReadAlt", target, valid)
-              if(is.null(out)){return(NULL)}
+              if(is.null(out)){
+                  stop("Nothing to rerurn. Run countRead().")
+              }
 
               return(out)
           })
 
 ## Get quantile values of the number of reference allele reads
 ## per marker and per sample.
-#' @rdname getQtileReadRef
-setMethod("getQtileReadRef",
+#' @rdname getMedianReadRef
+setMethod("getMedianReadRef",
           "GbsrGenotypeData",
           function(object, target, q, valid){
               stopifnot(length(q) != 0)
-              stopifnot(target %in% c("snp", "scan"))
-              stopifnot(is.logical(valid))
-
               out <- .getStatsData(object,
                                    paste0("qtileReadRef", q),
                                    target,
                                    valid)
-              if(is.null(out)){return(NULL)}
+              if(is.null(out)){
+                  stop("Nothing to rerurn. Run countRead().")
+              }
 
               return(out)
           })
 
 ## Get quantile values of the number of alternative allele reads
 ## per marker and per sample.
-#' @rdname getQtileReadAlt
-setMethod("getQtileReadAlt",
+#' @rdname getMedianReadAlt
+setMethod("getMedianReadAlt",
           "GbsrGenotypeData",
           function(object, target, q, valid){
               stopifnot(length(q) != 0)
-              stopifnot(target %in% c("snp", "scan"))
-              stopifnot(is.logical(valid))
-
               out <- .getStatsData(object,
                                    paste0("qtileReadAlt", q),
                                    target,
                                    valid)
-              if(is.null(out)){return(NULL)}
+              if(is.null(out)){
+                  stop("Nothing to rerurn. Run countRead().")
+              }
 
               return(out)
           })
@@ -953,9 +661,6 @@ setMethod("getQtileReadAlt",
 setMethod("getMAF",
           "GbsrGenotypeData",
           function(object, target, valid){
-              stopifnot(target %in% c("snp", "scan"))
-              stopifnot(is.logical(valid))
-
               out <- getCountAlleleRef(object, target, valid, TRUE)
               out <- 0.5 - abs(out - 0.5)
               return(out)
@@ -966,9 +671,6 @@ setMethod("getMAF",
 setMethod("getMAC",
           "GbsrGenotypeData",
           function(object, target, valid){
-              stopifnot(target %in% c("snp", "scan"))
-              stopifnot(is.logical(valid))
-
               ref <- getCountAlleleRef(object, target, valid, FALSE)
               alt <- getCountAlleleAlt(object, target, valid, FALSE)
               out <- ref
@@ -979,28 +681,26 @@ setMethod("getMAC",
 
 ## Get the information of the parents.
 #' @rdname getParents
-#' @importMethodsFrom GWASTools getScanVariable hasScanVariable
 setMethod("getParents",
           "GbsrGenotypeData",
           function(object, bool){
-              if(!hasScanVariable(object, "parents")){
-                  message("No parents specified.")
-                  return(NULL)
+              if(is.null(slot(object, "sample")[["parents"]])){
+                  stop("No parents specified.")
               }
 
-              parents <- getScanVariable(object, "parents")
+              parents <- slot(object, "sample")[["parents"]]
               if(bool){
                   return(parents != 0)
               }
 
               p_index <- which(parents != 0)
               p_id <- parents[p_index]
-              p_name <- getScanID(object, FALSE)[p_index]
-              return(data.frame(scanID = p_name,
+              p_name <- getSamID(object, FALSE)[p_index]
+              return(data.frame(sampleID = p_name,
                                 memberID = p_id,
-                                indexes = p_index
-              ))
+                                indexes = p_index))
           })
+
 ###############################################################################
 ## Exported getter functions which return a boolen value.
 
@@ -1010,7 +710,7 @@ setMethod("getParents",
 setMethod("isOpenGDS",
           "GbsrGenotypeData",
           function(object){
-              tryout <- try(diagnosis.gds(.getGdsfmtObj(object)),
+              tryout <- try(diagnosis.gds(object),
                             silent = TRUE)
               if(is.list(tryout)){
                   out <- TRUE
@@ -1024,162 +724,88 @@ setMethod("isOpenGDS",
               return(out)
           })
 
-## Check if the data include flipped SNP markers.
-#' @rdname hasFlipped
-#' @importMethodsFrom GWASTools hasSnpVariable
-setMethod("hasFlipped",
-          "GbsrGenotypeData",
-          function(object){
-              return(hasSnpVariable(object, "flipped"))
-          })
-
-###############################################################################
-## Exported setter functions.
-
-## Set new validity information of SNPs.
-#' @rdname setValidSnp
-setMethod("setValidSnp",
-          "GbsrGenotypeData",
-          function(object, new, update){
-              if(!missing(new)){
-                  if(any(is.na(new))){
-                      stop('NA is not allowed for a logical vector "new".',
-                           call. = FALSE)
-                  }
-                  object <- .setSnpVariable(object, "validMarker", new)
-
-              } else if(!missing(update)){
-                  if(any(is.na(update))){
-                      stop('NA is not allowed for a logical vector "update".',
-                           call. = FALSE)
-                  }
-                  valid_marker <- getSnpVariable(object, "validMarker")
-                  valid_marker[getValidSnp(object)] <- update
-                  object <- .setSnpVariable(object, "validMarker", valid_marker)
-              }
-              return(object)
-          })
-
-## Set new validity information of scans (samples).
-#' @rdname setValidScan
-setMethod("setValidScan",
-          "GbsrGenotypeData",
-          function(object, new, update){
-              if(!missing(new)){
-                  if(any(is.na(new))){
-                      stop('NA is not allowed for a logical vector "new".',
-                           call. = FALSE)
-                  }
-                  object <- .setScanVariable(object, "validScan", new)
-
-              } else if(!missing(update)){
-                  if(any(is.na(update))){
-                      stop('NA is not allowed for a logical vector "update".',
-                           call. = FALSE)
-                  }
-                  valid_marker <- getScanVariable(object, "validScan")
-                  valid_marker[getValidScan(object)] <- update
-                  object <- .setScanVariable(object, "validScan", valid_marker)
-              }
-              return(object)
-          })
-
 ## Set parental samples.
 #' @rdname setParents
 setMethod("setParents",
           "GbsrGenotypeData",
-          function(object, parents, flip, mono, bi){
+          function(object, parents, mono, bi){
               if(length(parents) == 0 | any(is.na(parents))){
                   stop('Specify valid sample names as parents.', call. = FALSE)
               }
               if(inherits(parents, "numeric")){
-                  parents <- getScanID(object)[parents]
+                  parents <- getSamID(object)[parents]
               }
               if(!inherits(parents, "character")){
                   stop('Specify valid sample names as parents.', call. = FALSE)
               }
 
-              id <- getScanID(object, FALSE)
+              id <- getSamID(object, FALSE)
               p_index <- match(parents, id)
               if(any(is.na(p_index))){
                   stop("No sample named: ", parents[is.na(p_index)], call. = FALSE)
               }
 
               n_parents <- length(p_index)
-              p_vec <- integer(nscan(object, FALSE))
+              p_vec <- integer(nsam(object, FALSE))
               for (i in seq_len(n_parents)){
                   p_vec[p_index[i]] <- i
               }
 
-              valid_scan <- getValidScan(object, FALSE)
-              if(hasScanVariable(object, "parents")){
+              valid_sam <- validSam(object, FALSE)
+              if(!is.null(slot(object, "sample")[["parents"]])){
                   old_parents <- getParents(object, TRUE)
-                  valid_scan[old_parents] <- TRUE
+                  valid_sam[old_parents] <- TRUE
               }
+              valid_sam[p_vec != 0] <- FALSE
+              validSam(object) <- valid_sam
+              slot(object, "sample")[["parents"]] <- p_vec
 
-              valid_scan[p_vec != 0] <- FALSE
-              object <- setValidScan(object, valid_scan)
-              object <- .setScanVariable(object, "parents", p_vec)
-
-              if(mono | bi | flip){
-                  object <- .pGenoFilt(object, mono, bi, flip)
+              if(mono | bi){
+                  object <- .pGenoFilt(object, mono, bi)
               }
               return(object)
           })
 
-.pGenoFilt <- function(object, mono, bi, flip){
-    geno <- readex.gdsn(.getNodeIndex(object, .getGenotypeVar(object)),
-                        list(getParents(object, TRUE), getValidSnp(object)))
+.pGenoFilt <- function(object, mono, bi){
+    read <- getRead(object, "raw", "only", FALSE, NULL)
+    ref <- read$ref
+    alt <- read$alt
 
     # Find markers which are homozygous in each parent and biallelic
+    missing <- ref == 0 & alt == 0
+    het <- ref > 0 & alt > 0
     if(mono){
-        monomorphic <- apply(geno, 2, function(x){
-            return(all(x %in% c(0, 2)))
-        })
+        mono <- !het & !missing
+        mono <- colSums(mono) == sum(slot(object, "sample")[["parents"]] != 0)
     } else {
-        monomorphic <- TRUE
+        mono <- rep(TRUE, nmar(object, FALSE))
     }
 
     if(bi){
-        biallelic <- apply(geno, 2, function(x){
-            return(sum(c(0:2) %in% unique(x)) == 2)
-        })
+        bi <- ref > 0 & alt == 0 & !het & !missing
+        bi <- colSums(bi) != sum(slot(object, "sample")[["parents"]] != 0)
     } else {
-        biallelic <- TRUE
+        bi <- rep(TRUE, nmar(object, FALSE))
     }
-    object <- setValidSnp(object, update=monomorphic & biallelic)
-
-    ## Find markers which p1 has an alternative allele
-    ## while p2 has a reference allele.
-    if(sum(getParents(object, TRUE)) == 2 & flip){
-        message('Check flipped markers.')
-        object <- .setFlipped(object, geno[1, ] == 0)
-    }
+    validMar(object) <- mono & bi & validMar(object)
     return(object)
 }
 
 ###############################################################################
 ## Show the GbsrGenotypeData object.
-#' @importMethodsFrom GWASTools getSnpAnnotation
-#' @importMethodsFrom GWASTools getScanAnnotation
 #' @importFrom methods show
 setMethod("show",
           "GbsrGenotypeData",
           function(object){
-              message('Data in GDS file...')
-              message('GDS file name')
-              message(.getGDSFileName(object))
-              if(isOpenGDS(object)){
-                  print(.getGdsfmtObj(object))
-              } else {
-                  message('Connection to GDS file has been closed.')
-              }
-              message('-----------------------------------------------------')
-              message('SnpAnnotationDataFrame')
-              print(getSnpAnnotation(object))
-              message('-----------------------------------------------------')
-              message('ScanAnnotationDataFrame')
-              print(getScanAnnotation(object))
+              print(object$root)
+              message("No of samples: ", nsam(object))
+              message("No of markers: ", nmar(object))
+              message("Data in the sample slot: ", paste(names(slot(object, "sample")),
+                                                         collapse = ", "))
+              message("Data in the marker slot: ", paste(names(slot(object, "marker")),
+                                                         collapse = ", "))
+              message("No of generations in the scheme object: ",
+                      length(gds@scheme@mating))
           })
 
 ###############################################################################
@@ -1187,111 +813,43 @@ setMethod("show",
 
 ## Close the connection to the GDS file.
 #' @rdname closeGDS
-#' @importFrom gdsfmt closefn.gds
+#' @importFrom SeqArray seqClose seqAddValue
 setMethod("closeGDS",
           "GbsrGenotypeData",
-          function(object, verbose){
-              closefn.gds(.getGdsfmtObj(object))
+          function(object, save_filter, verbose){
+              if(save_filter){
+                  seqAddValue(object, "annotation/info/GFL", validMar(object),
+                              replace = TRUE, compress = "LZMA_RA",
+                              verbose = FALSE)
+                  seqAddValue(object, "sample.annotation",
+                              data.frame(GFL = validSam(object)),
+                              replace = TRUE, compress = "LZMA_RA",
+                              verbose = FALSE)
+              }
+              seqClose(object)
               if(verbose){
                   message('The connection to the GDS file was closed.')
               }
           })
 
 ## Close the connection to the GDS file.
-#' @rdname openGDS
-#' @importClassesFrom GWASTools GenotypeData GdsGenotypeReader
-#' @importFrom GWASTools GdsGenotypeReader GenotypeData
-#' @importMethodsFrom GWASTools getSnpAnnotation getScanAnnotation
-#' @importFrom gdsfmt openfn.gds
-setMethod("openGDS",
+#' @rdname reopenGDS
+#' @importFrom SeqArray seqOpen
+setMethod("reopenGDS",
           "GbsrGenotypeData",
           function(object){
+              gds_fn <- object$filename
               if(isOpenGDS(object)){
                   closeGDS(object, FALSE)
               }
-              genotype_var <- .getGenotypeVar(object)
-
-              # Leave the following connection open to build the GdsGenotypeReader
-              # object with `readonly=FALSE` mode.
-              gds <- GdsGenotypeReader(openfn.gds(.getGDSFileName(object), FALSE),
-                                       "scan,snp")
-              gds <- GenotypeData(gds,
-                                  getSnpAnnotation(object),
-                                  getScanAnnotation(object))
-              object <- new("GbsrGenotypeData", gds)
-              if(genotype_var == "filt.genotype"){
-                  object <- setFiltGenotype(object)
-              }
+              object <- new("GbsrGenotypeData",
+                            seqOpen(gds_fn, FALSE),
+                            marker = slot(object, "marker"),
+                            sample = slot(object, "sample"),
+                            scheme = slot(object, "scheme"))
               return(object)
           })
 
-## Save the data in the SnpAnnotationDataFrame to the GDS file.
-#' @rdname saveSnpAnnot
-#' @importFrom Biobase pData
-#' @importMethodsFrom GWASTools getSnpAnnotation
-setMethod("saveSnpAnnot",
-          "GbsrGenotypeData",
-          function(object){
-              .gds_decomp(object)
-              new_node <- add.gdsn(
-                  node = .getGdsfmtObj(object),
-                  name = "snpAnnot",
-                  val = pData(getSnpAnnotation(object)),
-                  replace = TRUE
-              )
-              .gds_comp(object)
-              return(object)
-          })
-
-## Save the data of the ScanAnnotationDataFrame object to the GDS file.
-#' @rdname saveScanAnnot
-#' @importFrom Biobase pData
-#' @importMethodsFrom GWASTools getScanAnnotation
-setMethod("saveScanAnnot",
-          "GbsrGenotypeData",
-          function(object){
-              .gds_decomp(object)
-              new_node <- add.gdsn(
-                  node = .getGdsfmtObj(object),
-                  name = "scanAnnot",
-                  val = pData(getScanAnnotation(object)),
-                  replace = TRUE
-              )
-              .gds_comp(object)
-              return(object)
-          })
-
-## Load the stored SnpAnnotationDataFrame data from the GDS file.
-#' @rdname loadSnpAnnot
-setMethod("loadSnpAnnot",
-          "GbsrGenotypeData",
-          function(object){
-              if(.existGdsNode(object, "snpAnnot")){
-                  ann_node <- .getNodeIndex(object, "snpAnnot")
-                  ann <- read.gdsn(ann_node)
-                  object <- .setSnpVariable(object, "df", ann)
-                  return(object)
-
-              } else {
-                  stop('No data in the GDS file.', call. = FALSE)
-              }
-          })
-
-## Load the stored ScanAnnotationDataFrame data from the GDS file.
-#' @rdname loadScanAnnot
-setMethod("loadScanAnnot",
-          "GbsrGenotypeData",
-          function(object){
-              if(.existGdsNode(object, "scanAnnot")){
-                  ann_node <- .getNodeIndex(object, "scanAnnot")
-                  ann <- read.gdsn(ann_node)
-                  object <- .setScanVariable(object, "df", ann)
-                  return(object)
-
-              } else {
-                  stop('No data in the GDS file.', call. = FALSE)
-              }
-          })
 
 ###############################################################################
 ## Functions to calculate statistical summaries of
@@ -1299,364 +857,125 @@ setMethod("loadScanAnnot",
 
 ## Calculate the numbers of each genotype and each allele per marker and
 ## per sample.
+#' @importFrom gdsfmt exist.gdsn apply.gdsn
 #' @rdname countGenotype
 setMethod("countGenotype",
           "GbsrGenotypeData",
           function(object, target, node){
               node <- match.arg(node,
                                 c("raw",
-                                  "corrected.genotype",
-                                  "filt.genotype"))
-              if(node == "raw"){node <- "genotype"}
-              if(.existGdsNode(object, node)){
-                  path <- .getNodeIndex(object, node)
+                                  "cor",
+                                  "filt"))
+              if(node == "raw"){node <- "genotype/data"}
+              if(node == "cor"){node <- "annotation/format/CGT/data"}
+              if(node == "filt"){node <- "annotation/format/FGT/data"}
+
+
+              if(!exist.gdsn(object, node)){
+                  if(node == "annotation/format/FGT/data"){
+                      stop("Nothing to return.",
+                           " Run setCallFilter() if needed.")
+                  } else {
+                      stop("Nothing to return. Run estGeno() to obtain the",
+                           " corrected genotype data.")
+                  }
               }
-
-              valid_markers <- getValidSnp(object)
-              valid_scans <- getValidScan(object)
-
-              if(node != "corrected.genotype" & hasFlipped(object)){
-                  has_flipped <- TRUE
-                  valid_flipped <- getFlipped(object, valid = TRUE)
-              } else {
-                  has_flipped <- FALSE
-                  valid_flipped <- FALSE
-              }
-
-              sel <- list(valid_scans, valid_markers)
 
               # Counts per sample
-              if(target %in% c("both", "scan")){
-                  object <- .countGenotypeScan(object,
-                                               path,
-                                               sel,
-                                               has_flipped,
-                                               valid_flipped)
+              if(target %in% c("both", "sample")){
+                  object <- .countGeno(object, node, 2, "sample")
               }
 
               # Counts per marker
-              if(target %in% c("both", "snp")){
-                  object <- .countGenotypeSnp(object,
-                                              path,
-                                              sel,
-                                              has_flipped,
-                                              valid_flipped)
+              if(target %in% c("both", "marker")){
+                  object <- .countGeno(object, node, 3, "marker")
               }
 
               return(object)
           })
 
 #' @importFrom gdsfmt apply.gdsn
-.countGenotypeScan <- function(object, path, sel, has_flipped, valid_flipped){
-    df <- apply.gdsn(path, 1, selection=sel, as.is="list",
-                     FUN=function(x){
-                         if(has_flipped){
-                             flipped_x <- x[valid_flipped]
-                             if(length(flipped_x) > 0){
-                                 ref <- flipped_x == 0
-                                 alt <- flipped_x == 2
-                                 flipped_x[ref] <- 2
-                                 flipped_x[alt] <- 0
-                                 x[valid_flipped] <- flipped_x
-                             }
-                         }
-                         x <- factor(x, 0:3)
-                         return(as.integer(table(x)))
-                     })
-    df <- matrix(unlist(df), 4)
-    tmp <- matrix(NA, 4, nscan(object, FALSE))
-    tmp[, getValidScan(object)] <- df
-    df <- tmp
-
-    object <- .setScanVariable(object, "countGenoRef", df[3,])
-    object <- .setScanVariable(object, "countGenoHet", df[2,])
-    object <- .setScanVariable(object, "countGenoAlt", df[1,])
-    object <- .setScanVariable(object, "countGenoMissing", df[4,])
-    ref_allele <- colSums(df * c(0, 1, 2, 0))
-    object <- .setScanVariable(object, "countAlleleRef", ref_allele)
-    alt_allele <- colSums(df * c(2, 1, 0, 0))
-    object <- .setScanVariable(object, "countAlleleAlt", alt_allele)
-    missing <- colSums(df * c(0, 0, 0, 2))
-    object <- .setScanVariable(object, "countAlleleMissing", missing)
-    return(object)
-}
-
-.countGenotypeSnp <- function(object, path, sel, has_flipped, valid_flipped){
-    df <- apply.gdsn(path, 2, selection=sel, as.is="list",
-                     FUN=function(x){
-                         x <- factor(x, 0:3)
-                         return(as.integer(table(x)))
-                     })
-    df <- matrix(unlist(df), 4)
-
-    if(has_flipped){
-        tmp <- df[1, valid_flipped]
-        df[1, valid_flipped] <- df[3, valid_flipped]
-        df[3, valid_flipped] <- tmp
+.countGeno <- function(object, node, margin, slotid){
+    ploidy <- attributes(slot(object, "sample"))[["ploidy"]]
+    sel <- list(rep(TRUE, ploidy), validSam(object), validMar(object))
+    out <- apply.gdsn(index.gdsn(object, node), margin, count_geno, sel, "list")
+    out <- do.call("rbind", out)
+    if(margin == 2){
+        df <- matrix(NA, nsam(object, FALSE), 7)
+        df[validSam(object), ] <- out
+    } else {
+        df <- matrix(NA, nmar(object, FALSE), 7)
+        df[validMar(object), ] <- out
     }
-    tmp <- matrix(NA, 4, nsnp(object, FALSE))
-    tmp[, getValidSnp(object)] <- df
-    df <- tmp
-
-    object <- .setSnpVariable(object, "countGenoRef", df[3,])
-    object <- .setSnpVariable(object, "countGenoHet", df[2,])
-    object <- .setSnpVariable(object, "countGenoAlt", df[1,])
-    object <- .setSnpVariable(object, "countGenoMissing", df[4,])
-    ref_allele <- colSums(df * c(0, 1, 2, 0))
-    object <- .setSnpVariable(object, "countAlleleRef", ref_allele)
-    alt_allele <- colSums(df * c(2, 1, 0, 0))
-    object <- .setSnpVariable(object, "countAlleleAlt", alt_allele)
-    missing <- colSums(df * c(0, 0, 0, 2))
-    object <- .setSnpVariable(object, "countAlleleMissing", missing)
+    slot(object, slotid)$countGenoRef <- df[, 1]
+    slot(object, slotid)$countGenoHet <- df[, 2]
+    slot(object, slotid)$countGenoAlt <- df[, 3]
+    slot(object, slotid)$countGenoMissing <- df[, 4]
+    slot(object, slotid)$countAlleleRef <- df[, 5]
+    slot(object, slotid)$countAlleleAlt <- df[, 6]
+    slot(object, slotid)$countAlleleMissing <- df[, 7]
     return(object)
 }
 
 ## Calculate the numbers of reads of each allele per marker and per sample.
+#' SeqArray seqSetFilter
 #' @rdname countRead
 setMethod("countRead",
           "GbsrGenotypeData",
-          function(object, target, node){
-              node <- match.arg(node,
-                                c("raw",
-                                  "data",
-                                  "filt.data"))
-              if(node == "raw"){node <- "data"}
-              path <- paste0("annotation/format/AD/", node)
-              if(.existGdsNode(object, path)){
-                  path <- .getNodeIndex(object, path)
+          function(object, target, node, q){
+              node <- match.arg(node, c("raw", "filt"))
+              if(node == "raw"){node <- "annotation/format/AD"}
+              if(node == "filt"){node <- "annotation/format/FAD"}
+
+              if(!exist.gdsn(object, node)){
+                  stop("Nothing to return.",
+                       " Run setCallFilter() if needed.")
               }
 
-              valid_markers <- getValidSnp(object)
-              valid_scans <- getValidScan(object)
+              seqSetFilter(object, validMar(object), validSam(object),
+                           action = "push+intersect", verbose = FALSE)
 
-              has_flipped <- hasFlipped(object)
-              if(has_flipped){
-                  valid_flipped <- getFlipped(object, TRUE)
-              }
+              tot_read <- seqApply(object, node, sum, "by.sample", "integer")
 
-              sel <- list(valid_scans, rep(valid_markers, each=2))
               # Counts per sample
-              if(target %in% c("both", "scan")){
-                  object <- .countReadScan(object,
-                                           path,
-                                           sel,
-                                           has_flipped,
-                                           valid_flipped)
+              if(target %in% c("both", "sample")){
+                  object <- .countRead(object, node, "by.sample", "sample",
+                                       tot_read, q)
               }
 
               # Counts per marker
-              if(target %in% c("both", "snp")){
-                  object <- .countReadSnp(object,
-                                          path,
-                                          sel,
-                                          has_flipped,
-                                          valid_flipped)
+              if(target %in% c("both", "marker")){
+                  object <- .countRead(object, node, "by.variant", "marker",
+                                       tot_read, q)
               }
+
+              seqSetFilter(object, action = "pop", verbose = FALSE)
               return(object)
           })
 
-.countReadScan <- function(object, path, sel, has_flipped, valid_flipped){
-    df <- apply.gdsn(path, 1, selection=sel, as.is="list",
-                     FUN=function(x){
-                         ref <- x[c(TRUE, FALSE)]
-                         alt <- x[c(FALSE, TRUE)]
-                         if(has_flipped){
-                             tmp <- ref[valid_flipped]
-                             ref[valid_flipped] <- alt[valid_flipped]
-                             alt[valid_flipped] <- tmp
-                         }
-
-                         return(c(sum(ref), sum(alt)))
-                     })
-    df <- do.call("rbind", df)
-    tmp <- rep(NA, nscan(object, FALSE))
-    tmp[getValidScan(object)] <- df[, c(TRUE, FALSE)]
-    object <- .setScanVariable(object, "countReadRef", tmp)
-
-    tmp <- rep(NA, nscan(object, FALSE))
-    tmp[getValidScan(object)] <- df[, c(FALSE, TRUE)]
-    object <- .setScanVariable(object, "countReadAlt", tmp)
-    return(object)
-}
-
-.countReadSnp <- function(object, path, sel, has_flipped, valid_flipped){
-    df <- apply.gdsn(path, 2, sum, sel, "list")
-    df <- unlist(df)
-
-    if(has_flipped){
-        valid_flipped <- rep(valid_flipped, each=2)
-        tmp <- df[valid_flipped]
-        ref <- tmp[c(TRUE, FALSE)]
-        tmp[c(TRUE, FALSE)] <- tmp[c(FALSE, TRUE)]
-        tmp[c(FALSE, TRUE)] <- ref
-        df[valid_flipped] <- tmp
+#' @importFrom SeqArray seqApply
+.countRead <- function(object, node, margin, slotid, tot_read, q){
+    if(margin == "by.sample"){
+        tot_read <- 0
     }
-
-    tmp <- rep(NA, nsnp(object, FALSE))
-    tmp[getValidSnp(object)] <- df[c(TRUE, FALSE)]
-    object <- .setSnpVariable(object, "countReadRef", tmp)
-
-    tmp <- rep(NA, nsnp(object, FALSE))
-    tmp[getValidSnp(object)] <- df[c(FALSE, TRUE)]
-    object <- .setSnpVariable(object, "countReadAlt", tmp)
-    return(object)
-}
-
-## Calculate mean, SD, and quantile values of normalized allele read counts
-## per marker and per sample.
-#' @rdname calcReadStats
-setMethod("calcReadStats",
-          "GbsrGenotypeData",
-          function(object, target, q){
-              .gds_decomp(object)
-              on.exit({
-                  .gds_comp(object)
-              })
-
-              valid_markers <- getValidSnp(object)
-              valid_scans <- getValidScan(object)
-              has_flipped <- hasFlipped(object)
-              if(has_flipped){
-                  valid_flipped <- getFlipped(object, TRUE)
-              }
-
-              # Calculate normarized allele read counts (reads per million).
-              object <- .calcNormRead(object)
-              path <- .getNodeIndex(object, "annotation/format/AD/norm")
-              sel <- list(valid_scans, rep(valid_markers, each=2))
-              # read dist per sample
-              if(target %in% c("both", "scan")){
-                  object <- .calcReadStatsScan(object,
-                                               path,
-                                               sel,
-                                               has_flipped,
-                                               valid_flipped,
-                                               q)
-              }
-
-              # Counts per marker
-              if(target %in% c("both", "snp")){
-                  object <- .calcReadStatsSnp(object,
-                                              path,
-                                              sel,
-                                              has_flipped,
-                                              valid_flipped,
-                                              q)
-              }
-
-              return(object)
-          })
-
-#' @importFrom gdsfmt setdim.gdsn
-.calcNormRead <- function(object){
-    ad_data_node <- .getNodeIndex(object, "annotation/format/AD/data")
-    ad_node <- .getNodeIndex(object, "annotation/format/AD")
-    tmp_node <- add.gdsn(ad_node, "tmp", storage="float32", replace=TRUE)
-
-    apply.gdsn(ad_data_node, 1, as.is="gdsnode", target.node=tmp_node,
-               FUN = function(x){
-                   denomi <- sum(x)
-                   if(denomi == 0){
-                       return(x)
-                   } else {
-                       return(x / denomi * 10^6)
-                   }
-               })
-    setdim.gdsn(tmp_node, objdesp.gdsn(ad_data_node)$dim[2:1])
-    norm_node <- add.gdsn(ad_node, "norm", storage="float32", replace=TRUE)
-    apply.gdsn(tmp_node, 1, as.is="gdsnode", target.node=norm_node, FUN = c)
-    setdim.gdsn(norm_node, objdesp.gdsn(ad_data_node)$dim)
-
-    return(object)
-}
-
-.calcReadStatsScan <- function(object,
-                               path,
-                               sel,
-                               has_flipped,
-                               valid_flipped,
-                               q){
-    df <- apply.gdsn(path, 1, selection=sel, as.is="list",
-                     FUN=function(x){
-                         ref <- x[c(TRUE, FALSE)]
-                         alt <-  x[c(FALSE, TRUE)]
-                         if(has_flipped){
-                             tmp <- ref[valid_flipped]
-                             ref[valid_flipped] <- alt[valid_flipped]
-                             alt[valid_flipped] <- tmp
-                         }
-                         ref[ref == 0] <- NA
-                         alt[alt == 0] <- NA
-                         return(c(mean(ref, na.rm=TRUE),
-                                  mean(alt, na.rm=TRUE),
-                                  sd(ref, na.rm=TRUE),
-                                  sd(alt, na.rm=TRUE),
-                                  quantile(ref, q, TRUE),
-                                  quantile(alt, q, TRUE)))}
-    )
-    df <- do.call("rbind", df)
-    tmp <- matrix(NA, nscan(object, FALSE), ncol(df))
-    tmp[getValidScan(object), ] <- df
-    df <- tmp
-
-    object <- .setScanVariable(object, "meanReadRef", df[, 1])
-    object <- .setScanVariable(object, "meanReadAlt", df[, 2])
-    object <- .setScanVariable(object, "sdReadRef", df[, 3])
-    object <- .setScanVariable(object, "sdReadAlt", df[, 4])
-    n_q <- length(q)
-    if(n_q != 0){
-        for(i in seq_len(n_q)){
-            object <- .setScanVariable(object, paste0("qtileReadRef", q[i]),
-                                       df[, 4 + i])
-            object <- .setScanVariable(object, paste0("qtileReadAlt", q[i]),
-                                       df[, 4 + n_q + i])
-        }
+    out <- seqApply(object, node, count_read, margin, "list",
+                    tot_read = tot_read)
+    out <- do.call("rbind", out)
+    if(margin == "by.sample"){
+        df <- matrix(NA, nsam(object, FALSE), 8)
+        df[validSam(object), ] <- out
+    } else {
+        df <- matrix(NA, nmar(object, FALSE), 8)
+        df[validMar(object), ] <- out
     }
-    return(object)
-}
-
-.calcReadStatsSnp <- function(object,
-                              path,
-                              sel,
-                              has_flipped,
-                              valid_flipped,
-                              q){
-    df <- apply.gdsn(path, 2, selection=sel, as.is="list",
-                     FUN = function(x){
-                         x[x == 0] <- NA
-                         return(c(mean(x, na.rm=TRUE),
-                                  sd(x, na.rm=TRUE),
-                                  quantile(x, q, TRUE)))
-                     }
-    )
-    df <- do.call("rbind", df)
-    tmp <- matrix(NA, nsnp(object, FALSE) * 2, ncol(df))
-    tmp[rep(getValidSnp(object), each=2), ] <- df
-    df <- tmp
-
-    ## Summarize allelic read counts
-    if(has_flipped){
-        valid_flipped <- rep(valid_flipped, each=2)
-        tmp <- df[valid_flipped,]
-        ref <- tmp[c(TRUE, FALSE),]
-        tmp[c(TRUE, FALSE),] <- tmp[c(FALSE, TRUE),]
-        tmp[c(FALSE, TRUE),] <- ref
-        df[valid_flipped,] <- tmp
-    }
-
-    object <- .setSnpVariable(object, "meanReadRef", df[c(TRUE, FALSE), 1])
-    object <- .setSnpVariable(object, "meanReadAlt", df[c(FALSE, TRUE), 1])
-    object <- .setSnpVariable(object, "sdReadRef", df[c(TRUE, FALSE), 2])
-    object <- .setSnpVariable(object, "sdReadAlt", df[c(FALSE, TRUE), 2])
-    n_q <- length(q)
-    if(n_q != 0){
-        for(i in seq_len(n_q)){
-            object <- .setSnpVariable(object, paste0("qtileReadRef", q[i]),
-                                      df[c(TRUE, FALSE), 2 + i])
-            object <- .setSnpVariable(object, paste0("qtileReadAlt", q[i]),
-                                      df[c(FALSE, TRUE), 2 + i])
-        }
-    }
+    slot(object, slotid)$countReadRef <- df[, 1]
+    slot(object, slotid)$countReadAlt <- df[, 2]
+    slot(object, slotid)$meanReadRef <- df[, 3]
+    slot(object, slotid)$meanReadAlt <- df[, 4]
+    slot(object, slotid)$sdReadRef <- df[, 5]
+    slot(object, slotid)$sdReadAlt <- df[, 6]
+    slot(object, slotid)$medianReadRef <- df[, 7]
+    slot(object, slotid)$medianReadAlt <- df[, 8]
     return(object)
 }
 
@@ -1668,8 +987,8 @@ setMethod("calcReadStats",
 setMethod("thinMarker",
           "GbsrGenotypeData",
           function(object, range){
-              if(!hasSnpVariable(object, "countGenoMissing")){
-                  stop('Run countGenotype first.', call. = FALSE)
+              if(is.null(slot(object, "marker")[["countGenoMissing"]])){
+                  stop('Run countGenotype() first.', call. = FALSE)
               }
 
               if(!{is.numeric(range) & length(range) == 1 & range >= 0}){
@@ -1677,44 +996,20 @@ setMethod("thinMarker",
                        call. = FALSE)
               }
 
-              missing_count <- getCountGenoMissing(object, "snp")
+              missing_count <- slot(object, "marker")[["countGenoMissing"]]
 
-              chr <- getChromosome(object)
+              chr <- as.integer(factor(getChromosome(object)))
               pos <- getPosition(object)
-              n_snp <- nsnp(object)
-              valid <- rep(TRUE, n_snp)
-              i <- 1
-              j <- 2
-              while (TRUE){
-                  if(chr[i] == chr[j]){
-                      mar1 <- pos[i]
-                      mar2 <- pos[j]
-                      if(mar2 - mar1 <= range){
-                          if(missing_count[i] <= missing_count[j]){
-                              valid[j] <- FALSE
-                              j <- j + 1
-                          } else {
-                              valid[i] <- FALSE
-                              i <- j
-                              j <- j + 1
-                          }
-                      } else {
-                          i <- j
-                          j <- j + 1
-                      }
-                  } else {
-                      i <- j
-                      j <- j + 1
-                  }
-                  if(j > n_snp){
-                      break
-                  }
-              }
-              object <- setValidSnp(object, update=valid)
+              out <- thinout_marker(chr, pos, missing_count, range)
+              cur_valid <- validMar(object)
+              cur_valid[cur_valid] <- out
+              validMar(object) <- cur_valid
               return(object)
           })
 
 ## Filter out genotype calls meet the criteria.
+#' @importFrom gdsfmt put.attr.gdsn
+#' @importFrom SeqArray seqOptimize
 #' @rdname setCallFilter
 setMethod("setCallFilter",
           "GbsrGenotypeData",
@@ -1722,343 +1017,149 @@ setMethod("setCallFilter",
                    dp_count,
                    ref_count,
                    alt_count,
-                   norm_dp_count,
-                   norm_ref_count,
-                   norm_alt_count,
-                   scan_dp_qtile,
-                   scan_ref_qtile,
-                   scan_alt_qtile,
-                   snp_dp_qtile,
-                   snp_ref_qtile,
-                   snp_alt_qtile){
+                   dp_qtile,
+                   ref_qtile,
+                   alt_qtile){
 
-              .gds_decomp(object)
-              .initFilt(object)
+              cft_node <- addfolder.gdsn(index.gdsn(object,
+                                                    "annotation/format"),
+                                         "CFT", replace = TRUE)
+              add.gdsn(cft_node, "data", 0L, "uint8",
+                       c(nsam(object, FALSE), nmar(object, FALSE)),
+                       replace = TRUE)
+              put.attr.gdsn(cft_node, "Number", "1")
+              put.attr.gdsn(cft_node, "Type", "Integer")
+              put.attr.gdsn(cft_node, "Description",
+                            "Call filter information generated by GBScleanR")
 
               ## Quantile filtering on each genotype call
-              filt_list <- list(dp_count,
-                                ref_count,
-                                alt_count,
-                                norm_dp_count,
-                                norm_ref_count,
-                                norm_alt_count,
-                                scan_dp_qtile,
-                                scan_ref_qtile,
-                                scan_alt_qtile,
-                                snp_dp_qtile,
-                                snp_ref_qtile,
-                                snp_alt_qtile)
-
-              check <- .makeCallFilter(object, filt_list)
+              filt_list <- list(dp_count = dp_count, ref_count = ref_count,
+                                alt_count = alt_count, dp_qtile = dp_qtile,
+                                ref_qtile = ref_qtile, alt_qtile = alt_qtile)
+              .checkCallArgValid(filt_list)
+              for(i in which(validSam(object))){
+                  .callFilterScan(object, i, filt_list)
+              }
 
               # Generate filtered AD data
-              if(check){
-                  .makeCallFilterData(object)
-                  object <- .setGenotypeVar(object, "filt.genotype")
-              }
-              .gds_decomp(object)
-              .gds_comp(object)
+              .makeCallFilterData(object)
+
+              closeGDS(object, verbose = FALSE)
+              seqOptimize(object$filename, "by.sample",
+                          c("FAD", "FGT", "CFT"), verbose = FALSE)
+              object <- reopenGDS(object)
               return(object)
           })
 
-.initFilt <- function(object){
-    valdim <- c(nscan(object, FALSE), nsnp(object, FALSE))
-    add.gdsn(.getGdsfmtObj(object),
-             "callfilt",
-             0L,
-             "uint8",
-             valdim,
-             replace=TRUE)
-}
-
 .checkCallArgValid <- function(filt_list){
-    if(!{is.numeric(filt_list$dp_count) & length(filt_list$dp_count) == 2 &
-            all(filt_list$dp_count >= 0)}){
-        stop("dp_count should be two numbers greater than zero.",
-             call. = FALSE)
-    } else if(filt_list$dp_count[1] > filt_list$dp_count[2]){
-        stop("dp_count[1] should be smaller than dp_count[2].",
-             call. = FALSE)
+    check <- FALSE
+    for(i in names(filt_list)){
+        if(grepl("count", i)){
+            if(!{is.numeric(filt_list[[i]]) & length(filt_list[[i]]) == 2 &
+                    all(filt_list[[i]] >= 0)}){
+                stop(i, " should be two numbers greater than zero.",
+                     call. = FALSE)
+            } else if(filt_list[[i]][1] > filt_list[[i]][2]){
+                stop(i, "[1] should be smaller than", i, "[2].", call. = FALSE)
+            }
+            check <- check | any(filt_list[[i]] != c(0, Inf))
+        }
+        if(grepl("qtile", i)){
+            if(!{is.numeric(filt_list[[i]]) &
+                    length(filt_list[[i]]) == 2 &
+                    all(filt_list[[i]] <= 1) &
+                    all(filt_list[[i]] >= 0)}){
+                stop(i, " should be two numbers in [0-1].", call. = FALSE)
+            } else if(filt_list[[i]][1] > filt_list[[i]][2]){
+                stop(i, "[1] should be smaller than", i, "[2].", call. = FALSE)
+            }
+            check <- check | any(filt_list[[i]] != c(0, 1))
+        }
     }
-    if(!{is.numeric(filt_list$ref_count) & length(filt_list$ref_count) == 2 &
-            all(filt_list$ref_count >= 0)}){
-        stop("ref_count should be two numbers greater than zero.",
-             call. = FALSE)
-    } else if(filt_list$ref_count[1] > filt_list$ref_count[2]){
-        stop("ref_count[1] should be smaller than ref_count[2].",
-             call. = FALSE)
-    }
-    if(!{is.numeric(filt_list$alt_count) & length(filt_list$alt_count) == 2 &
-            all(filt_list$alt_count >= 0)}){
-        stop("alt_count should be two numbers greater than zero.",
-             call. = FALSE)
-    } else if(filt_list$alt_count[1] > filt_list$alt_count[2]){
-        stop("alt_count[1] should be smaller than alt_count[2].",
-             call. = FALSE)
-    }
-    if(!{is.numeric(filt_list$norm_dp_count) &
-            length(filt_list$norm_dp_count) == 2 &
-            all(filt_list$norm_dp_count >= 0)}){
-        stop("norm_dp_count should be two numbers greater than zero.",
-             call. = FALSE)
-    } else if(filt_list$norm_dp_count[1] > filt_list$norm_dp_count[2]){
-        stop("norm_dp_count[1] should be smaller than norm_dp_count[2].",
-             call. = FALSE)
-    }
-    if(!{is.numeric(filt_list$norm_ref_count) &
-            length(filt_list$norm_ref_count) == 2 &
-            all(filt_list$norm_ref_count >= 0)}){
-        stop("norm_ref_count should be two numbers greater than zero.",
-             call. = FALSE)
-    } else if(filt_list$norm_ref_count[1] > filt_list$norm_ref_count[2]){
-        stop("norm_ref_count[1] should be smaller than norm_ref_count[2].",
-             call. = FALSE)
-    }
-    if(!{is.numeric(filt_list$norm_alt_count) &
-            length(filt_list$norm_alt_count) == 2 &
-            all(filt_list$norm_alt_count >= 0)}){
-        stop("norm_alt_count should be two numbers greater than zero.",
-             call. = FALSE)
-    } else if(filt_list$norm_alt_count[1] > filt_list$norm_alt_count[2]){
-        stop("norm_alt_count[1] should be smaller than norm_alt_count[2].",
-             call. = FALSE)
-    }
-    if(!{is.numeric(filt_list$scan_dp_qtile) &
-            length(filt_list$scan_dp_qtile) == 2 &
-            all(filt_list$scan_dp_qtile <= 1) & all(filt_list$scan_dp_qtile >= 0)}){
-        stop("scan_dp_qtile should be two numbers in [0-1].",
-             call. = FALSE)
-    } else if(filt_list$scan_dp_qtile[1] > filt_list$scan_dp_qtile[2]){
-        stop("scan_dp_qtile[1] should be smaller than scan_dp_qtile[2].",
-             call. = FALSE)
-    }
-    if(!{is.numeric(filt_list$scan_ref_qtile) &
-            length(filt_list$scan_ref_qtile) == 2 &
-            all(filt_list$scan_ref_qtile <= 1) &
-            all(filt_list$scan_ref_qtile >= 0)}){
-        stop("scan_ref_qtile should be two numbers in [0-1].",
-             call. = FALSE)
-    } else if(filt_list$scan_ref_qtile[1] > filt_list$scan_ref_qtile[2]){
-        stop("scan_ref_qtile[1] should be smaller than scan_ref_qtile[2].",
-             call. = FALSE)
-    }
-    if(!{is.numeric(filt_list$scan_alt_qtile) &
-            length(filt_list$scan_alt_qtile) == 2 &
-            all(filt_list$scan_alt_qtile <= 1) &
-            all(filt_list$scan_alt_qtile >= 0)}){
-        stop("scan_alt_qtile should be two numbers in [0-1].",
-             call. = FALSE)
-    } else if(filt_list$scan_alt_qtile[1] > filt_list$scan_alt_qtile[2]){
-        stop("scan_alt_qtile[1] should be smaller than scan_alt_qtile[2].",
-             call. = FALSE)
-    }
-    if(!{is.numeric(filt_list$snp_dp_qtile) &
-            length(filt_list$snp_dp_qtile) == 2 &
-            all(filt_list$snp_dp_qtile <= 1) & all(filt_list$snp_dp_qtile >= 0)}){
-        stop("snp_dp_qtile should be two numbers in [0-1].",
-             call. = FALSE)
-    } else if(filt_list$snp_dp_qtile[1] > filt_list$snp_dp_qtile[2]){
-        stop("snp_dp_qtile[1] should be smaller than snp_dp_qtile[2].",
-             call. = FALSE)
-    }
-    if(!{is.numeric(filt_list$snp_ref_qtile) &
-            length(filt_list$snp_ref_qtile) == 2 &
-            all(filt_list$snp_ref_qtile <= 1) & all(filt_list$snp_ref_qtile >= 0)}){
-        stop("snp_ref_qtile should be two numbers in [0-1].",
-             call. = FALSE)
-    } else if(filt_list$snp_ref_qtile[1] > filt_list$snp_ref_qtile[2]){
-        stop("snp_ref_qtile[1] should be smaller than snp_ref_qtile[2].",
-             call. = FALSE)
-    }
-    if(!{is.numeric(filt_list$snp_alt_qtile) &
-            length(filt_list$snp_alt_qtile) == 2 &
-            all(filt_list$snp_alt_qtile <= 1) & all(filt_list$snp_alt_qtile >= 0)}){
-        stop("snp_alt_qtile should be two numbers in [0-1].",
-             call. = FALSE)
-    } else if(filt_list$snp_alt_qtile[1] > filt_list$snp_alt_qtile[2]){
-        stop("snp_alt_qtile[1] should be smaller than snp_alt_qtile[2].",
-             call. = FALSE)
+    if(!check){
+        stop("Nothing to filter out. Check the filtering criteria.")
     }
 }
 
-.makeCallFilter <- function(object,
-                            filt_list){
-    check1 <- any(vapply(seq_len(9), FUN.VALUE=logical(1), FUN=function(i){
-        if(i <= 6){
-            return(any(filt_list[[i]] != c(0, Inf)))
-        } else if(i <= 9){
-            return(any(filt_list[[i]] != c(0, 1)))
-        }
-    }))
 
-    if(check1){
-        for(i in which(getValidScan(object))){
-            .callFilterScan(object, i, filt_list)
-        }
-        set_filt <- TRUE
-
-    } else {
-        set_filt <- FALSE
-    }
-
-    check2 <- any(vapply(seq(10, 12), FUN.VALUE=logical(1), FUN=function(i){
-        return(any(filt_list[[i]] != c(0, 1)))
-    }))
-
-    if(check2){
-        .callFilterSnp(object, filt_list)
-        set_filt <- set_filt | TRUE
-
-    } else {
-        set_filt <- set_filt | FALSE
-    }
-    return(set_filt)
-}
-
-#' @importFrom gdsfmt write.gdsn
+#' @importFrom gdsfmt write.gdsn read.gdsn
 .callFilterScan <- function(object, i, filt_list){
-    ad_data_node <- .getNodeIndex(object, "annotation/format/AD/data")
-    callfilt <- .getNodeIndex(object, "callfilt")
+    ad_data_node <- index.gdsn(object, "annotation/format/AD/data")
+    callfilt <- index.gdsn(object, "annotation/format/CFT/data")
     count_default = c(0, Inf)
     qtile_default = c(0, 1)
     x <- read.gdsn(ad_data_node, start = c(i, 1), count = c(1, -1))
 
-    valid_df <- matrix(TRUE, nsnp(object, FALSE), 9)
-
     ref <- x[c(TRUE, FALSE)]
     alt <- x[c(FALSE, TRUE)]
     dp <- ref + alt
-    invalid_snp <- !getValidSnp(object)
+    invalid_snp <- !validMar(object)
     ref[invalid_snp] <- NA
     alt[invalid_snp] <- NA
     dp[invalid_snp] <- NA
 
-    if(hasFlipped(object)){
-        flipped <- getFlipped(object, FALSE)
-        tmp <- ref[flipped]
-        ref[flipped] <- alt[flipped]
-        alt[flipped] <- tmp
-    }
     read_list <- list(dp, ref, alt)
 
-    for(j in seq_len(3)){
-        valid_df[, j] <- .calcSubFilter(read_list[[j]],
-                                        filt_list[[j]],
-                                        count_default,
-                                        TRUE,
-                                        TRUE)
-    }
-
-    for(j in 4:6){
-        denomi <- sum(x)
-        if(denomi == 0){
-            valid_df[, j] <- FALSE
-        }
-        reads <- read_list[[j-3]] / denomi * 10^6
-        valid_df[, j] <- .calcSubFilter(reads,
-                                        filt_list[[j]],
-                                        count_default,
-                                        TRUE,
-                                        TRUE)
-    }
-
-    for(j in 7:9){
-        if(any(filt_list[[j]] != qtile_default)){
-            threshold <- quantile(read_list[[j-6]][read_list[[j-6]] != 0],
-                                    filt_list[[j]][1:2],
-                                    TRUE)
-            valid_df[, j] <- .calcSubFilter(read_list[[j-6]],
-                                            threshold,
-                                            c(-1,-1),
+    valid_df <- matrix(TRUE, nmar(object, FALSE), 6)
+    for(j in 1:6){
+        if(j <= 3){
+            valid_df[, j] <- .calcSubFilter(read_list[[j]],
+                                            filt_list[[j]],
+                                            count_default,
                                             TRUE,
                                             TRUE)
-        }
-    }
-    x <- as.numeric(rowSums(valid_df) < 9)
-
-    i_callfilt <- read.gdsn(callfilt, start = c(i, 1), count = c(1, -1))
-    i_callfilt <- as.numeric(i_callfilt | x)
-    write.gdsn(callfilt, i_callfilt, c(i, 1),  c(1, -1))
-}
-
-.callFilterSnp <- function(object, filt_list){
-    ad_data_node <- .getNodeIndex(object, "annotation/format/AD/data")
-    callfilt <- .getNodeIndex(object, "callfilt")
-    qtile_default = c(0, 1)
-    for(i in which(getValidSnp(object))){
-        x <- read.gdsn(ad_data_node, start = c(1, i*2-1), count = c(-1, 2))
-        valid_df <- matrix(TRUE, nscan(object, FALSE), 3)
-
-        ref <- x[, c(TRUE, FALSE)]
-        alt <- x[, c(FALSE, TRUE)]
-        dp <- ref + alt
-        invalid_scan <- !getValidScan(object)
-        ref[invalid_scan] <- NA
-        alt[invalid_scan] <- NA
-        dp[invalid_scan] <- NA
-
-        if(hasFlipped(object)){
-            flipped <- getFlipped(object, FALSE)[i]
-            tmp <- ref[flipped]
-            ref[flipped] <- alt[flipped]
-            alt[flipped] <- tmp
-        }
-        read_list <- list(dp, ref, alt)
-
-        for(j in 10:12){
+        } else {
             if(any(filt_list[[j]] != qtile_default)){
-                threshold <- quantile(read_list[[j-9]][read_list[[j-9]] != 0],
-                                        filt_list[[j]][1:2],
-                                        TRUE)
-                valid_df[, j-9] <- .calcSubFilter(read_list[[j-9]],
-                                                  threshold,
-                                                  c(-1,-1),
-                                                  TRUE,
-                                                  TRUE)
+                threshold <- quantile(read_list[[j-3]][read_list[[j-3]] != 0],
+                                      filt_list[[j]][1:2],
+                                      TRUE)
+                valid_df[, j] <- .calcSubFilter(read_list[[j-3]],
+                                                threshold,
+                                                c(-1,-1),
+                                                TRUE,
+                                                TRUE)
             }
         }
-        x <- as.numeric(rowSums(valid_df) < 3)
-
-        i_callfilt <- read.gdsn(callfilt, start = c(1, i), count = c(-1, 1))
-        i_callfilt <- as.numeric(i_callfilt | x)
-        write.gdsn(callfilt, i_callfilt, c(1, i),  c(-1, 1))
     }
+    valid_v <- as.numeric(rowSums(valid_df) < 6)
+    write.gdsn(callfilt, valid_v, c(i, 1),  c(1, -1))
 }
 
-#' @importFrom gdsfmt assign.gdsn
+#' @importFrom gdsfmt assign.gdsn index.gdsn addfolder.gdsn add.gdsn objdesp.gdsn read.gdsn
 .makeCallFilterData <- function(object){
-    ad_node <- .getNodeIndex(object, "annotation/format/AD")
-    ad_data <- .getNodeIndex(object, "annotation/format/AD/data")
-    callfilt <- .getNodeIndex(object, "callfilt")
+    ad_data <- index.gdsn(object, "annotation/format/AD/data")
+    ad_index <- index.gdsn(object, "annotation/format/AD/@data")
+    fad <- addfolder.gdsn(index.gdsn(object, "annotation/format"),
+                          "FAD", replace = TRUE)
+    put.attr.gdsn(fad, "Number", "2")
+    put.attr.gdsn(fad, "Type", "Integer")
+    put.attr.gdsn(fad, "Description",
+                  "Filtered read counts generated by GBScleanR")
+    obj <- objdesp.gdsn(ad_data)
+    ad_filt_data <- add.gdsn(fad, "data", valdim = obj$dim, storage = "int64", )
+    ad_filt_index <- add.gdsn(fad, "@data", storage = "int32")
+    assign.gdsn(ad_filt_index, ad_index)
 
-    ad_filt_data <- add.gdsn(ad_node,
-                             "filt.data",
-                             storage="uint32",
-                             replace=TRUE)
-    assign.gdsn(ad_filt_data, ad_data)
+    gt_node <- index.gdsn(object, "genotype")
+    gt_data <-index.gdsn(object, "genotype/data")
+    fgt <- addfolder.gdsn(index.gdsn(object, "annotation/format"),
+                          "FGT", replace = TRUE)
+    obj <- objdesp.gdsn(gt_data)
+    gt_filt_data <- add.gdsn(fgt, "data", valdim = obj$dim, storage = "bit2")
 
-    gt_data <- .getNodeIndex(object, "genotype")
-
-    gt_filt_data <- add.gdsn(.getGdsfmtObj(object),
-                             "filt.genotype",
-                             storage="bit2",
-                             replace=TRUE)
-    assign.gdsn(gt_filt_data, gt_data)
-
-    n_scan <- nscan(object, FALSE)
-    n_snp <- nsnp(object, FALSE)
-    valid_scan_indexes <- which(getValidScan(object))
+    callfilt <- index.gdsn(object, "annotation/format/CFT/data")
+    valid_scan_indexes <- which(validSam(object))
     i_ad <- i_gt <- NULL
     for (i in valid_scan_indexes){
-        i_ad <- read.gdsn(ad_filt_data, c(i, 1), c(1, -1))
+        i_ad <- read.gdsn(ad_data, c(i, 1), c(1, -1))
         i_callfilt <- read.gdsn(callfilt, c(i, 1), c(1, -1))
         i_ad[rep(i_callfilt, each = 2) == 1] <- 0
         write.gdsn(ad_filt_data, i_ad, c(i, 1), c(1, -1))
         i_ad <- NULL
 
-        i_gt <- read.gdsn(gt_filt_data, c(i, 1), c(1, -1))
-        i_gt[i_callfilt == 1] <- 3
-        write.gdsn(gt_filt_data, i_gt, c(i, 1), c(1, -1))
+        i_gt <- read.gdsn(gt_data, c(1, i, 1), c(-1, 1, -1))
+        i_gt[, 1, i_callfilt == 1] <- 3
+        write.gdsn(gt_filt_data, i_gt, c(1, i, 1), c(-1, 1, -1))
         i_gt <- NULL
     }
 }
@@ -2108,8 +1209,8 @@ setMethod("setCallFilter",
 }
 
 ## Filtering on samples.
-#' @rdname setScanFilter
-setMethod("setScanFilter",
+#' @rdname setSamFilter
+setMethod("setSamFilter",
           "GbsrGenotypeData",
           function(object,
                    id,
@@ -2130,14 +1231,16 @@ setMethod("setScanFilter",
                                 dp = dp, mean_ref = mean_ref,
                                 mean_alt = mean_alt,
                                 sd_ref = sd_ref, sd_alt = sd_alt)
-              update <- .makeStatsFilter(object, filt_list, "scan")
-              object <- setValidScan(object, update=update)
+              out <- .makeStatsFilter(object, filt_list, "sample")
+              cur_valid <- validSam(object)
+              cur_valid[cur_valid] <- out
+              validSam(object) <- cur_valid
               return(object)
           })
 
 ## Filtering on markers.
-#' @rdname setSnpFilter
-setMethod("setSnpFilter",
+#' @rdname setMarFilter
+setMethod("setMarFilter",
           "GbsrGenotypeData",
           function(object,
                    id,
@@ -2156,8 +1259,10 @@ setMethod("setSnpFilter",
                                 maf = maf, ad_ref = ad_ref, ad_alt = ad_alt,
                                 dp = dp, mean_ref = mean_ref, mean_alt = mean_alt,
                                 sd_ref = sd_ref, sd_alt = sd_alt)
-              update <- .makeStatsFilter(object, filt_list, "snp")
-              object <- setValidSnp(object, update=update)
+              out <- .makeStatsFilter(object, filt_list, "marker")
+              cur_valid <- validMar(object)
+              cur_valid[cur_valid] <- out
+              validMar(object) <- cur_valid
               return(object)
           })
 
@@ -2240,14 +1345,14 @@ setMethod("setSnpFilter",
 .makeStatsFilter <- function(object, filt_list, target){
     .checkArgValid(filt_list)
 
-    if(target == "scan"){
+    if(target == "sample"){
         if(!is.character(filt_list$id)){
             stop("id should be a character vector.", call. = FALSE)
         }
         if(all(filt_list$id == "")){
-            v <- rep(TRUE, nscan(object, TRUE))
+            v <- rep(TRUE, nsam(object, TRUE))
         } else {
-            v <- !getScanID(object, TRUE) %in% filt_list$id
+            v <- !getSamID(object) %in% filt_list$id
         }
 
     } else {
@@ -2255,9 +1360,9 @@ setMethod("setSnpFilter",
             stop("id should be a integer vector.", call. = FALSE)
         }
         if(all(is.na(filt_list$id))){
-            v <- rep(TRUE, nsnp(object, TRUE))
+            v <- rep(TRUE, nmar(object, TRUE))
         } else {
-            v <- !getSnpID(object, TRUE) %in% filt_list$id
+            v <- !getMarID(object) %in% filt_list$id
         }
     }
 
@@ -2310,7 +1415,6 @@ setMethod("setSnpFilter",
 
 ## Filtering on marker based on quality scores.
 #' @rdname setInfoFilter
-#' @importFrom Biobase pData pData<-
 setMethod("setInfoFilter",
           "GbsrGenotypeData",
           function(object,
@@ -2326,8 +1430,10 @@ setMethod("setInfoFilter",
                                 readposranksum = readposranksum,
                                 baseqranksum = baseqranksum)
               .checkInfoArgValid(filt_list)
-              update <- .makeInfoFilter(object, filt_list)
-              object <- setValidSnp(object, update=update)
+              out <- .makeInfoFilter(object, filt_list)
+              cur_valid <- validMar(object)
+              cur_valid[cur_valid] <- out
+              validMar(object) <- cur_valid
               return(object)
           })
 
@@ -2378,7 +1484,7 @@ setMethod("setInfoFilter",
 }
 
 .makeInfoFilter <- function(object, filt_list){
-    v <- rep(TRUE, nsnp(object))
+    v <- rep(TRUE, nmar(object))
     # Filtering for samples.
     ## MQ
     v <- v & .calcSubFilter(getInfo(object, "MQ"),
@@ -2415,360 +1521,174 @@ setMethod("setInfoFilter",
 ## Functions to reset filters.
 
 ## Reset filters on samples
-#' @rdname resetScanFilters
-setMethod("resetScanFilters",
+#' @rdname resetSamFilter
+setMethod("resetSamFilter",
           "GbsrGenotypeData",
           function(object){
-              return(setValidScan(object, new=TRUE))
-          })
-
-## Reset filters on markers.
-#' @rdname resetSnpFilters
-setMethod("resetSnpFilters",
-          "GbsrGenotypeData",
-          function(object){
-              return(setValidSnp(object, new=TRUE))
-          })
-
-## Reset all filters.
-#' @rdname resetFilters
-setMethod("resetFilters",
-          "GbsrGenotypeData",
-          function(object){
-              object <- setRawGenotype(object)
-              object <- resetScanFilters(object)
-              object <- resetSnpFilters(object)
+              slot(object, "sample")[["valid"]] <- TRUE
               return(object)
           })
 
-## Set raw data as getnotype, which also means reseting
-## filters on genotype calls and read counts made by setCallFilter().
-#' @rdname setRawGenotype
-setMethod("setRawGenotype",
+## Reset filters on markers.
+#' @rdname resetMarFilter
+setMethod("resetMarFilter",
           "GbsrGenotypeData",
           function(object){
-              return(.setGenotypeVar(object, "genotype"))
+              slot(object, "marker")[["valid"]] <- TRUE
+              return(object)
           })
 
-## Set filtered data as genotype, which also means set again the filter
-## which has been made by setCallFilter().
-#' @rdname setFiltGenotype
-setMethod("setFiltGenotype",
+## Reset all filters.
+#' @importFrom SeqArray seqDelete
+#' @importFrom gdsfmt exist.gdsn
+#' @rdname resetCallFilter
+setMethod("resetCallFilter",
           "GbsrGenotypeData",
           function(object){
-              return(.setGenotypeVar(object, "filt.genotype"))
+              if(exist.gdsn(object, "annotation/format/CFT/data")){
+                  seqDelete(object, fmt.var = c("CFT", "FGT", "FAD"),
+                            verbose = FALSE)
+              }
+              return(object)
           })
 
-###############################################################################
-## Function to create a GDS file of subset data.
-
-## Create a new GDS file with subset data.
-#' @importMethodsFrom GWASTools hasSnpVariable
-#' @importFrom gdsfmt openfn.gds closefn.gds
-#' @rdname subsetGDS
-setMethod("subsetGDS",
+## Reset all filters.
+#' @rdname resetFilter
+setMethod("resetFilter",
           "GbsrGenotypeData",
-          function(object,
-                   out_fn,
-                   snp_incl,
-                   scan_incl,
-                   incl_parents,
-                   verbose){
-              if(missing(snp_incl)){
-                  snp_incl <- getValidSnp(object)
-              } else {
-                  stopifnot(nsnp(object, FALSE) == length(snp_incl))
-              }
-
-              if(missing(scan_incl)){
-                  scan_incl <- getValidScan(object)
-                  if(incl_parents){
-                      if(hasScanVariable(object, "parents")){
-                          scan_incl[getParents(object, TRUE)] <- TRUE
-                      }
-                  }
-              } else {
-                  stopifnot(nscan(object, FALSE) == length(scan_incl))
-              }
-
-              n_scan <- nscan(object, FALSE)
-              n_snp <- nsnp(object, FALSE)
-              no_scan <- n_scan == sum(scan_incl)
-              no_snp <- n_snp == sum(snp_incl)
-              if(no_scan & no_snp){
-                  if(verbose){
-                      message("All markers and sampels are valid.")
-                      message("Nothing to be subset.")
-                  }
-              }
-
-              closeGDS(object, FALSE)
-              if(!file.copy(.getGDSFileName(object), out_fn)){
-                  ans <- readline("Are you sure to overwrite the existing file?(y/n)")
-                  while(ans != "y"){
-                      if(ans == "n"){
-                          stop("Subsetting was cancelled.",
-                               out_fn, call. = FALSE)
-                      }
-                  }
-                  file.copy(.getGDSFileName(object), out_fn, TRUE)
-              }
-              newgds <- openfn.gds(out_fn, FALSE)
-              on.exit({closefn.gds(newgds)})
-
-              all_data_node <- ls.gdsn(newgds,
-                                       recursive = TRUE,
-                                       include.dirs = FALSE)
-              for (i_node in all_data_node){
-                  if(grepl("annotation/format", i_node)){
-                      if(!grepl("data", i_node)){
-                          next
-                      }
-                  }
-                  newgds_i_node <- index.gdsn(newgds, i_node)
-                  i_desc <- objdesp.gdsn(newgds_i_node)
-                  if(any(i_desc$dim == 0)){
-                      next
-                  }
-
-                  if(length(i_desc$dim) == 1){
-                      check <- sum(which(c(n_scan, n_snp) %in% i_desc$dim))
-                      if(check == 1){
-                          assign.gdsn(newgds_i_node, seldim=list(which(scan_incl)))
-
-                      } else if(check == 2){
-                          assign.gdsn(newgds_i_node, seldim=list(which(snp_incl)))
-                      }
-
-                  } else if(length(i_desc$dim) == 2){
-                      if(i_desc$name == "parents.genotype"){
-                          times <- i_desc$dim[2] / n_snp
-                          seldim <- list(seq_len(i_desc$dim[1]),
-                                         which(rep(snp_incl, each=times)))
-                          assign.gdsn(newgds_i_node, seldim=seldim)
-
-                      } else {
-                          times <- i_desc$dim[2] / n_snp
-                          if(i_desc$dim[1] == n_scan){
-                              seldim <- list(which(scan_incl),
-                                             which(rep(snp_incl, each=times)))
-                          } else {
-                              seldim <- list(seq_len(i_desc$dim[1]),
-                                             which(rep(snp_incl, each=times)))
-                          }
-                          assign.gdsn(newgds_i_node, seldim=seldim)
-                      }
-                  }
-              }
-
-              .gds_comp(newgds)
-              closefn.gds(newgds)
-              on.exit({})
-
-              output <- loadGDS(newgds$filename, verbose=verbose)
-              if(.getGenotypeVar(object) == "filt.genotype"){
-                  output <- setFiltGenotype(output)
-              }
-              return(output)
+          function(object){
+              object <- resetCallFilter(object)
+              object <- resetSamFilter(object)
+              object <- resetMarFilter(object)
+              return(object)
           })
 
 ###############################################################################
 ## Function to output a VCF file data stored in the GDS file.
 
 #' @rdname gbsrGDS2VCF
-#' @importFrom gdsfmt closefn.gds
+#' @importFrom gdsfmt ls.gdsn index.gdsn
+#' @importFrom SeqArray seqSetFilter
 setMethod("gbsrGDS2VCF",
           "GbsrGenotypeData",
           function(object,
                    out_fn,
-                   node,
-                   incl_parents){
-              gds_fn_tmp <- tempfile(fileext = "gds")
-              tmp_gds <- subsetGDS(object,
-                                   gds_fn_tmp,
-                                   incl_parents=incl_parents,
-                                   verbose=FALSE)
-              on.exit({
-                  closefn.gds(.getGdsfmtObj(tmp_gds))
-                  unlink(gds_fn_tmp)
-              }, TRUE)
+                   parents){
+              if(is.null(slot(object, "sample")[["parents"]])){
+                  parents <- FALSE
+                  warnings("No parents info.")
+              }
+              sam_sel <- validSam(object, parents = parents)
+              mar_sel <- validMar(object)
 
-              .gds_decomp(tmp_gds)
-              .replaceGDSdata(tmp_gds, node)
-              .insertDP(tmp_gds)
+              check <- .checkNodes(object)
+              if(any(check)){
+                  out_gds <- .modGDS(object, check)
+              } else {
+                  out_gds <- object
+              }
 
-              out_fn_tmp <- tempfile(fileext = "out.gds")
-              closefn.gds(.getGdsfmtObj(tmp_gds))
-              on.exit({unlink(gds_fn_tmp)})
-
-              seqSNP2GDS(.getGDSFileName(tmp_gds), out_fn_tmp,
-                         "none", FALSE, verbose=FALSE)
-              on.exit({unlink(out_fn_tmp)}, TRUE)
-
-              out_gds <- openfn.gds(out_fn_tmp, FALSE)
-              on.exit({closefn.gds(out_gds)}, TRUE)
-              tmp_gds <- openfn.gds(.getGDSFileName(tmp_gds), FALSE)
-              on.exit({closefn.gds(tmp_gds)}, TRUE)
-
-              .insertAnnot(tmp_gds, out_gds)
-              .formatAnnot(out_gds)
-              .insertHaplotype(tmp_gds, out_gds)
-              closefn.gds(out_gds)
-              on.exit({
-                  closefn.gds(tmp_gds)
-                  unlink(gds_fn_tmp)
-                  unlink(out_fn_tmp)
-              })
-
-              .checkDataLen(out_gds)
-
-              seqGDS2VCF(gdsfile = seqOpen(out_gds$filename),
-                         vcf.fn = out_fn,
-                         verbose = FALSE)
+              seqSetFilter(out_gds, mar_sel, sam_sel, action = "set",
+                           verbose = FALSE)
+              seqGDS2VCF(out_gds, out_fn, verbose = FALSE)
               return(out_fn)
           })
 
-#' @importFrom gdsfmt delete.gdsn openfn.gds closefn.gds
-.checkDataLen <- function(out_gds){
-    gds <- openfn.gds(out_gds$filename, readonly = FALSE)
-    geno_node <- .getNodeIndex(gds, "genotype/data")
-    data_dim <- objdesp.gdsn(geno_node)$dim
-    for(i in .getNodeList(gds, "annotation/info")){
-        i_gdsn <- .getNodeIndex(gds, i)
-        if(objdesp.gdsn(i_gdsn)$dim != data_dim[3]){
-            warning("The node ", i, " has invalid data length.")
-            delete.gdsn(i_gdsn, TRUE)
-        }
-    }
-
-    for(i in .getNodeList(gds, "annotation/format")){
-        i_gdsn <- .getNodeIndex(gds, i)
-        if(grepl("/tmp", i)){
-            delete.gdsn(i_gdsn, TRUE)
-        } else {
-            if(any(objdesp.gdsn(i_gdsn)$dim != data_dim[2:3])){
-                warning("The node ", i, " has invalid data length.")
-                delete.gdsn(i_gdsn, TRUE)
-            }
-        }
-    }
-    closefn.gds(gds)
+.checkNodes <- function(object){
+    check <- c(exist.gdsn(object, "annotation/info/PGT"),
+               exist.gdsn(object, "annotation/format/HAP"),
+               exist.gdsn(object, "annotation/format/CGT"),
+               exist.gdsn(object, "annotation/format/FGT"))
+    return(check)
 }
 
-.formatAnnot <- function(out_gds){
-    format_node_list <- .getNodeList(out_gds, "annotation/format")
-    format_node_list <- grep("/data$", format_node_list, value=TRUE)
-    for (gdsn_i in format_node_list){
-        node_data <- index.gdsn(out_gds, gdsn_i)
-        fld <- index.gdsn(out_gds, sub("/data$", "", gdsn_i))
-        tmp <- add.gdsn(fld, "tmp", storage="string32", replace=TRUE)
-        if(grepl("AD", gdsn_i)){
-            apply.gdsn(node_data, 1, as.is="gdsnode", target.node=tmp, FUN=function(x){
-                ref <- x[c(TRUE, FALSE)]
-                alt <- x[c(FALSE, TRUE)]
-                return(paste(ref, alt, sep = ","))
-            })
-        } else if(grepl("DP", gdsn_i)){
-            apply.gdsn(node_data, 1, as.is="gdsnode", target.node=tmp, FUN=c)
-        }
-        data_dim <- objdesp.gdsn(index.gdsn(out_gds, "genotype/data"))$dim
-        setdim.gdsn(tmp, data_dim[3:2])
-        node_data <- add.gdsn(fld, "data", storage="string32", replace=TRUE)
-        apply.gdsn(tmp, 1, c, as.is="gdsnode", target.node=node_data)
-        setdim.gdsn(node_data, data_dim[2:3])
+.modGDS <- function(object, check){
+    if(any(check)){
+        closeGDS(object)
+        tmp_gds <- tempfile("tmp",tempdir(), ".gds")
+        file.copy(object$filename, tmp_gds, overwrite = TRUE)
+        tmpgds <- seqOpen(tmp_gds, FALSE)
     }
-}
-
-.insertHaplotype <- function(tmp_gds, out_gds){
-    if(.existGdsNode(tmp_gds, "estimated.haplotype")){
-        hap_fld <- addfolder.gdsn(.getNodeIndex(out_gds, "annotation/format"),
-                                  "HAP")
-        put.attr.gdsn(hap_fld, "Number", "1")
-        put.attr.gdsn(hap_fld, "Type", "String")
-        put.attr.gdsn(hap_fld, "Description", "Haplotype estimated by GBScleanR")
-        hap_gdsn <- .getNodeIndex(tmp_gds, "estimated.haplotype")
-        hap_dim <- objdesp.gdsn(hap_gdsn)$dim
-        hap_dim[2] <- hap_dim[2] / 2
-        tmp_data <- add.gdsn(tmp_gds, "data", storage="string", replace=TRUE)
-        apply.gdsn(hap_gdsn, 1, as.is="gdsnode", target.node=tmp_data,
-                   FUN=function(x){
-                       x1 <- x[c(TRUE, FALSE)]
-                       x2 <- x[c(FALSE, TRUE)]
-                       return(paste(x1, x2, sep="|"))
-                   })
-        setdim.gdsn(tmp_data, hap_dim[2:1])
-        hap_data <- add.gdsn(hap_fld, "data", storage="string",
-                             valdim=c(hap_dim[1], 0), replace=TRUE)
-        apply.gdsn(tmp_data, 1, c, as.is="gdsnode", target.node=hap_data)
-
-        info_gdsn <- .getNodeIndex(out_gds, "annotation/info")
-        pgt_node <- add.gdsn(info_gdsn, "PGT", storage = "string", replace=TRUE)
-        put.attr.gdsn(pgt_node, "Number", ".")
-        put.attr.gdsn(pgt_node, "Type", "Integer")
-        put.attr.gdsn(pgt_node, "Description",
-                      "Genotype of each haplotype estimated by GBScleanR")
-
-        pgt_gdsn <- .getNodeIndex(tmp_gds, "parents.genotype")
-        apply.gdsn(pgt_gdsn, 2, as.is="gdsnode", target.node=pgt_node,
-                   FUN=function(x){
-                       return(paste(x, collapse=","))
-                   })
-    }
-}
-
-.insertDP <- function(tmp_gds){
-        dp_fld <- addfolder.gdsn(.getNodeIndex(tmp_gds, "annotation/format"),
-                                  "DP")
-        put.attr.gdsn(dp_fld, "Number", "1")
-        put.attr.gdsn(dp_fld, "Type", "Integer")
-        put.attr.gdsn(dp_fld, "Description", "Total Depth")
-        ad_node <- .getNodeIndex(tmp_gds, "annotation/format/AD/data")
-        ad_dim <- objdesp.gdsn(ad_node)$dim
-        ad_dim[2] <- ad_dim[2] / 2
-        tmp_data <- add.gdsn(dp_fld, "tmp", storage="int16", replace=TRUE)
-        apply.gdsn(ad_node, 1, as.is="gdsnode", target.node=tmp_data,
-                   FUN=function(x){
-                       x1 <- x[c(TRUE, FALSE)]
-                       x2 <- x[c(FALSE, TRUE)]
-                       return(x1 + x2)
-                   })
-        setdim.gdsn(tmp_data, ad_dim[2:1])
-        ad_data <- add.gdsn(dp_fld, "data", storage="int16",
-                             valdim=c(ad_dim[1], 0), replace=TRUE)
-        apply.gdsn(tmp_data, 1, c, as.is="gdsnode", target.node=ad_data)
-}
-
-.replaceGDSdata <- function(object, node){
-    id <- getScanID(object, valid = FALSE)
-    add.gdsn(.getGdsfmtObj(object),
-             "sample.id",
-             id,
-             "string",
-             replace=TRUE)
-
-    id <- getSnpID(object, valid = FALSE)
-    add.gdsn(.getGdsfmtObj(object),
-             "snp.id",
-             id,
-             "string",
-             replace=TRUE)
-
-    node <- match.arg(node, c("raw", "filt.genotype", "corrected.genotype"))
-    if(.existGdsNode(object, node)){
-        gt <- .getNodeIndex(object, "genotype")
-        gt_attr <- get.attr.gdsn(gt)
-        delete.gdsn(gt)
-        newgt <- .getNodeIndex(object, node)
-        rename.gdsn(newgt, "genotype")
-        put.attr.gdsn(newgt, names(gt_attr)[1], gt_attr[[1]])
-
-        if(node == "filt.genotype"){
-            ad <- .getNodeIndex(object, "annotation/format/AD/data")
-            delete.gdsn(ad)
-            newad <- .getNodeIndex(object, "annotation/format/AD/filt.data")
-            rename.gdsn(newad, "data")
+    if(check[1]){
+        data_gdsn <- index.gdsn(tmpgds, "annotation/info/PGT")
+        obj <- objdesp.gdsn(data_gdsn)
+        if(length(obj$dim) == 2){
+            tmp_gdsn <- add.gdsn(index.gdsn(tmpgds, "annotation/info"), "tmp",
+                                 storage = "string", replace = TRUE)
+            apply.gdsn(data_gdsn, 2, as.is = "gdsnode", target.node = tmp_gdsn,
+                       FUN = function(x){
+                           x[x == 3] <- "."
+                           return(paste(x, collapse = "|"))
+                       })
+            moveto.gdsn(tmp_gdsn, data_gdsn, "replace+rename")
+            fld_gdsn <- index.gdsn(tmpgds, "annotation/info/PGT")
+            put.attr.gdsn(fld_gdsn, "Number", "1")
+            put.attr.gdsn(fld_gdsn, "Type", "String")
+            put.attr.gdsn(fld_gdsn, "Description",
+                          "Estimated allele of parental haplotype by GBScleanR")
         }
     }
+    if(check[2]){
+        data_gdsn <- index.gdsn(tmpgds, "annotation/format/HAP/data")
+        obj <- objdesp.gdsn(data_gdsn)
+        if(length(obj$dim) == 3){
+            tmp_gdsn <- add.gdsn(index.gdsn(tmpgds, "annotation/format/HAP"), "tmp",
+                                 storage = "string", replace = TRUE)
+            apply.gdsn(data_gdsn, 3, as.is = "gdsnode", target.node = tmp_gdsn,
+                       FUN = function(x){
+                           x[x == 0] <- "."
+                           apply(x, 2, paste, collapse = "|")
+                       })
+            setdim.gdsn(tmp_gdsn, obj$dim[-1])
+            moveto.gdsn(tmp_gdsn, data_gdsn, "replace+rename")
+            fld_gdsn <- index.gdsn(tmpgds, "annotation/format/HAP")
+            put.attr.gdsn(fld_gdsn, "Number", "1")
+            put.attr.gdsn(fld_gdsn, "Type", "String")
+            put.attr.gdsn(fld_gdsn, "Description",
+                          "Estimated haplotype data by GBScleanR")
+        }
+    }
+    if(check[3]){
+        data_gdsn <- index.gdsn(tmpgds, "annotation/format/CGT/data")
+        obj <- objdesp.gdsn(data_gdsn)
+        if(length(obj$dim) == 3){
+            tmp_gdsn <- add.gdsn(index.gdsn(tmpgds, "annotation/format/CGT"), "tmp",
+                                 storage = "string", replace = TRUE)
+            apply.gdsn(data_gdsn, 3, as.is = "gdsnode", target.node = tmp_gdsn,
+                       FUN = function(x){
+                           x[x == 3] <- "."
+                           apply(x, 2, paste, collapse = "|")
+                       })
+            setdim.gdsn(tmp_gdsn, obj$dim[-1])
+            moveto.gdsn(tmp_gdsn, data_gdsn, "replace+rename")
+            fld_gdsn <- index.gdsn(tmpgds, "annotation/format/CGT")
+            put.attr.gdsn(fld_gdsn, "Number", "1")
+            put.attr.gdsn(fld_gdsn, "Type", "String")
+            put.attr.gdsn(fld_gdsn, "Description",
+                          "Corrected genotype data by GBScleanR")
+        }
+    }
+    if(check[4]){
+        data_gdsn <- index.gdsn(tmpgds, "annotation/format/FGT/data")
+        obj <- objdesp.gdsn(data_gdsn)
+        if(length(obj$dim) == 3){
+            tmp_gdsn <- add.gdsn(index.gdsn(tmpgds, "annotation/format/FGT"), "tmp",
+                                 storage = "string", replace = TRUE)
+            apply.gdsn(data_gdsn, 3, as.is = "gdsnode", target.node = tmp_gdsn,
+                       FUN = function(x){
+                           x[x == 3] <- "."
+                           apply(x, 2, paste, collapse = "|")
+                       })
+            setdim.gdsn(tmp_gdsn, obj$dim[-1])
+            moveto.gdsn(tmp_gdsn, data_gdsn, "replace+rename")
+            fld_gdsn <- index.gdsn(tmpgds, "annotation/format/FGT")
+            put.attr.gdsn(fld_gdsn, "Number", "1")
+            put.attr.gdsn(fld_gdsn, "Type", "String")
+            put.attr.gdsn(fld_gdsn, "Description",
+                          "Filtered genotype data by GBScleanR")
+        }
+    }
+    return(tmpgds)
 }
 
 ###############################################################################
@@ -2841,104 +1761,13 @@ setMethod("gbsrGDS2CSV",
                       geno <- matrix(geno, dim_geno[1], dim_geno[2])
                   }
                   geno <- rbind(chr, pos * bp2cm, geno)
-                  rownames(geno) <- c("Chr", "Pos", getScanID(object))
+                  rownames(geno) <- c("Chr", "Pos", getSamID(object))
                   write.table(geno, out_fn, quote = TRUE, row.names = TRUE,
                               col.names = FALSE, sep = ",")
               }
 
               return(out_fn)
           })
-
-################################################################################
-## Functions to modify GDS file.
-#' @rdname addScan
-#' @importFrom gdsfmt append.gdsn
-setMethod("addScan", "GbsrGenotypeData",
-          function(object, id, genotype, reads){
-              if(any(id == "")){
-                  stop("Please specify non empty sample id.")
-              }
-
-              if(any(id %in% getScanID(object, FALSE))){
-                  stop("Sample IDs must be unique.")
-              }
-
-              n_snp <- nsnp(object, FALSE)
-              if(length(id) == 1){
-                  if(!is.numeric(genotype)){
-                      stop("genotype can be an integer vector or matrix.")
-                  }
-                  if(!is.numeric(reads)){
-                      stop("reads can be an integer vector or matrix.")
-                  }
-                  message(length(id), " sample was given to add.")
-                  if(length(genotype) != n_snp){
-                      stop("The length of genotype should match",
-                           " with the number of marekrs.")
-                  }
-                  if(length(reads) != n_snp * 2){
-                      stop("The length of reads should match ",
-                           "with twice the number of marekrs.")
-                  }
-              }
-
-              if(length(id) > 1){
-                  if(!is.numeric(genotype)){
-                      stop("genotype can be an integer vector or matrix.")
-                  }
-                  if(!is.numeric(reads)){
-                      stop("reads can be an integer vector or matrix.")
-                  }
-                  message(length(id), " sample was given to add.")
-                  if(ncol(genotype) != n_snp){
-                      stop("The number of columns of genotype should match",
-                           " with the number of marekrs.")
-                  }
-                  if(ncol(reads) != n_snp * 2){
-                      stop("The number of columns of reads should match",
-                           " with twice the number of marekrs.")
-                  }
-                  if(length(id) != nrow(genotype) | length(id) != nrow(reads)){
-                      stop("The number of specified IDs and the numbers of ",
-                           "rows of genotype and reads should be same.")
-                  }
-              }
-
-              .gds_decomp(object)
-              append.gdsn(.getNodeIndex(object, "sample.id"), id)
-              gt_node <- .getNodeIndex(object, "genotype")
-              tmp <- read.gdsn(gt_node)
-              tmp <- rbind(tmp, genotype)
-              gt_attr <- get.attr.gdsn(gt_node)
-              gt_node <- add.gdsn(.getGdsfmtObj(object),
-                                  "genotype",
-                                  tmp,
-                                  "bit2",
-                                  c(nscan(object) + length(id), nsnp(object)),
-                                  "",
-                                  replace = TRUE)
-              for(i in seq_along(gt_attr)){
-                  put.attr.gdsn(gt_node, names(gt_attr)[i], val = gt_attr[[i]])
-              }
-              ad_node <- .getNodeIndex(object, "annotation/format/AD/data")
-              ad_attr <- get.attr.gdsn(ad_node)
-              tmp <- read.gdsn(ad_node)
-              tmp <- rbind(tmp, reads)
-              ad_node <- add.gdsn(.getNodeIndex(object, "annotation/format/AD"),
-                                  "data",
-                                  tmp,
-                                  "float32",
-                                  c(nscan(object) + length(id),
-                                    nsnp(object) * 2),
-                                  "",
-                                  replace = TRUE)
-              for(i in seq_along(ad_attr)){
-                  put.attr.gdsn(ad_node, names(ad_attr)[i], val = ad_attr[[i]])
-              }
-              .gds_comp(object)
-              return(loadGDS(gds))
-          })
-
 
 ###############################################################################
 ## Functions to handle the GbsrScheme object in the GbsrGenotypeData object.
@@ -2949,9 +1778,9 @@ setMethod("initScheme",
           "GbsrGenotypeData",
           function(object, crosstype, mating){
               parents <- getParents(object)
-              scheme <- initScheme(.getSchemeObj(object),
+              scheme <- initScheme(slot(object, "scheme"),
                                    crosstype, mating, parents$memberID)
-              object <- .setSchemeObj(object, scheme)
+              slot(object, "scheme") <- scheme
               return(object)
           })
 
@@ -2966,9 +1795,9 @@ setMethod("addScheme",
               if(missing(mating)){
                   mating <- NA
               }
-              scheme <- addScheme(.getSchemeObj(object),
+              scheme <- addScheme(slot(object, "scheme"),
                                   crosstype, mating, pop_size)
-              object <- .setSchemeObj(object, scheme)
+              slot(object, "scheme") <- scheme
               return(object)
           })
 
@@ -2978,5 +1807,5 @@ setMethod("showScheme",
           "GbsrGenotypeData",
           function(object){
               parents <- getParents(object)
-              showScheme(.getSchemeObj(object), parents$scanID)
+              showScheme(slot(object, "scheme"), parents$sampleID)
           })

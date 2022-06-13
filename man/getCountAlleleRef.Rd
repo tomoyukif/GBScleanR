@@ -5,7 +5,7 @@
 \alias{getCountAlleleRef,GbsrGenotypeData-method}
 \title{Obtain total reference allele counts per SNP or per scan (sample)}
 \usage{
-getCountAlleleRef(object, target = "snp", valid = TRUE, prop = FALSE, ...)
+getCountAlleleRef(object, target = "marker", valid = TRUE, prop = FALSE, ...)
 
 \S4method{getCountAlleleRef}{GbsrGenotypeData}(object, target, valid, prop)
 }

@@ -7,7 +7,7 @@
 boxplotGBSR(
   x,
   stats = "missing",
-  target = c("snp", "scan"),
+  target = c("marker", "sample"),
   q = 0.5,
   color = c(Marker = "darkblue", Sample = "darkblue"),
   fill = c(Marker = "skyblue", Sample = "skyblue")
@@ -18,7 +18,7 @@ boxplotGBSR(
 
 \item{stats}{A string to specify statistics to be drawn.}
 
-\item{target}{Either or both of "snp" and "scan", e.g. \code{target = "snp"}
+\item{target}{Either or both of "marker" and "sample", e.g. \code{target = "marker"}
 to draw a histogram only for SNPs.}
 
 \item{q}{An integer to specify a quantile calculated via
@@ -67,10 +67,8 @@ the following values:
 To draw boxplots for "missing", "het", "raf", you need to run
 \code{\link[=countGenotype]{countGenotype()}} first to obtain statistics. Similary, "dp",
 "ad_ref", "ad_alt", "rrf" requires values obtained via \code{\link[=countRead]{countRead()}}.
-\code{\link[=calcReadStats]{calcReadStats()}} should be executed before drawing boxplots of
-"mean_ref", "sd_ref", "qtile_ref", "mean_alt", "sd_alt", and
-"qtile_alt". "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
-and "baseqranksum" only work with \code{target = "snp"}, if your data
+"mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
+and "baseqranksum" only work with \code{target = "marker"}, if your data
 contains those values supplied via SNP calling tools like
 \href{https://gatk.broadinstitute.org/hc/en-us}{GATK}.
 }
@@ -83,10 +81,6 @@ gdata <- loadGDS(gds_fn)
 gdata <- countGenotype(gdata)
 
 boxplotGBSR(gdata, stats = "missing")
-
-# Calculate means, standard deviations, quantile values of read counts
-# to be used in `boxplotGBSR()`
-gdata <- calcReadStats(gdata, q = 0.9)
 
 # Draw boxplots of 90 percentile values of reference read counts and
 # alternative read counts per SNP and per sample.

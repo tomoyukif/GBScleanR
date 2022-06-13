@@ -5,7 +5,7 @@
 \alias{getCountRead,GbsrGenotypeData-method}
 \title{Obtain total read counts per SNP or per scan (sample)}
 \usage{
-getCountRead(object, target = "snp", valid = TRUE, ...)
+getCountRead(object, target = "marker", valid = TRUE, ...)
 
 \S4method{getCountRead}{GbsrGenotypeData}(object, target, valid)
 }

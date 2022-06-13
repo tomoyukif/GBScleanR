@@ -10,15 +10,9 @@ setCallFilter(
   dp_count = c(0, Inf),
   ref_count = c(0, Inf),
   alt_count = c(0, Inf),
-  norm_dp_count = c(0, Inf),
-  norm_ref_count = c(0, Inf),
-  norm_alt_count = c(0, Inf),
-  scan_dp_qtile = c(0, 1),
-  scan_ref_qtile = c(0, 1),
-  scan_alt_qtile = c(0, 1),
-  snp_dp_qtile = c(0, 1),
-  snp_ref_qtile = c(0, 1),
-  snp_alt_qtile = c(0, 1),
+  dp_qtile = c(0, 1),
+  ref_qtile = c(0, 1),
+  alt_qtile = c(0, 1),
   ...
 )
 
@@ -27,15 +21,9 @@ setCallFilter(
   dp_count,
   ref_count,
   alt_count,
-  norm_dp_count,
-  norm_ref_count,
-  norm_alt_count,
-  scan_dp_qtile,
-  scan_ref_qtile,
-  scan_alt_qtile,
-  snp_dp_qtile,
-  snp_ref_qtile,
-  snp_alt_qtile
+  dp_qtile,
+  ref_qtile,
+  alt_qtile
 )
 }
 \arguments{
@@ -50,34 +38,15 @@ upper limit of reference read counts.}
 \item{alt_count}{A numeric vector with length two specifying lower and
 upper limit of alternative read counts.}
 
-\item{norm_dp_count}{A numeric vector with length two specifying lower
-and upper limit of normalized total read counts
-(normalized reference reads + normalized alternaitve reads).}
-
-\item{norm_ref_count}{A numeric vector with length two specifying lower
-and upper limit of normalized reference read counts.}
-
-\item{norm_alt_count}{A numeric vector with length two specifying lower
-and upper limit of normalized alternative read counts}
-
-\item{scan_dp_qtile}{A numeric vector with length two specifying lower
+\item{dp_qtile}{A numeric vector with length two specifying lower
 and upper limit of quantile of total read counts in each scan (sample).}
 
-\item{scan_ref_qtile}{A numeric vector with length two specifying lower
+\item{ref_qtile}{A numeric vector with length two specifying lower
 and upper limit of quantile of reference read counts in each scan (sample).}
 
-\item{scan_alt_qtile}{A numeric vector with length two specifying lower
+\item{alt_qtile}{A numeric vector with length two specifying lower
 and upper limit of quantile of alternative read counts in each
 scan (sample).}
-
-\item{snp_dp_qtile}{A numeric vector with length two specifying lower
-and upper limit of quantile of total read counts in each SNP marker}
-
-\item{snp_ref_qtile}{A numeric vector with length two specifying lower
-and upper limit of quantile of reference read counts in each SNP marker.}
-
-\item{snp_alt_qtile}{A numeric vector with length two specifying lower
-and upper limit of quantile of alternative read counts in each SNP marker.}
 
 \item{...}{Unused.}
 }
@@ -93,17 +62,15 @@ the genotype calls which are not reliable enough and set zero
 to reference and alternative read counts of the genotype calls.
 }
 \details{
-\code{norm_dp_count}, \code{norm_ref_count}, and \code{norm_alt_count} use
-normalized read counts which are obtained by dividing each read count
-by the total read count of each sample. \code{scan_dp_qtile}, \code{scan_ref_qtile},
-and \code{scan_alt_qtile} work similarly but use quantile values of read counts
+\code{dp_qtile}, \code{ref_qtile},
+and \code{alt_qtile} use quantile values of read counts
 of each sample to decide the lower and upper limit of read counts.
 This function generate two new nodes in the GDS file linked with
-the given \link{GbsrGenotypeData} object. The new nodes "filt.data"
-in the AD node
-and "filt.genotype" contains read count data and genotype data
-after filtering, respectively.
-To reset the filter applied by setCallFilter(), run \code{\link[=setRawGenotype]{setRawGenotype()}}.
+the given \link{GbsrGenotypeData} object. The filtered read counts and genotype
+calls will be stored in the data node in the "FAD" folder and the data node
+in the "FGT" folder, while the data node in the "CFT" stores call fitering
+informatin.
+To reset the filter applied by setCallFilter(), run \code{\link[=resetCallFilter]{resetCallFilter()}}.
 }
 \examples{
 # Create a GDS file from a sample VCF file.
@@ -119,10 +86,10 @@ gds <- setCallFilter(gds, dp_count = c(5, Inf))
 
 # Filter out genotype calls supported by reads less than
 # the 20 percentile of read counts per marker in each sample.
-gds <- setCallFilter(gds, scan_dp_qtile = c(0.2, 1))
+gds <- setCallFilter(gds, dp_qtile = c(0.2, 1))
 
 # Reset the filter
-gds <- setRawGenotype(gds)
+gds <- resetCallFilter(gds)
 
 # Close the connection to the GDS file.
 closeGDS(gds)
