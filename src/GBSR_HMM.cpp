@@ -1353,7 +1353,7 @@ vector<double> calcDosProb(RMatrix<double> ref,
 
     if(ref_i[m] == -1){
         if(ratio_i[m] < 0){
-            double even_p = 1 / (ploidy[0] + 1);
+            double even_p = 1 / ((double)ploidy[0] + 1);
             for(size_t i = 0; i < plex; ++i){
                 prob[i] = even_p;
             }

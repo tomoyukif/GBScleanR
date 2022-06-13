@@ -5,7 +5,14 @@
 \title{Draw line plots of proportion of reference allele read counts
 per marker per sample.}
 \usage{
-plotSmoothedRatio(x, coord = NULL, chr = NULL, ind = 1, dot_fill = "blue")
+plotSmoothedRatio(
+  x,
+  coord = NULL,
+  chr = NULL,
+  ind = 1,
+  dot_fill = "blue",
+  line_color = "magenta"
+)
 }
 \arguments{
 \item{x}{A \link{GbsrGenotypeData} object.}
