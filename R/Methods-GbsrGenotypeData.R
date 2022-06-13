@@ -100,7 +100,7 @@ setMethod("validMar",
                       warning("More than one values were specified to chr,",
                               " but use the first one")
                   }
-                  out <- out & seqGetData(object, "chromosome") == chr[1]
+                  out <- out[seqGetData(object, "chromosome") == chr[1]]
               }
               return(out)
           })

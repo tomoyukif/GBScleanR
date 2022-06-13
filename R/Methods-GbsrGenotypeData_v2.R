@@ -237,7 +237,7 @@ setMethod("estDosage",
               chr <- unique(getChromosome(object))
               for (chr_i in chr) {
 
-                  n_mar_i <- nmar(object, TRUE, chr_i)
+                  n_mar_i <- nmar(object, FALSE, chr_i)
                   message("\nNow cleaning chr ", chr_i, "...")
 
                   best_dosage <- .cleanEachChr(object, chr_i, error_rate,
