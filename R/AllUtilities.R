@@ -1,5 +1,5 @@
 print.GbsrGenotypeData <- function(x) {
-  show(x)
+    show(x)
 }
 
 #' Convert a VCF file to a GDS file
@@ -40,39 +40,51 @@ print.GbsrGenotypeData <- function(x) {
 #'
 #' @export
 #'
-#' @importFrom SeqArray seqVCF2GDS seqOptimize seqStorageOption
+#' @importFrom SeqArray seqVCF2GDS seqOptimize seqStorageOption seqExport
 #'
 gbsrVCF2GDS <- function(vcf_fn,
                         out_fn,
                         gt = "GT",
                         force = FALSE,
                         verbose = TRUE) {
-  if (file.exists(out_fn)) {
-    message(out_fn, ' exists!')
-    while (TRUE) {
-      if (force) {
-        file.remove(out_fn)
-        break()
-      }
-      user <- readline("Are you sure to overwirte?(y/n)")
-      if (user == "y") {
-        file.remove(out_fn)
-        break()
-      } else if (user == "n") {
-        message('Stopped by user.')
-        return(out_fn)
-      }
+    if (file.exists(out_fn)) {
+        message(out_fn, ' exists!')
+        while (TRUE) {
+            if (force) {
+                file.remove(out_fn)
+                break()
+            }
+            user <- readline("Are you sure to overwirte?(y/n)")
+            if (user == "y") {
+                file.remove(out_fn)
+                break()
+            } else if (user == "n") {
+                message('Stopped by user.')
+                return(out_fn)
+            }
+        }
     }
-  }
 
-  # Create GDS file formatted in the SeqArray style.
-  stropt <- seqStorageOption(mode = c ('annotation/format/AD' = "int64"))
-  out_fn <- seqVCF2GDS(vcf_fn, out_fn, ignore.chr.prefix = "",
-                       storage.option = stropt,
-                       genotype.var.name = gt, verbose = verbose)
-  seqOptimize(out_fn, "by.sample",
-              c("AD", "FAD", "HAP", "CGT", "FGT"), verbose = verbose)
-  return(out_fn)
+    # Create GDS file formatted in the SeqArray style.
+    stropt <- seqStorageOption(mode = c ('annotation/format/AD' = "int64"))
+    out_fn <- seqVCF2GDS(vcf_fn, out_fn, ignore.chr.prefix = "",
+                         storage.option = stropt,
+                         genotype.var.name = gt, verbose = verbose)
+    gds <- seqOpen(out_fn)
+    n_allele <- seqNumAllele(gds)
+    if(any(n_allele != 2)){
+        message("Some markers are not bi-allelic.",
+                "\nGBScleanR filters out those markers.")
+        message("Filtering non-biallelic markers.")
+        temp_fn <- tempfile("biallelic", tempdir(), ".gds")
+        seqSetFilter(gds, variant.sel = n_allele == 2)
+        seqExport(gds, temp_fn)
+        seqClose(gds)
+        file.copy(temp_fn, out_fn, overwrite = TRUE)
+    }
+    seqOptimize(out_fn, "by.sample",
+                c("AD", "FAD", "HAP", "CGT", "FGT"), verbose = verbose)
+    return(out_fn)
 }
 
 #' Load a GDS file and construct a `GbsrGenotypeData` object.
@@ -114,63 +126,62 @@ gbsrVCF2GDS <- function(vcf_fn,
 #' closeGDS(gdata)
 #'
 loadGDS <- function(x, load_filter = FALSE, ploidy = 2, verbose = TRUE) {
-  if(verbose){ message('Loading GDS file.') }
-  if(inherits(x = x, what = "GbsrGenotypeData")){
-    if(isOpenGDS(object = x)){
-        closeGDS(object = x, save_filter = FALSE)
-    }
-    # Leave the following connection open to build the GdsGenotypeReader object
-    # with `readonly=FALSE` mode.
-    x <- seqOpen(gds.fn = x$filename, readonly = FALSE)
+    if(verbose){ message('Loading GDS file.') }
+    if(inherits(x = x, what = "GbsrGenotypeData")){
+        if(isOpenGDS(object = x)){
+            closeGDS(object = x, save_filter = FALSE)
+        }
+        # Leave the following connection open to build the GdsGenotypeReader object
+        # with `readonly=FALSE` mode.
+        gds <- seqOpen(gds.fn = x$filename, readonly = FALSE)
 
-  } else if(is.character(x)){
-    # Leave the following connection open to build the GdsGenotypeReader object
-    # with `readonly=FALSE` mode.
-    x <- seqOpen(gds.fn = x, readonly = FALSE)
-
-  } else {
-    stop("x must be a file path or a GbsrGenotypeData object",
-         call. = FALSE)
-  }
-
-  opt <- exist.gdsn(node = x, path = "genotype/~data") &
-    exist.gdsn(node = x, path = "annotation/format/AD/~data")
-  if(!opt){
-      seqClose(object = x)
-      seqOptimize(gdsfn = x$filename, target = "by.sample",
-                  format.var = c("AD", "FAD", "HAP", "CGT", "FGT"),
-                  verbose = verbose)
-      x <- seqOpen(gds.fn = x$filename, readonly = FALSE)
-  }
-
-  d <- seqSummary(gdsfile = x, varname = "genotype", verbose = FALSE)
-  marker <- data.frame(valid = rep(TRUE, d$dim[3]))
-  sample <- data.frame(valid = rep(TRUE, d$dim[2]))
-  attributes(sample) <- c(attributes(sample), list(ploidy = ploidy))
-  gds <- new(Class = "GbsrGenotypeData", x, sample = sample, marker = marker)
-
-  if(load_filter){
-    if(exist.gdsn(gds, "sample.annotation/GFL")){
-      validSam(gds) <- read.gdsn(index.gdsn(gds, "sample.annotation/GFL"))
-      validMar(gds) <- read.gdsn(index.gdsn(gds, "annotation/info/GFL"))
+    } else if(is.character(x)){
+        # Leave the following connection open to build the GdsGenotypeReader object
+        # with `readonly=FALSE` mode.
+        gds <- seqOpen(gds.fn = x, readonly = FALSE)
 
     } else {
-      warnings("No filtering information stored in the GDS.")
+        stop("x must be a file path or a GbsrGenotypeData object",
+             call. = FALSE)
     }
-  }
 
-  if(exist.gdsn(gds, "annotation/format/CFT")){
-    .makeCallFilterData(gds)
-  }
+    opt <- exist.gdsn(node = gds, path = "genotype/~data") &
+        exist.gdsn(node = gds, path = "annotation/format/AD/~data")
+    if(!opt){
+        seqClose(object = gds)
+        seqOptimize(gdsfn = gds$filename, target = "by.sample",
+                    format.var = c("AD", "FAD", "HAP", "CGT", "FGT"),
+                    verbose = verbose)
+        gds <- seqOpen(gds.fn = gds$filename, readonly = FALSE)
+    }
 
-  n_allele <- seqNumAllele(gdsfile = gds)
-  bi <- n_allele == 2
-  if(any(!bi)){
-      message("Some markers are not bi-allelic.",
-              "\nGBScleanR masks non-biallelic markers.")
-      seqSetFilter(object = gds, variant.sel = n_allele == 2,
-                   action = "set", verbose = FALSE)
-  }
+    n_allele <- seqNumAllele(gdsfile = gds)
+    bi <- n_allele == 2
+    if(any(!bi)){
+        stop("Some markers are not bi-allelic.",
+             "\nGBScleanR accepts biallelic markers only.",
+             "\nYou can filter out non-biallelic markers with gbsrVCF2GDS().")
+    }
 
-  return(gds)
+    d <- seqSummary(gdsfile = gds, varname = "genotype", verbose = FALSE)
+    marker <- data.frame(valid = rep(TRUE, d$dim[3]))
+    sample <- data.frame(valid = rep(TRUE, d$dim[2]))
+    attributes(sample) <- c(attributes(sample), list(ploidy = ploidy))
+    gds <- new(Class = "GbsrGenotypeData", gds, sample = sample, marker = marker)
+
+    if(load_filter){
+        if(exist.gdsn(gds, "sample.annotation/GFL")){
+            validSam(gds) <- read.gdsn(index.gdsn(gds, "sample.annotation/GFL"))
+            validMar(gds) <- read.gdsn(index.gdsn(gds, "annotation/info/GFL"))
+
+        } else {
+            warnings("No filtering information stored in the GDS.")
+        }
+    }
+
+    if(exist.gdsn(gds, "annotation/format/CFT")){
+        .makeCallFilterData(gds)
+    }
+
+    return(gds)
 }

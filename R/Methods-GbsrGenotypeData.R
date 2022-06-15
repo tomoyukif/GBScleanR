@@ -12,9 +12,8 @@
         }
         obj <- objdesp.gdsn(index.gdsn(object, node))
         dim1 <- obj$dim[1]
-        out <- apply.gdsn(index.gdsn(object, node), 3, colSums,
-                          list(rep(TRUE, dim1), filters$sam, filters$mar),
-                          "list")
+        sel <- list(rep(TRUE, dim1), filters$sam, filters$mar)
+        out <- apply.gdsn(index.gdsn(object, node), 3, colSums, sel, "list")
         out <- do.call("cbind", out)
         out[out == 3*dim1] <- NA
 
@@ -805,7 +804,7 @@ setMethod("show",
               message("Data in the marker slot: ", paste(names(slot(object, "marker")),
                                                          collapse = ", "))
               message("No of generations in the scheme object: ",
-                      length(gds@scheme@mating))
+                      length(object@scheme@mating))
           })
 
 ###############################################################################

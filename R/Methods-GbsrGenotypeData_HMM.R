@@ -39,19 +39,19 @@ setMethod("estGeno",
               message("Start cleaning...")
 
               .initGDS(object, het_parent)
-              chr <- unique(getChromosome(object))
-              for (chr_i in chr) {
-
-                  n_mar_i <- nmar(object, FALSE, chr_i)
+              chr <- getChromosome(object)
+              chr_levels <- unique(chr)
+              for (chr_i in chr_levels) {
                   message("\nNow cleaning chr ", chr_i, "...")
-
                   best_seq <- .cleanEachChr(object, chr_i, error_rate,
                                             recomb_rate, call_threshold,
                                             het_parent, optim, iter)
-                  valid_mar_i <- validMar(object, chr_i)
-                  .saveHap(object, best_seq$best_hap, n_mar_i, valid_mar_i)
-                  .saveGeno(object, best_seq$best_geno, n_mar_i, valid_mar_i)
-                  .savePGeno(object, best_seq$p_geno, n_mar_i, valid_mar_i)
+
+                  sel <- list(mar = validMar(object, chr_i),
+                              sam = validSam(object))
+                  .saveHap(object, best_seq$best_hap, sel)
+                  .saveGeno(object, best_seq$best_geno, sel)
+                  .savePGeno(object, best_seq$p_geno, sel)
               }
               closeGDS(object, verbose = FALSE)
               seqOptimize(object$filename, "by.sample",
@@ -73,10 +73,10 @@ setMethod("estGeno",
                     storage = "bit2", compress = "", replace = TRUE)
 }
 
-.saveHap <- function(object, best_hap, n_mar, valid_index) {
-    output <- array(0, c(2, nsam(object, FALSE), n_mar))
+.saveHap <- function(object, best_hap, sel) {
+    output <- array(0, c(2, length(sel$sam), length(sel$mar)))
     i_sample <- c(which(slot(object, "sample")$parents != 0), which(validSam(object)))
-    output[, i_sample, valid_index] <- best_hap
+    output[, sel$sam, sel$mar][, i_sample,] <- best_hap
 
     hap_gdsn <- index.gdsn(object, "annotation/format/HAP/data")
     gdsn_dim <- objdesp.gdsn(hap_gdsn)$dim
@@ -88,10 +88,10 @@ setMethod("estGeno",
     }
 }
 
-.saveGeno <- function(object, best_geno, n_mar, valid_index) {
-    output <- array(3, c(2, nsam(object, FALSE), n_mar))
+.saveGeno <- function(object, best_geno, sel) {
+    output <- array(3, c(2, length(sel$sam), length(sel$mar)))
     i_sample <- c(which(slot(object, "sample")$parents != 0), which(validSam(object)))
-    output[, i_sample, valid_index] <- best_geno
+    output[, sel$sam, sel$mar][, i_sample,] <- best_geno
 
     out_gdsn <-index.gdsn(object, "annotation/format/CGT/data")
     gdsn_dim <- objdesp.gdsn(out_gdsn)$dim
@@ -103,9 +103,9 @@ setMethod("estGeno",
     }
 }
 
-.savePGeno <- function(object, p_geno, n_mar, valid_index) {
-    output <- matrix(3, nrow(p_geno), n_mar)
-    output[, valid_index] <- p_geno
+.savePGeno <- function(object, p_geno, sel) {
+    output <- matrix(3, nrow(p_geno), length(sel$mar))
+    output[, sel$mar] <- p_geno
     out_gdsn <- index.gdsn(object, "annotation/info/PGT")
     gdsn_dim <- objdesp.gdsn(out_gdsn)$dim
     if (gdsn_dim[1] == 0) {
