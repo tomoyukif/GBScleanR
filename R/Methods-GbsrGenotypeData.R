@@ -13,8 +13,8 @@
         obj <- objdesp.gdsn(index.gdsn(object, node))
         dim1 <- obj$dim[1]
         sel <- list(rep(TRUE, dim1), filters$sam, filters$mar)
-        out <- apply.gdsn(index.gdsn(object, node), 3, colSums, sel, "list")
-        out <- do.call("cbind", out)
+        out <- apply.gdsn(index.gdsn(object, node), 2, colSums, sel, "list")
+        out <- do.call("rbind", out)
         out[out == 3*dim1] <- NA
 
     } else {
@@ -323,7 +323,6 @@ setMethod("getGenotype",
                   dimnames(out) <- list(dimnames(out)$allele,
                                         dimnames(out)$variant)
               }
-
               return(out)
           })
 
@@ -895,8 +894,7 @@ setMethod("countGenotype",
 
 #' @importFrom gdsfmt apply.gdsn
 .countGeno <- function(object, node, margin, slotid){
-    ploidy <- attributes(slot(object, "sample"))[["ploidy"]]
-    sel <- list(rep(TRUE, ploidy), validSam(object), validMar(object))
+    sel <- list(rep(TRUE, 2), validSam(object), validMar(object))
     out <- apply.gdsn(index.gdsn(object, node), margin, count_geno, sel, "list")
     out <- do.call("rbind", out)
     if(margin == 2){

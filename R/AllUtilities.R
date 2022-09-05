@@ -81,6 +81,8 @@ gbsrVCF2GDS <- function(vcf_fn,
         seqExport(gds, temp_fn)
         seqClose(gds)
         file.copy(temp_fn, out_fn, overwrite = TRUE)
+    } else {
+        seqClose(gds)
     }
     seqOptimize(out_fn, "by.sample",
                 c("AD", "FAD", "HAP", "CGT", "FGT"), verbose = verbose)

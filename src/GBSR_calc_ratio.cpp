@@ -45,7 +45,7 @@ struct ParSR : public Worker {
             for(size_t i = 0; i < pos.length(); ++i){
                 dp = ref_i[i] + alt_i[i];
                 if(dp != 0){
-                    rr[i] = ref_i[i] / dp;
+                    rr[i] = alt_i[i] / dp;
                 } else {
                     rr[i] = -1;
                 }

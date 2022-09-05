@@ -233,14 +233,14 @@ setMethod("estDosage",
 
               message("Start cleaning...")
 
-              .initGDS(object, het_parent)
+              .initGDS_ds(object, het_parent)
               chr <- unique(getChromosome(object))
               for (chr_i in chr) {
 
                   n_mar_i <- nmar(object, FALSE, chr_i)
                   message("\nNow cleaning chr ", chr_i, "...")
 
-                  best_dosage <- .cleanEachChr(object, chr_i, error_rate,
+                  best_dosage <- .cleanEachChr_ds(object, chr_i, error_rate,
                                                recomb_rate, smooth, mindp)
                   valid_mar_i <- validMar(object, chr_i)
                   .saveDosage(object, best_dosage, n_mar_i, valid_mar_i)
@@ -252,7 +252,7 @@ setMethod("estDosage",
               return(object)
           })
 
-.initGDS <- function(object, het_parent) {
+.initGDS_ds <- function(object, het_parent) {
     cgt <- addfolder.gdsn(index.gdsn(object, "annotation/format"), "EDS",
                           replace = TRUE)
     add.gdsn(cgt, "data", storage = "bit6", compress = "", replace = TRUE)
@@ -273,13 +273,13 @@ setMethod("estDosage",
     }
 }
 
-.cleanEachChr <- function(object,
+.cleanEachChr_ds <- function(object,
                           chr_i,
                           error_rate,
                           recomb_rate,
                           smooth,
                           mindp) {
-    param_list <- .getParams(object, chr_i, error_rate, recomb_rate, smooth, mindp)
+    param_list <- .getParams_ds(object, chr_i, error_rate, recomb_rate, smooth, mindp)
 
     param_list$trans_prob <- matrix(param_list$trans_prob,
                                     dim(param_list$trans_prob)[1])
@@ -296,15 +296,15 @@ setMethod("estDosage",
     return(t(best_dosage))
 }
 
-.getParams <- function(object, chr_i, error_rate, recomb_rate, smooth, mindp) {
-    reads <- .loadReadCounts(object, chr_i, smooth)
+.getParams_ds <- function(object, chr_i, error_rate, recomb_rate, smooth, mindp) {
+    reads <- .loadReadCounts_ds(object, chr_i, smooth)
     n_samples <- nsam(object)
     n_alleles <- 2
     n_ploidy <- attributes(slot(object, "sample"))$ploidy
     pos <- getPosition(object, TRUE, chr_i)
     n_mar <- nmar(object, TRUE, chr_i)
-    trans_prob <- .transitionProb(pos, recomb_rate, n_ploidy)
-    init_prob <- .getInitProb(trans_prob[,, 1])
+    trans_prob <- .transitionProb_ds(pos, recomb_rate, n_ploidy)
+    init_prob <- .getInitProb_ds(trans_prob[,, 1])
 
     return(list(n_samples = n_samples,
                 n_alleles = n_alleles,
@@ -318,7 +318,7 @@ setMethod("estDosage",
                 mindp = mindp))
 }
 
-.loadReadCounts <- function(object, chr_i, smooth) {
+.loadReadCounts_ds <- function(object, chr_i, smooth) {
     if (exist.gdsn(object, "annotation/format/FAD")) {
         ad_node <- "filt"
     } else {
@@ -336,7 +336,7 @@ setMethod("estDosage",
     } else {
         dp <- reads$ref + reads$alt
         dp[dp == 0] <- NA
-        ratio <- reads$ref / dp
+        ratio <- reads$alt / dp
         ratio[is.na(ratio)] <- -1
     }
     return(list(ref = reads$ref,
@@ -344,7 +344,7 @@ setMethod("estDosage",
                 ratio = ratio))
 }
 
-.transitionProb <- function(pos, recomb_rate, n_ploidy){
+.transitionProb_ds <- function(pos, recomb_rate, n_ploidy){
 
     # Calculate the recombination frequency between each pair of flanking markers
     mar_dist <- abs(diff(pos) * 1e-06)
@@ -364,7 +364,7 @@ setMethod("estDosage",
     return(prob)
 }
 
-.getInitProb <- function(prob) {
+.getInitProb_ds <- function(prob) {
     ev1 <- eigen(t(prob))$vectors[, 1]
     init <- ev1 / sum(ev1)
     return(init)

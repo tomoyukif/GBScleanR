@@ -1398,7 +1398,7 @@ vector<double> calcDosProb(RMatrix<double> ref,
                 w[i] = log10_safe_d(w[i]);
             }
             for(size_t g = 0; g < plex; ++g){
-                prob[g] = ref_i[m] * w[g] + alt_i[m] * w[ploidy[0] - g];
+                prob[g] = ref_i[m] * w[ploidy[0] - g] + alt_i[m] * w[g];
             }
 
             lognorm_vec(prob);

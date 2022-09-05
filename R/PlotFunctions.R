@@ -644,11 +644,11 @@ pairsGBSR  <- function(x,
     Alt <- NULL
     if (stats == "geno") {
         snp <- data.frame(Ref = getCountGenoRef(x, "marker", TRUE, TRUE),
-                         Het = getCountGenoHet(x, "marker", TRUE, TRUE),
-                         Alt = getCountGenoAlt(x, "marker", TRUE, TRUE),
-                         chr = getChromosome(x),
-                         pos = getPosition(x) * 10^-6,
-                         stringsAsFactors=FALSE)
+                          Het = getCountGenoHet(x, "marker", TRUE, TRUE),
+                          Alt = getCountGenoAlt(x, "marker", TRUE, TRUE),
+                          chr = getChromosome(x),
+                          pos = getPosition(x) * 10^-6,
+                          stringsAsFactors=FALSE)
         if (is.null(snp)) {
             msg <- paste0('No data for the statistic: ', stats)
             stop(msg)
@@ -868,7 +868,7 @@ pairsGBSR  <- function(x,
 #' @param node Either one of "raw", "filt", and "cor" to output raw
 #' genotype data, filtered genotype data, or corrected genotype data,
 #' respectively.
-#' @param dot_fill A string to indicate the dot color in the plot.
+#' @param showratio If `TRUE`, draw dots indicating read ratio.
 #' @param line_color A string to indicate the line color in the plot.
 #'
 #' @examples
@@ -885,13 +885,14 @@ pairsGBSR  <- function(x,
 #' @export
 #' @importFrom ggplot2 ggplot aes geom_point geom_line labs
 #' @importFrom ggplot2 ylim xlab ylab facet_wrap theme
+#' @importFrom ggplot2 scale_colour_gradient
 #'
 plotDosage <- function(x,
                        coord = NULL,
                        chr = NULL,
                        ind = 1,
                        node = "raw",
-                       dot_fill = "green",
+                       showratio = TRUE,
                        line_color = "magenta") {
     pos <- na <- NULL
 
@@ -906,16 +907,34 @@ plotDosage <- function(x,
     } else {
         parents <- TRUE
     }
+
+    if(!is.null(showratio)){
+        ploidy <- attributes(slot(x, "sample"))[["ploidy"]]
+        read <- getRead(x, node="raw", parents=parents)
+        ref <- read$ref[ind, chr]
+        alt <- read$alt[ind, chr]
+        dp <- ref + alt
+        ad <- alt / dp * ploidy
+    }
+
     geno <- getGenotype(x, node=node, parents=parents)[ind, chr]
     id <- getSamID(x, valid = FALSE)[ind]
     df <- data.frame(chr = getChromosome(x)[chr],
                      pos = getPosition(x)[chr],
-                     geno = geno)
+                     geno = geno,
+                     ad = ad,
+                     dp)
     df <- df[!is.na(df$geno), ]
     ploidy <- attributes(slot(x, "sample"))[["ploidy"]]
-    p <- ggplot(df, aes( x = pos * 10^-6, y=geno, group=chr)) +
-        geom_point(size=0.8, stroke=0, color=dot_fill) +
-        geom_line(color=line_color) +
+    p <- ggplot(df)
+
+    if(!is.null(showratio)){
+        p <- p + geom_point(mapping = aes(x = pos * 10^-6, y=ad),
+                            size=0.8, alpha=0.2, stroke=0, colour=dp) +
+            scale_colour_gradient(low = "green", high = "darkblue")
+    }
+    p <- p + geom_line(mapping = aes(x = pos * 10^-6, y=geno, group=chr),
+                       color=line_color) +
         labs(title=paste0("Alternative allele dosage: ", id)) +
         ylim(0, ploidy) +
         xlab("Physical position (Mb)") +
@@ -959,6 +978,8 @@ plotDosage <- function(x,
 #' @export
 #' @importFrom ggplot2 ggplot aes geom_point labs
 #' @importFrom ggplot2 ylim xlab ylab facet_wrap theme
+#' @importFrom ggplot2 scale_colour_gradient
+#'
 plotReadRatio <- function(x,
                           coord = NULL,
                           chr = NULL,
@@ -982,13 +1003,16 @@ plotReadRatio <- function(x,
     read <- getRead(x, node=node, parents=parents)
     ref <- read$ref[ind, chr]
     alt <- read$alt[ind, chr]
+    dp <- ref + alt
 
     df <- data.frame(chr = getChromosome(x)[chr],
                      pos = getPosition(x)[chr],
-                     ad = ref / (ref + alt))
+                     ad = alt / dp,
+                     dp = dp)
 
-    p <- ggplot(df, aes(x = pos * 10^-6, y = ad, group = chr, color = chr)) +
+    p <- ggplot(df, aes(x = pos * 10^-6, y = ad, group = chr, colour = dp)) +
         geom_point(size=0.8, alpha=0.2, stroke=0) +
+        scale_colour_gradient(low = "green", high = "darkblue") +
         labs(title=paste0("Alternative allele read ratio: ", id)) +
         ylim(0, 1) +
         xlab("Position (Mb)") +

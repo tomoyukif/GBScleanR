@@ -48,10 +48,12 @@ setMethod("estGeno",
                                             het_parent, optim, iter)
 
                   sel <- list(mar = validMar(object, chr_i),
-                              sam = validSam(object))
+                              sam = validSam(object, parents = TRUE))
                   .saveHap(object, best_seq$best_hap, sel)
                   .saveGeno(object, best_seq$best_geno, sel)
                   .savePGeno(object, best_seq$p_geno, sel)
+                  .saveADB(object, t(best_seq$bias), sel)
+                  .saveMR(object, t(best_seq$mismap), sel)
               }
               closeGDS(object, verbose = FALSE)
               seqOptimize(object$filename, "by.sample",
@@ -71,6 +73,12 @@ setMethod("estGeno",
 
     pgt <- add.gdsn(index.gdsn(object, "annotation/info"), "PGT",
                     storage = "bit2", compress = "", replace = TRUE)
+
+    adb <- add.gdsn(index.gdsn(object, "annotation/info"), "ADB",
+                    storage = "single", compress = "", replace = TRUE)
+
+    mr <- add.gdsn(index.gdsn(object, "annotation/info"), "MR",
+                    storage = "single", compress = "", replace = TRUE)
 }
 
 .saveHap <- function(object, best_hap, sel) {
@@ -111,6 +119,32 @@ setMethod("estGeno",
     if (gdsn_dim[1] == 0) {
         add.gdsn(index.gdsn(object, "annotation/info"), "PGT", output,
                  "bit2", compress = "", replace = TRUE)
+    } else {
+        append.gdsn(out_gdsn, output)
+    }
+}
+
+.saveADB <- function(object, bias, sel) {
+    output <- rep(-1, length(sel$mar))
+    output[sel$mar] <- bias
+    out_gdsn <- index.gdsn(object, "annotation/info/ADB")
+    gdsn_dim <- objdesp.gdsn(out_gdsn)$dim
+    if (gdsn_dim[1] == 0) {
+        add.gdsn(index.gdsn(object, "annotation/info"), "ADB", output,
+                 "single", compress = "", replace = TRUE)
+    } else {
+        append.gdsn(out_gdsn, output)
+    }
+}
+
+.saveMR <- function(object, mismap, sel) {
+    output <- matrix(-1, nrow(mismap), length(sel$mar))
+    output[, sel$mar] <- mismap
+    out_gdsn <- index.gdsn(object, "annotation/info/MR")
+    gdsn_dim <- objdesp.gdsn(out_gdsn)$dim
+    if (gdsn_dim[1] == 0) {
+        add.gdsn(index.gdsn(object, "annotation/info"), "MR", output,
+                 "single", compress = "", replace = TRUE)
     } else {
         append.gdsn(out_gdsn, output)
     }
@@ -770,6 +804,8 @@ setMethod("estGeno",
         out_list <- .summarizeEst(best_hap, best_geno,
                                   best_pat$prob, param_list)
         out_list$p_geno <- p_geno
+        out_list$bias <- param_list$bias
+        out_list$mismap <-param_list$mismap
 
         message("\r", "Done!")
         return(out_list)
