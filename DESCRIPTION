@@ -28,7 +28,7 @@ Imports: GWASTools, graphics, stats, utils, methods, gdsfmt, ggplot2, tidyr, Seq
 Suggests: BiocStyle, testthat (>= 3.0.0), knitr, rmarkdown
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 biocViews: GeneticVariability, SNP, Genetics, HiddenMarkovModel, Sequencing, QualityControl
 BugReports: https://github.com/tomoyukif/GBScleanR/issues
 URL: https://github.com/tomoyukif/GBScleanR
