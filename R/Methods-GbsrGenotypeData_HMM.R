@@ -611,6 +611,25 @@ setMethod("estGeno",
 
     best_seq <- rbind(best_pat_r$best_seq[first,],
                       best_pat_f$best_seq[latter,])
+    border_geno <- cbind(best_seq[half, ], best_seq[half + 1, ])
+    diff_geno <- border_geno[, 1] != border_geno[, 2]
+    diff_border_geno1 <- param_list$pat$hap_progeny[border_geno[diff_geno, 1], ]
+    diff_border_geno2 <- param_list$pat$hap_progeny[border_geno[diff_geno, 2], ]
+    fliped_geno <- which(rowSums(diff_border_geno1 == diff_border_geno2[, 2:1]) == 2)
+    fliped_seq <- sapply(seq_along(fliped_geno), function(i){
+        g1 <- best_seq[, diff_geno][, fliped_geno[i]][half]
+        g2 <- best_seq[, diff_geno][, fliped_geno[i]][half + 1]
+        g2_pos <- which(best_seq[, diff_geno][, fliped_geno[i]][latter] == g2)
+        check <- which(diff(g2_pos) != 1)
+        if(length(check) == 0){
+            best_seq[, diff_geno][, fliped_geno[i]][latter][g2_pos] <- g1
+        } else {
+            best_seq[, diff_geno][, fliped_geno[i]][latter][seq_len(min(check))] <- g1
+        }
+        return(best_seq[, diff_geno][, fliped_geno[i]])
+    })
+    best_seq[, diff_geno][, fliped_geno] <- fliped_seq
+
     p_geno <- c(best_pat_r$p_geno[first], best_pat_f$p_geno[latter])
 
     prob <- c(best_pat_r$prob[, , first],
@@ -628,17 +647,16 @@ setMethod("estGeno",
     n_mar <- param_list$n_mar
     n_sample <- param_list$n_samples
     i_sample <- -seq_len(param_list$n_parents)
-    sample_geno <- apply(best_geno[, i_sample, ], 3, colSums)
+    sample_geno <- apply(best_geno[, i_sample, ], 2, colSums)
     sample_geno <- as.vector(sample_geno + 1)
     sample_geno <- sample_geno + seq(0, by=3, length.out=n_mar * n_sample)
     log10_th <- log10(param_list$call_threshold)
-    geno_prob <- matrix(pat_prob[sample_geno], n_mar, n_sample) < log10_th
+    geno_prob <- t(matrix(pat_prob[sample_geno], n_mar, n_sample) < log10_th)
     best_geno[1, i_sample, ][geno_prob] <- 3
     best_geno[2, i_sample, ][geno_prob] <- 3
     if (!param_list$het_parent) {
         best_hap[best_hap != 1] <- (best_hap[best_hap != 1] + 1) / 2
     }
-    geno_prob <- t(geno_prob)
     best_hap[1, i_sample, ][geno_prob] <- 0
     best_hap[2, i_sample, ][geno_prob] <- 0
     out_list <- list(best_hap = best_hap, best_geno = best_geno)
