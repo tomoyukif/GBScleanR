@@ -39,16 +39,12 @@
 #' # Close the connection to the GDS file.
 #' closeGDS(gdata)
 #'
-setClass(
-    Class = "GbsrScheme",
-    slots = c(
-        crosstype = "character",
-        pop_size = "numeric",
-        mating = "list",
-        parents = "numeric",
-        progenies = "list"
-    )
-)
+setClass(Class = "GbsrScheme",
+         slots = c(crosstype = "character",
+                   pop_size = "numeric",
+                   mating = "list",
+                   parents = "numeric",
+                   progenies = "list"))
 
 
 #' Class `GbsrGenotypeData`
@@ -57,45 +53,37 @@ setClass(
 #' user work with this class object.
 #'
 #' @details
-#' The `GbsrGenotypeData` class has slots to store summarized genotype
-#' data, a [GbsrScheme] object, and the connection information
-#' to a GDS file which can be generated from a VCF file of your
-#' genotype data via [gbsrVCF2GDS()].
-#' The [GbsrGenotypeData] class has four slots: `data`, `snpAnnot`,
-#' and `scanAnnot` and `scheme.` "Samples" or "individuals" subjected to
-#' genotyping are called "scan" here with following the way used
-#' in [GWASTools]. The slots `snpAnnot` and `scanAnnot` store
-#' a [SnpAnnotationDataFrame] object and a
-#' [ScanAnnotationDataFrame] object, respectively.
-#' The slot `data` stores a [GdsGenotypeReader] object.
-#' Those three classes are included from [GWASTools].
-#' The slot `scheme` holds a [GbsrScheme] object.
-#' The function [loadGDS()] initialize those class objects internally.
+#' The `GbsrGenotypeData` class is an extention of `SeqVarGDSClass` in the
+#' [SeqArray] package to store summary data of genotypes and reads and a
+#' [GbsrScheme] object that contains mating scheme information of the given
+#' population..
+#' The slots `marker` and `sample` store a [data.frame] object for variant-wise
+#' and sample-wise summary information, respectively. The `scheme` slot holds a
+#' [GbsrScheme] object. The function [loadGDS()] initialize the
+#' `GbsrGenotypeData` class.
 #'
-#' @importClassesFrom GWASTools GenotypeData
+#' @importClassesFrom SeqArray SeqVarGDSClass
 #' @aliases  GbsrGenotypeData-class GbsrGenotypeData
-#' @slot data A [GdsGenotypeReader] object.
-#' @slot snpAnnot A [SnpAnnotationDataFrame] object.
-#' @slot scanAnnot A [ScanAnnotationDataFrame] object.
+#' @slot data A [SeqVarGDSClass] object.
+#' @slot marker A [data.frame] object.
+#' @slot sample A [data.frame] object.
 #' @slot scheme A [GbsrScheme] object.
 #'
 #' @examples
-#' # `loadGDS()` initialize objects in the slots of a `GbsrGenotypeData`
-#' # object internally.
+#' # `loadGDS()` initialize the `GbsrGenotypeData` object.
 #'
-#' # Load data in the GDS file and instantiate
-#' # a `GbsrGenotypeData` object.
+#' # Load a GDS file and instantiate a `GbsrGenotypeData` object.
 #' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-#' gdata <- loadGDS(gds_fn)
+#' gds <- loadGDS(gds_fn)
 #'
 #' # Close connection to the GDS file.
-#' closeGDS(gdata)
+#' closeGDS(gds)
 #'
 #' @exportClass GbsrGenotypeData
 #' @importFrom methods setClass slot
 #'
-setClass(
-    Class = "GbsrGenotypeData",
-    contains = "GenotypeData",
-    slots = c(scheme = "GbsrScheme")
-)
+setClass(Class = "GbsrGenotypeData",
+         contains = "SeqVarGDSClass",
+         slots = c(marker = "data.frame",
+                   sample = "data.frame",
+                   scheme = "GbsrScheme"))

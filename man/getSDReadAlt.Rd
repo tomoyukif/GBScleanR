@@ -6,7 +6,7 @@
 \title{Obtain standard deviations of total alternative read counts per
 SNP or per scan (sample)}
 \usage{
-getSDReadAlt(object, target = "snp", valid = TRUE, ...)
+getSDReadAlt(object, target = "marker", valid = TRUE, ...)
 
 \S4method{getSDReadAlt}{GbsrGenotypeData}(object, target, valid)
 }

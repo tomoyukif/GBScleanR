@@ -1,8 +1,9 @@
+#' @importFrom SeqArray seqOptimize
+#' @importFrom gdsfmt put.attr.gdsn index.gdsn
 #' @rdname estGeno
 setMethod("estGeno",
           "GbsrGenotypeData",
           function(object,
-                   chr,
                    recomb_rate,
                    error_rate,
                    call_threshold,
@@ -11,7 +12,7 @@ setMethod("estGeno",
                    iter,
                    n_threads) {
 
-              if(!.hasScheme(object)){
+              if(length(slot(slot(object, "scheme"), "crosstype")) == 0){
                   stop("No scheme information.",
                        "\n",
                        "Build scheme information with ",
@@ -37,113 +38,126 @@ setMethod("estGeno",
 
               message("Start cleaning...")
 
-              .gds_decomp(object)
-              on.exit({
-                  .gds_comp(object)
-              })
-              .initGDS(object)
-              chr_all <- getChromosome(object, levels=TRUE)
-              if (missing(chr)) { chr <- chr_all }
-              for (chr_i in chr_all) {
-
-                  n_snp_i <- nsnp(object, FALSE, chr_i)
-                  if (!chr_i %in% chr) {
-                      .saveHap(object, NA, n_snp_i, FALSE)
-                      .saveGeno(object, NA, n_snp_i, FALSE)
-                      .savePGeno(object, NA, n_snp_i, FALSE)
-                      message("Chr ", chr_i, " was skipped.")
-                      next
-                  }
-
+              .initGDS(object, het_parent)
+              chr <- getChromosome(object)
+              chr_levels <- unique(chr)
+              for (chr_i in chr_levels) {
                   message("\nNow cleaning chr ", chr_i, "...")
-
                   best_seq <- .cleanEachChr(object, chr_i, error_rate,
                                             recomb_rate, call_threshold,
                                             het_parent, optim, iter)
-                  valid_snp_i <- getValidSnp(object, chr_i)
-                  .saveHap(object, best_seq$best_hap, n_snp_i, valid_snp_i)
-                  .saveGeno(object, best_seq$best_geno, n_snp_i, valid_snp_i)
-                  .savePGeno(object, best_seq$p_geno, n_snp_i, valid_snp_i)
-              }
 
+                  sel <- list(mar = validMar(object, chr_i),
+                              sam = validSam(object, parents = TRUE))
+                  .saveHap(object, best_seq$best_hap, sel)
+                  .saveGeno(object, best_seq$best_geno, sel)
+                  .savePGeno(object, best_seq$p_geno, sel)
+                  .saveADB(object, t(best_seq$bias), sel)
+                  .saveMR(object, t(best_seq$mismap), sel)
+              }
+              closeGDS(object, verbose = FALSE)
+              seqOptimize(object$filename, "by.sample",
+                          c("HAP", "CGT"), verbose = FALSE)
+              object <- reopenGDS(object)
               return(object)
           })
 
-.initGDS <- function(object) {
-    add.gdsn(.getGdsfmtObj(object), "estimated.haplotype", storage="bit6",
-             compress="", replace=TRUE)
-    add.gdsn(.getGdsfmtObj(object), "corrected.genotype", storage="bit2",
-             compress="", replace=TRUE)
-    add.gdsn(.getGdsfmtObj(object), "parents.genotype", storage="bit2",
-             compress="", replace=TRUE)
+.initGDS <- function(object, het_parent) {
+    hap <- addfolder.gdsn(index.gdsn(object, "annotation/format"), "HAP",
+                          replace = TRUE)
+    add.gdsn(hap, "data", storage = "bit6", compress = "", replace = TRUE)
+
+    cgt <- addfolder.gdsn(index.gdsn(object, "annotation/format"), "CGT",
+                          replace = TRUE)
+    add.gdsn(cgt, "data", storage = "bit2", compress = "", replace = TRUE)
+
+    pgt <- add.gdsn(index.gdsn(object, "annotation/info"), "PGT",
+                    storage = "bit2", compress = "", replace = TRUE)
+
+    adb <- add.gdsn(index.gdsn(object, "annotation/info"), "ADB",
+                    storage = "single", compress = "", replace = TRUE)
+
+    mr <- add.gdsn(index.gdsn(object, "annotation/info"), "MR",
+                    storage = "single", compress = "", replace = TRUE)
 }
 
-.saveHap <- function(object, best_hap, n_snp, valid_index) {
-    output <- array(0, c(2, n_snp, nscan(object, FALSE)))
-    if (is.array(best_hap)) {
-        i_sample <- c(getParents(object)$indexes, which(getValidScan(object)))
-        output[, valid_index, i_sample] <- best_hap
-        output <- t(matrix(output, n_snp * 2))
-        output[is.na(output)] <- 0
+.saveHap <- function(object, best_hap, sel) {
+    output <- array(0, c(2, length(sel$sam), length(sel$mar)))
+    i_sample <- c(which(slot(object, "sample")$parents != 0), which(validSam(object)))
+    output[, sel$sam, sel$mar][, i_sample,] <- best_hap
 
-    } else {
-        output <- t(matrix(output, n_snp * 2))
-    }
-
-    hap_gdsn <- .getNodeIndex(object, "estimated.haplotype")
+    hap_gdsn <- index.gdsn(object, "annotation/format/HAP/data")
     gdsn_dim <- objdesp.gdsn(hap_gdsn)$dim
     if (gdsn_dim[1] == 0) {
-        add.gdsn(.getGdsfmtObj(object), "estimated.haplotype", output,
-                 "bit6", compress = "", replace=TRUE)
+        add.gdsn(index.gdsn(object, "annotation/format/HAP"), "data", output,
+                 "bit6", compress = "", replace = TRUE)
     } else {
         append.gdsn(hap_gdsn, output)
     }
 }
 
-.saveGeno <- function(object, best_geno, n_snp, valid_index) {
-    output <- matrix(3, n_snp, nscan(object, FALSE))
-    if (!is.na(best_geno[1])) {
-        i_sample <- c(getParents(object)$indexes, which(getValidScan(object)))
-        output[valid_index, i_sample] <- best_geno
-        output[is.na(output)] <- 3
-    }
+.saveGeno <- function(object, best_geno, sel) {
+    output <- array(3, c(2, length(sel$sam), length(sel$mar)))
+    i_sample <- c(which(slot(object, "sample")$parents != 0), which(validSam(object)))
+    output[, sel$sam, sel$mar][, i_sample,] <- best_geno
 
-    out_gdsn <-.getNodeIndex(object, "corrected.genotype")
+    out_gdsn <-index.gdsn(object, "annotation/format/CGT/data")
     gdsn_dim <- objdesp.gdsn(out_gdsn)$dim
     if (gdsn_dim[1] == 0) {
-        add.gdsn(.getGdsfmtObj(object), "corrected.genotype", t(output), "bit2",
-                 compress="", replace=TRUE)
+        add.gdsn(index.gdsn(object, "annotation/format/CGT"), "data", output,
+                 "bit2", compress = "", replace = TRUE)
     } else {
-        append.gdsn(out_gdsn, t(output))
+        append.gdsn(out_gdsn, output)
     }
 }
 
-.savePGeno <- function(object, p_geno, n_snp, valid_index) {
-    if (is.na(p_geno[1])) {
-        n_p <- nrow(getParents(object))
-        output <- matrix(3, n_p * 2, n_snp)
-    } else {
-        output <- matrix(3, nrow(p_geno), n_snp)
-        output[, valid_index] <- p_geno
-    }
-    out_gdsn <- .getNodeIndex(object, "parents.genotype")
+.savePGeno <- function(object, p_geno, sel) {
+    output <- matrix(3, nrow(p_geno), length(sel$mar))
+    output[, sel$mar] <- p_geno
+    out_gdsn <- index.gdsn(object, "annotation/info/PGT")
     gdsn_dim <- objdesp.gdsn(out_gdsn)$dim
     if (gdsn_dim[1] == 0) {
-        add.gdsn(object@data@handler, "parents.genotype", output, "bit2",
-                 compress="", replace=TRUE)
+        add.gdsn(index.gdsn(object, "annotation/info"), "PGT", output,
+                 "bit2", compress = "", replace = TRUE)
+    } else {
+        append.gdsn(out_gdsn, output)
+    }
+}
+
+.saveADB <- function(object, bias, sel) {
+    output <- rep(-1, length(sel$mar))
+    output[sel$mar] <- bias
+    out_gdsn <- index.gdsn(object, "annotation/info/ADB")
+    gdsn_dim <- objdesp.gdsn(out_gdsn)$dim
+    if (gdsn_dim[1] == 0) {
+        add.gdsn(index.gdsn(object, "annotation/info"), "ADB", output,
+                 "single", compress = "", replace = TRUE)
+    } else {
+        append.gdsn(out_gdsn, output)
+    }
+}
+
+.saveMR <- function(object, mismap, sel) {
+    output <- matrix(-1, nrow(mismap), length(sel$mar))
+    output[, sel$mar] <- mismap
+    out_gdsn <- index.gdsn(object, "annotation/info/MR")
+    gdsn_dim <- objdesp.gdsn(out_gdsn)$dim
+    if (gdsn_dim[1] == 0) {
+        add.gdsn(index.gdsn(object, "annotation/info"), "MR", output,
+                 "single", compress = "", replace = TRUE)
     } else {
         append.gdsn(out_gdsn, output)
     }
 }
 
 .loadReadCounts <- function(object, chr_i) {
-    if (.getGenotypeVar(object) == "filt.genotype") {
+    if (exist.gdsn(object, "annotation/format/FAD")) {
         ad_node <- "filt"
     } else {
         ad_node <- "raw"
     }
-    reads <- getRead(object, TRUE, chr_i, ad_node, FALSE)
-    p_reads <- getRead(object, TRUE, chr_i, ad_node, "only")
+    reads <- getRead(object, ad_node, FALSE, TRUE, chr_i)
+    p_reads <- getRead(object, ad_node, "only", TRUE, chr_i)
 
     return(list(p_ref = p_reads$ref,
                 p_alt = p_reads$alt,
@@ -373,14 +387,14 @@ setMethod("estGeno",
     ibd[invalid_joint] <- 0
     q_mat <- as.numeric(ibd)
 
-    snp_dist <- diff(pos)
-    rf <- snp_dist * 1e-6 * recomb_rate
+    mar_dist <- diff(pos)
+    rf <- mar_dist * 1e-6 * recomb_rate
     q_mat <- matrix(q_mat, nrow(pat$hap_progeny), nrow(pat$hap_progeny))
     diag(q_mat) <- NA
     diag(q_mat) <- -rowSums(q_mat, na.rm = TRUE)
     prob <- vapply(rf, function(x) expm.Higham08(q_mat * x),
                    numeric(length(q_mat)))
-    prob_dim <- c(pat$n_hap_pat, pat$n_hap_pat, length(snp_dist))
+    prob_dim <- c(pat$n_hap_pat, pat$n_hap_pat, length(mar_dist))
 
     prob <- array(prob, prob_dim)
     return(prob)
@@ -462,26 +476,25 @@ setMethod("estGeno",
     reads <- .loadReadCounts(object, chr_i)
     parents <- getParents(object)
     n_parents <- nrow(parents)
-    n_samples <- nscan(object)
+    n_samples <- nsam(object)
     n_alleles <- 2
-    n_ploidy <- getPloidy(object, TRUE, chr_i)
+    n_ploidy <- attributes(slot(object, "sample"))$ploidy
     n_origin <- n_parents * 2^het_parent
     pat <- .makePattern(n_parents, n_ploidy, n_alleles, n_samples,
-                        het_parent, .getSchemeObj(object), n_origin)
+                        het_parent, slot(object, "scheme"), n_origin)
 
     pos <- getPosition(object, TRUE, chr_i)
-    n_snp <- nsnp(object, TRUE, chr_i)
-    trans_prob <- .transitionProb(pat, pos, recomb_rate, .getSchemeObj(object),
+    n_mar <- nmar(object, TRUE, chr_i)
+    trans_prob <- .transitionProb(pat, pos, recomb_rate, slot(object, "scheme"),
                                   n_origin, het_parent)
-    init_prob <-
-        .getInitProb(trans_prob[, , 1], pat$n_p_pat, n_samples)
+    init_prob <- .getInitProb(trans_prob[, , 1], pat$n_p_pat, n_samples)
 
     return(list(n_parents = n_parents,
                 n_samples = n_samples,
                 n_alleles = n_alleles,
                 n_ploidy = n_ploidy,
-                n_snp = n_snp,
-                samples_index = getValidScan(object),
+                n_mar = n_mar,
+                samples_index = validSam(object),
                 parents_index = parents$indexes,
                 het_parent = het_parent,
                 error_rate = c(1 - error_rate, error_rate),
@@ -489,8 +502,8 @@ setMethod("estGeno",
                 call_threshold = call_threshold,
                 reads = reads,
                 pat = pat,
-                bias = rep(0.5, n_snp),
-                mismap = matrix(0, n_snp, 2),
+                bias = rep(0.5, n_mar),
+                mismap = matrix(0, n_mar, 2),
                 trans_prob = log10(trans_prob),
                 init_prob = log10(init_prob),
                 count = 0,
@@ -519,11 +532,12 @@ setMethod("estGeno",
                             n_h = param_list$pat$n_hap_pat,
                             n_f = param_list$n_parents,
                             n_o = param_list$n_samples,
-                            n_m = param_list$n_snp,
+                            n_m = param_list$n_mar,
                             het = param_list$het_parent,
                             possiblehap = param_list$pat$possiblehap - 1,
                             possiblegeno = param_list$pat$possiblegeno - 1,
-                            p_geno_fix = param_list$p_geno_fix - 1)
+                            p_geno_fix = param_list$p_geno_fix - 1,
+                            ploidy = param_list$n_ploidy)
 
     if (outprob) {
         prob <- run_fb(ref = param_list$reads$ref,
@@ -536,10 +550,11 @@ setMethod("estGeno",
                        p_geno = out_list$p_geno,
                        n_h = param_list$pat$n_hap_pat,
                        n_o = param_list$n_samples,
-                       n_m = param_list$n_snp,
-                       possiblehap = param_list$pat$possiblehap - 1)
+                       n_m = param_list$n_mar,
+                       possiblehap = param_list$pat$possiblehap - 1,
+                       ploidy = param_list$n_ploidy)
         prob <- array(apply(prob, 3, function(x) return(t(x))),
-                      dim = c(3, param_list$n_samples, param_list$n_snp))
+                      dim = c(3, param_list$n_samples, param_list$n_mar))
         out_list$prob <- prob
     } else {
         out_list$prob <- NULL
@@ -556,21 +571,23 @@ setMethod("estGeno",
 }
 
 .hap2geno <- function(hap, p_geno, param_list) {
-    out_geno <- apply(hap, 3, function(x) {
-        vapply(seq_len(ncol(x)), function(y) {
-            return(p_geno[x[1, y], y] + p_geno[x[2, y], y])
-        }, numeric(1))
+    out_geno <- sapply(seq_len(param_list$n_mar), function(x) {
+        return(p_geno[hap[,,x], x])
     })
+    out_geno <- array(out_geno, c(param_list$n_ploidy,
+                                  param_list$n_samples + param_list$n_parents,
+                                  param_list$n_mar))
+
     return(out_geno)
 }
 
 .pat2hap <- function(best_hap, param_list) {
     n_parents_chr <- (param_list$n_parents * param_list$n_ploidy)
     if (param_list$het_parent) {
-        parent_hap <- rep(seq_len(n_parents_chr), each=param_list$n_snp)
+        parent_hap <- rep(seq_len(n_parents_chr), each=param_list$n_mar)
     } else {
         parent_hap <- rep(seq(1, by=2, length.out=param_list$n_parents),
-                          each=param_list$n_ploidy * param_list$n_snp)
+                          each=param_list$n_ploidy * param_list$n_mar)
     }
     parent_hap <- matrix(parent_hap, n_parents_chr, byrow=TRUE)
     sample_pat <- best_hap$best_seq
@@ -581,30 +598,64 @@ setMethod("estGeno",
     out_hap <- rbind(parent_hap, sample_hap)
     out_hap <- array(out_hap, c(param_list$n_ploidy,
                                 param_list$n_parents + param_list$n_samples,
-                                param_list$n_snp))
-    out_hap <- apply(out_hap, 2, function(x) return(x))
-    out_hap <- array(out_hap, c(param_list$n_ploidy,
-                                param_list$n_snp,
-                                param_list$n_parents + param_list$n_samples))
+                                param_list$n_mar))
     return(out_hap)
 }
 
 .halfJoint <- function(best_pat_f, best_pat_r, param_list) {
-    n_snp <- param_list$n_snp
+    n_mar <- param_list$n_mar
     n_sample <- param_list$n_samples
-    half <- round(n_snp / 2)
-    first <- (n_snp:1)[seq_len(half)]
-    latter <- (half + 1):n_snp
+    half <- round(n_mar / 2)
+    first <- (n_mar:1)[seq_len(half)]
+    latter <- (half + 1):n_mar
 
     best_seq <- rbind(best_pat_r$best_seq[first,],
                       best_pat_f$best_seq[latter,])
+    border_geno <- cbind(best_seq[half, ], best_seq[half + 1, ])
+    diff_geno <- border_geno[, 1] != border_geno[, 2]
+    diff_seq <- subset(best_seq, select = diff_geno)
+    if(any(diff_geno)){
+        border_geno1 <- border_geno[diff_geno, 1]
+        border_geno2 <- border_geno[diff_geno, 2]
+        diff_border_geno1 <- param_list$pat$hap_progeny[border_geno1, ]
+        diff_border_geno2 <- param_list$pat$hap_progeny[border_geno2, ]
+        if(is.matrix(diff_border_geno1)){
+            check_flip <- diff_border_geno1 == diff_border_geno2[, 2:1]
+            fliped_geno <- which(rowSums(check_flip) == 2)
+        } else {
+            check_flip <- diff_border_geno1 == diff_border_geno2[2:1]
+            fliped_geno <- which(sum(check_flip) == 2)
+        }
+
+        if(length(fliped_geno) > 0){
+            fliped_seq <- sapply(seq_along(fliped_geno), function(i){
+                g1 <- diff_seq[, fliped_geno[i]][half]
+                g2 <- diff_seq[, fliped_geno[i]][half + 1]
+                g2_pos <- which(diff_seq[, fliped_geno[i]][latter] == g2)
+                check <- which(diff(g2_pos) != 1)
+                if(length(check) == 0){
+                    diff_seq[, fliped_geno[i]][latter][g2_pos] <- g1
+                } else {
+                    diff_seq[, fliped_geno[i]][latter][seq_len(min(check))] <- g1
+                }
+                return(diff_seq[, fliped_geno[i]])
+            })
+
+            if(is.matrix(diff_border_geno1)){
+                best_seq[, diff_geno][, fliped_geno] <- fliped_seq
+            } else {
+                best_seq[, diff_geno] <- fliped_seq
+            }
+        }
+    }
+
     p_geno <- c(best_pat_r$p_geno[first], best_pat_f$p_geno[latter])
 
     prob <- c(best_pat_r$prob[, , first],
               best_pat_f$prob[, , latter])
     prob <- array(prob, dim(best_pat_f$prob))
     prob <- apply(prob, 2, function(x) return(x))
-    prob <- array(prob, c(3, n_snp, n_sample))
+    prob <- array(prob, c(3, n_mar, n_sample))
     out_list <- list(best_seq = best_seq,
                      p_geno = p_geno,
                      prob = prob)
@@ -612,21 +663,21 @@ setMethod("estGeno",
 }
 
 .summarizeEst <- function(best_hap, best_geno, pat_prob, param_list) {
-    n_snp <- param_list$n_snp
+    n_mar <- param_list$n_mar
     n_sample <- param_list$n_samples
     i_sample <- -seq_len(param_list$n_parents)
-    sample_geno <- as.vector(best_geno[, i_sample] + 1)
-    sample_geno <- sample_geno + seq(0, by=3, length.out=n_snp * n_sample)
+    sample_geno <- apply(best_geno[, i_sample, ], 2, colSums)
+    sample_geno <- as.vector(sample_geno + 1)
+    sample_geno <- sample_geno + seq(0, by=3, length.out=n_mar * n_sample)
     log10_th <- log10(param_list$call_threshold)
-    geno_prob <- matrix(pat_prob[sample_geno], n_snp, n_sample) < log10_th
-    best_geno[, i_sample][geno_prob] <- NA
-    best_geno <- abs(best_geno - 2)
-    best_geno[is.na(best_geno)] <- 3
+    geno_prob <- t(matrix(pat_prob[sample_geno], n_mar, n_sample) < log10_th)
+    best_geno[1, i_sample, ][geno_prob] <- 3
+    best_geno[2, i_sample, ][geno_prob] <- 3
     if (!param_list$het_parent) {
         best_hap[best_hap != 1] <- (best_hap[best_hap != 1] + 1) / 2
     }
-    best_hap[1, , i_sample][geno_prob] <- 0
-    best_hap[2, , i_sample][geno_prob] <- 0
+    best_hap[1, i_sample, ][geno_prob] <- 0
+    best_hap[2, i_sample, ][geno_prob] <- 0
     out_list <- list(best_hap = best_hap, best_geno = best_geno)
     return(out_list)
 }
@@ -635,26 +686,26 @@ setMethod("estGeno",
     if (type == 1) {
         est_het <- best_seq == 1
         ref[!est_het] <- NA
-        ref <- rowSums(ref, na.rm = TRUE)
-        n_ref <- rowSums(est_het, na.rm = TRUE)
+        ref <- colSums(ref, na.rm = TRUE)
+        n_ref <- colSums(est_het, na.rm = TRUE)
         ref_prop <- ref / n_ref
         alt[!est_het] <- NA
-        alt <- rowSums(alt, na.rm = TRUE)
-        n_alt <- rowSums(est_het, na.rm = TRUE)
+        alt <- colSums(alt, na.rm = TRUE)
+        n_alt <- colSums(est_het, na.rm = TRUE)
         alt_prop <- alt / n_alt
         bias <- ref_prop / (ref_prop + alt_prop)
 
     } else {
         est_ref <- best_seq == 0
         ref[!est_ref] <- NA
-        ref <- rowSums(ref, na.rm = TRUE)
-        n_ref <- rowSums(est_ref, na.rm = TRUE)
+        ref <- colSums(ref, na.rm = TRUE)
+        n_ref <- colSums(est_ref, na.rm = TRUE)
         ref_prop <- ref / n_ref
 
         est_alt <- best_seq == 2
         alt[!est_alt] <- NA
-        alt <- rowSums(alt, na.rm = TRUE)
-        n_alt <- rowSums(est_alt, na.rm = TRUE)
+        alt <- colSums(alt, na.rm = TRUE)
+        n_alt <- colSums(est_alt, na.rm = TRUE)
         alt_prop <- alt / n_alt
         bias <- ref_prop / (ref_prop + alt_prop)
     }
@@ -673,8 +724,8 @@ setMethod("estGeno",
 }
 
 .calcReadBias <- function(best_seq, param_list) {
-    ref <- t(rbind(param_list$reads$p_ref, param_list$reads$ref))
-    alt <- t(rbind(param_list$reads$p_alt, param_list$reads$alt))
+    ref <- rbind(param_list$reads$p_ref, param_list$reads$ref)
+    alt <- rbind(param_list$reads$p_alt, param_list$reads$alt)
 
     bias1 <- .getBias(best_seq, 1, ref, alt)
     bias2 <- .getBias(best_seq, 2, ref, alt)
@@ -690,28 +741,29 @@ setMethod("estGeno",
 
 .calcMissmap <- function(best_seq, param_list) {
     i_samples <- -seq_len(param_list$n_parents)
-    est <- best_seq[, i_samples] == 0
-    n_ref <- rowSums(est, na.rm = TRUE)
-    alt <- t(param_list$reads$alt) > 0
+    est <- best_seq[i_samples, ] == 0
+    n_ref <- colSums(est, na.rm = TRUE)
+    alt <- param_list$reads$alt > 0
     alt[!est] <- NA
-    alt_mis <- rowSums(alt, na.rm = TRUE) / n_ref
+    alt_mis <- colSums(alt, na.rm = TRUE) / n_ref
 
-    est <- best_seq[, i_samples] == 2
-    n_alt <- rowSums(est, na.rm = TRUE)
-    ref <- t(param_list$reads$ref) > 0
+    est <- best_seq[i_samples, ] == 2
+    n_alt <- colSums(est, na.rm = TRUE)
+    ref <- param_list$reads$ref > 0
     ref[!est] <- NA
-    ref_mis <- apply(ref, 1, sum, na.rm = TRUE) / n_alt
+    ref_mis <- colSums(ref, na.rm = TRUE) / n_alt
     return(cbind(alt_mis, ref_mis))
 }
 
 .calcErrors <- function(best_seq, param_list) {
+    best_seq <- apply(best_seq, 3, colSums)
     bias <- .calcReadBias(best_seq, param_list)
     mismap <- .calcMissmap(best_seq, param_list)
     return(list(bias = bias, mismap = mismap))
 }
 
 .bindErrors <- function(error_f, error_r) {
-    nsnp <- length(error_f$bias)
+    nmar <- length(error_f$bias)
     bias <- colMeans(rbind(error_f$bias, error_r$bias), na.rm = TRUE)
     bias[is.na(bias)] <- 0.5
     mismap <- cbind(colMeans(rbind(error_f$mismap[, 1],
@@ -723,14 +775,14 @@ setMethod("estGeno",
 }
 
 .flipParam <- function(param_list) {
-    n_snp <- param_list$n_snp
-    param_list$trans_prob <- param_list$trans_prob[, , (n_snp - 1):1]
-    param_list$reads$p_ref <- param_list$reads$p_ref[, n_snp:1]
-    param_list$reads$p_alt <- param_list$reads$p_alt[, n_snp:1]
-    param_list$reads$ref <- param_list$reads$ref[, n_snp:1]
-    param_list$reads$alt <- param_list$reads$alt[, n_snp:1]
-    param_list$bias <- param_list$bias[n_snp:1]
-    param_list$mismap <- param_list$mismap[n_snp:1,]
+    n_mar <- param_list$n_mar
+    param_list$trans_prob <- param_list$trans_prob[, , (n_mar - 1):1]
+    param_list$reads$p_ref <- param_list$reads$p_ref[, n_mar:1]
+    param_list$reads$p_alt <- param_list$reads$p_alt[, n_mar:1]
+    param_list$reads$ref <- param_list$reads$ref[, n_mar:1]
+    param_list$reads$alt <- param_list$reads$alt[, n_mar:1]
+    param_list$bias <- param_list$bias[n_mar:1]
+    param_list$mismap <- param_list$mismap[n_mar:1,]
     return(param_list)
 }
 
@@ -744,14 +796,14 @@ setMethod("estGeno",
         best_hap_r <- .pat2hap(best_pat_r, param_list)
         p_geno_r <- .parentPat2Geno(best_pat_r, param_list)
         best_geno_r <- .hap2geno(best_hap_r, p_geno_r, param_list)
-        param_list$p_geno_fix <- best_pat_r$p_geno[param_list$n_snp]
+        param_list$p_geno_fix <- best_pat_r$p_geno[param_list$n_mar]
 
     } else {
         best_pat_f <- .getBestSeq(param_list, outprob)
         best_hap_f <- .pat2hap(best_pat_f, param_list)
         p_geno_f <- .parentPat2Geno(best_pat_f, param_list)
         best_geno_f <- .hap2geno(best_hap_f, p_geno_f, param_list)
-        param_list$p_geno_fix <- best_pat_f$p_geno[param_list$n_snp]
+        param_list$p_geno_fix <- best_pat_f$p_geno[param_list$n_mar]
     }
 
     message("\r", cycle, "Backward path...")
@@ -774,7 +826,7 @@ setMethod("estGeno",
         message("\r", cycle,
                 "Estimating allele read bias and mismapping pattern...")
         error_f <- .calcErrors(best_geno_f, param_list)
-        error_r <- .calcErrors(best_geno_r[param_list$n_snp:1, ], param_list)
+        error_r <- .calcErrors(best_geno_r[,,param_list$n_mar:1], param_list)
         error <- .bindErrors(error_f, error_r)
         param_list$bias <- error$bias
         param_list$mismap <- error$mismap
@@ -789,6 +841,8 @@ setMethod("estGeno",
         out_list <- .summarizeEst(best_hap, best_geno,
                                   best_pat$prob, param_list)
         out_list$p_geno <- p_geno
+        out_list$bias <- param_list$bias
+        out_list$mismap <-param_list$mismap
 
         message("\r", "Done!")
         return(out_list)
@@ -801,15 +855,15 @@ setMethod("estGeno",
     param_list$flip = FALSE
     p_read_s <- sum(param_list$reads$p_ref[, 1] == 0 &
                         param_list$reads$p_alt[, 1] == 0)
-    p_read_e <- sum(param_list$reads$p_ref[, param_list$n_snp] == 0 &
-                        param_list$reads$p_alt[, param_list$n_snp] == 0)
+    p_read_e <- sum(param_list$reads$p_ref[, param_list$n_mar] == 0 &
+                        param_list$reads$p_alt[, param_list$n_mar] == 0)
     if (p_read_s < p_read_e) {
         param_list$flip = TRUE
     } else if (p_read_s == p_read_e) {
         p_read_s <- sum(param_list$reads$p_ref[, 1] +
                             param_list$reads$p_alt[, 1])
-        p_read_e <- sum(param_list$reads$p_ref[, param_list$n_snp] +
-                            param_list$reads$p_alt[, param_list$n_snp])
+        p_read_e <- sum(param_list$reads$p_ref[, param_list$n_mar] +
+                            param_list$reads$p_alt[, param_list$n_mar])
         if (p_read_s < p_read_e) {
             param_list$flip = TRUE
         }

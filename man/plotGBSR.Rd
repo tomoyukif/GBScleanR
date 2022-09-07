@@ -73,10 +73,8 @@ the following values:
 To draw line plots for "missing", "het", "raf", you need to run
 \code{\link[=countGenotype]{countGenotype()}} first to obtain statistics. Similary, "dp",
 "ad_ref", "ad_alt", "rrf" requires values obtained via \code{\link[=countRead]{countRead()}}.
-\code{\link[=calcReadStats]{calcReadStats()}} should be executed before drawing line plots of
-"mean_ref", "sd_ref", "qtile_ref", "mean_alt", "sd_alt", and
-"qtile_alt". "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
-#' and "baseqranksum" only work with \code{target = "snp"}, if your data
+"mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
+#' and "baseqranksum" only work with \code{target = "marker"}, if your data
 contains those values supplied via SNP calling tools like
 \href{https://gatk.broadinstitute.org/hc/en-us}{GATK}.
 }
@@ -91,10 +89,6 @@ gdata <- countGenotype(gdata)
 # Draw line plots of missing rate, heterozygosity, proportion of genotype
 # calls per SNP.
 plotGBSR(gdata, stats = "missing")
-
-# Calculate means, standard deviations, quantile values of read counts
-# to be used in `plotGBSR()`
-gdata <- calcReadStats(gdata, q = 0.9)
 
 # Draw line plots of 90 percentile values of reference read counts and
 # alternative read counts per SNP and per sample.

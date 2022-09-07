@@ -3,7 +3,7 @@
 \name{getPosition}
 \alias{getPosition}
 \alias{getPosition,GbsrGenotypeData-method}
-\title{Obtain physical position information of each SNP marker}
+\title{Obtain marker positions}
 \usage{
 getPosition(object, valid = TRUE, chr = NULL, ...)
 
@@ -14,20 +14,21 @@ getPosition(object, valid = TRUE, chr = NULL, ...)
 
 \item{valid}{A logical value. See details.}
 
-\item{chr}{A index to spefcify chromosome to get information.}
+\item{chr}{A integer or string to specify chromosome to get information.}
 
 \item{...}{Unused.}
 }
 \value{
-A integer vetor indicating the physical positions of markers.
+An integer vector indicating the physical positions of markers.
 }
 \description{
-This function returns physical positions of SNP markers.
+This function returns physical positions of markers.
 }
 \details{
-If \code{valid = TRUE}, the chromosome information of markers which
-are labeled \code{TRUE} in the \link{ScanAnnotationDataFrame} slot will be returned.
-\code{\link[=getValidSnp]{getValidSnp()}} tells you which samples are valid.
+If \code{valid = TRUE}, the positions of the markers which are labeled \code{TRUE} in
+the "valid" column of the "marker" slot will be returned. If you need the
+number of over all markers, set \code{valid = FALSE}. \code{\link[=validMar]{validMar()}} tells you
+which markers are valid.
 }
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.

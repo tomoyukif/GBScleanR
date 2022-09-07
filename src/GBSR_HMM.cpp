@@ -24,7 +24,11 @@ double log10_safe_d(const double & d){
     } else {
         out = log10(d);
     }
+<<<<<<< HEAD
     return(out);
+=======
+    return out;
+>>>>>>> polyploids
 }
 
 // Calculate the log10 of the sum of probabilities.
@@ -192,24 +196,43 @@ vector<double> calcGenoprob(const double & ref,
     vector<double> prob(3);
     const double dp = ref + alt;
 
-    double logeseq0 = log10_safe_d(eseq0);
-    double logeseq1 = log10_safe_d(eseq1);
-    double logw1 = log10_safe_d(w1);
-    double logw2 = log10_safe_d(w2);
-    vector<double> ref_multiplier = {logeseq0, logw1, logeseq1};
-    vector<double> alt_multiplier = {logeseq1, logw2, logeseq0};
-    for(int g=0; g<3;++g){
-        prob[g] = ref * ref_multiplier[g] +
-            alt * alt_multiplier[g];
-    }
+    if(dp > 50){
+        const double ratio = ref / dp;
+        prob[0] = calcpdf(ratio, eseq0);
+        prob[1] = calcpdf(ratio, w1);
+        prob[2] = calcpdf(ratio, eseq1);
 
-    if(het){ setHetZero(prob); }
+        if(het){ setHetZero(prob); }
 
-    lognorm_vec(prob);
-    for(int g=0; g<3;++g){
-        prob[g] = pow10(prob[g]);
+        double sum_prob;
+        for(int g=0; g<3;++g){
+            sum_prob += prob[g];
+        }
+
+        for(int g=0; g<3;++g){
+            prob[g] = prob[g] / sum_prob;
+        }
+
+    } else {
+        double logeseq0 = log10_safe_d(eseq0);
+        double logeseq1 = log10_safe_d(eseq1);
+        double logw1 = log10_safe_d(w1);
+        double logw2 = log10_safe_d(w2);
+        vector<double> ref_multiplier = {logeseq0, logw1, logeseq1};
+        vector<double> alt_multiplier = {logeseq1, logw2, logeseq0};
+        for(int g=0; g<3;++g){
+            prob[g] = ref * ref_multiplier[g] +
+                alt * alt_multiplier[g];
+        }
+
+        if(het){ setHetZero(prob); }
+
+        lognorm_vec(prob);
+        for(int g=0; g<3;++g){
+            prob[g] = pow10(prob[g]);
+        }
     }
-    return(prob);
+    return prob;
 }
 
 // Calculate mismap accounted genotype probabilities
@@ -252,7 +275,8 @@ NumericVector calcPemit(NumericMatrix p_ref,
                         int & m,
                         int & n_f,
                         int & n_p,
-                        LogicalVector het
+                        LogicalVector het,
+                        IntegerVector ploidy
 ){
     vector<double> prob;
     double p_prob;
@@ -334,6 +358,10 @@ struct ParInitVit : public Worker {
     const RVector<int> dim;
     const RVector<int> valid_p_indices;
     const RVector<int> vec_m;
+<<<<<<< HEAD
+=======
+    const RVector<int> ploidy;
+>>>>>>> polyploids
 
     ParInitVit(NumericMatrix vit_score,
                const LogicalVector iter_sample,
@@ -348,7 +376,12 @@ struct ParInitVit : public Worker {
                const NumericVector init_prob,
                const IntegerVector dim,
                const IntegerVector valid_p_indices,
+<<<<<<< HEAD
                const IntegerVector m)
+=======
+               const IntegerVector m,
+               const IntegerVector ploidy)
+>>>>>>> polyploids
         : vit_score(vit_score),
           iter_sample(iter_sample),
           ref(ref),
@@ -362,7 +395,12 @@ struct ParInitVit : public Worker {
           init_prob(init_prob),
           dim(dim),
           valid_p_indices(valid_p_indices),
+<<<<<<< HEAD
           vec_m(m) {}
+=======
+          vec_m(m),
+          ploidy(ploidy) {}
+>>>>>>> polyploids
 
     void operator()(size_t begin, size_t end) {
         int het = 0;
@@ -477,6 +515,10 @@ struct ParCalcPathFounder : public Worker {
     const RVector<int> valid_p_indices1;
     const RVector<int> valid_p_indices2;
     const RVector<int> vec_m;
+<<<<<<< HEAD
+=======
+    const RVector<int> ploidy;
+>>>>>>> polyploids
 
     ParCalcPathFounder(IntegerMatrix f_path,
                        NumericMatrix vit_score,
@@ -495,7 +537,12 @@ struct ParCalcPathFounder : public Worker {
                        const NumericVector p_emit2,
                        const IntegerVector valid_p_indices1,
                        const IntegerVector valid_p_indices2,
+<<<<<<< HEAD
                        const IntegerVector m)
+=======
+                       const IntegerVector m,
+                       const IntegerVector ploidy)
+>>>>>>> polyploids
         : f_path(f_path),
           vit_score(vit_score),
           in_score(in_score),
@@ -513,7 +560,12 @@ struct ParCalcPathFounder : public Worker {
           p_emit2(p_emit2),
           valid_p_indices1(valid_p_indices1),
           valid_p_indices2(valid_p_indices2),
+<<<<<<< HEAD
           vec_m(m) {}
+=======
+          vec_m(m),
+          ploidy(ploidy) {}
+>>>>>>> polyploids
 
     void operator()(size_t begin, size_t end) {
         int het = 0;
@@ -706,7 +758,11 @@ void backtrack(IntegerMatrix f_path,
 // Functions for the Viterbi algorithm For OFFSPRING
 struct ParVitOffspring : public Worker {
 
+<<<<<<< HEAD
     const RMatrix<int> o_seq;
+=======
+    RMatrix<int> o_seq;
+>>>>>>> polyploids
     const RVector<int> iter_sample;
     const RMatrix<double> ref;
     const RMatrix<double> alt;
@@ -720,6 +776,10 @@ struct ParVitOffspring : public Worker {
     const RMatrix<double> trans_prob;
     const RVector<int> dim;
     const RVector<int> f_seq;
+<<<<<<< HEAD
+=======
+    const RVector<int> ploidy;
+>>>>>>> polyploids
 
 
     ParVitOffspring(IntegerMatrix o_seq,
@@ -735,7 +795,12 @@ struct ParVitOffspring : public Worker {
                     const NumericVector init_prob,
                     const NumericMatrix trans_prob,
                     const IntegerVector dim,
+<<<<<<< HEAD
                     const IntegerVector f_seq)
+=======
+                    const IntegerVector f_seq,
+                    const IntegerVector ploidy)
+>>>>>>> polyploids
         : o_seq(o_seq),
           iter_sample(iter_sample),
           ref(ref),
@@ -749,7 +814,12 @@ struct ParVitOffspring : public Worker {
           init_prob(init_prob),
           trans_prob(trans_prob),
           dim(dim),
+<<<<<<< HEAD
           f_seq(f_seq) {}
+=======
+          f_seq(f_seq),
+          ploidy(ploidy) {}
+>>>>>>> polyploids
 
     void operator()(size_t begin, size_t end) {
         int het = 0;
@@ -851,7 +921,8 @@ List run_viterbi(NumericMatrix p_ref,
                  LogicalVector het,
                  IntegerVector possiblehap,
                  IntegerVector possiblegeno,
-                 IntegerVector p_geno_fix
+                 IntegerVector p_geno_fix,
+                 IntegerVector ploidy
 ){
     // Initialize arrays to store output, alpha values,
     // emittion probs, and beta values.
@@ -890,7 +961,8 @@ List run_viterbi(NumericMatrix p_ref,
                         m,
                         n_f,
                         n_p,
-                        het);
+                        het,
+                        ploidy);
 
     int int_fix_p = p_geno_fix[0];
     if(int_fix_p >= 0){
@@ -926,7 +998,12 @@ List run_viterbi(NumericMatrix p_ref,
                         init_prob,
                         dim,
                         valid_p_indices1,
+<<<<<<< HEAD
                         in_m);
+=======
+                        in_m,
+                        ploidy);
+>>>>>>> polyploids
     parallelFor(0, iter_sample.length(), init_vit);
     NumericMatrix in_score;
     in_score = clone(vit_score);
@@ -959,7 +1036,12 @@ List run_viterbi(NumericMatrix p_ref,
                             m,
                             n_f,
                             n_p,
+<<<<<<< HEAD
                             het);
+=======
+                            het,
+                            ploidy);
+>>>>>>> polyploids
 
         R_xlen_t fix_p_len = p_geno_fix.size();
         if(fix_p_len > m){
@@ -1000,7 +1082,12 @@ List run_viterbi(NumericMatrix p_ref,
                                      p_emit2,
                                      valid_p_indices1,
                                      valid_p_indices2,
+<<<<<<< HEAD
                                      in_m);
+=======
+                                     in_m,
+                                     ploidy);
+>>>>>>> polyploids
 
         parallelFor(0, iter_p_pat.length(), calc_path);
         p_emit1 = clone(p_emit2);
@@ -1037,7 +1124,12 @@ List run_viterbi(NumericMatrix p_ref,
                                   init_prob,
                                   trans_prob,
                                   dim,
+<<<<<<< HEAD
                                   f_seq);
+=======
+                                  f_seq,
+                                  ploidy);
+>>>>>>> polyploids
     parallelFor(0, iter_sample.length(), vit_offspring);
 
     Rcpp::Rcout << "\r" << string(70, ' ');
@@ -1064,6 +1156,10 @@ struct ParFB : public Worker {
     const RMatrix<double> trans_prob;
     const RVector<int> dim;
     const RVector<int> p_geno;
+<<<<<<< HEAD
+=======
+    const RVector<int> ploidy;
+>>>>>>> polyploids
 
     ParFB(NumericMatrix gamma,
           const LogicalVector iter_sample,
@@ -1078,7 +1174,12 @@ struct ParFB : public Worker {
           const NumericVector init_prob,
           const NumericMatrix trans_prob,
           const IntegerVector dim,
+<<<<<<< HEAD
           const IntegerVector p_geno)
+=======
+          const IntegerVector p_geno,
+          const IntegerVector ploidy)
+>>>>>>> polyploids
         : gamma(gamma),
           iter_sample(iter_sample),
           ref(ref),
@@ -1092,7 +1193,12 @@ struct ParFB : public Worker {
           init_prob(init_prob),
           trans_prob(trans_prob),
           dim(dim),
+<<<<<<< HEAD
           p_geno(p_geno) {}
+=======
+          p_geno(p_geno),
+          ploidy(ploidy) {}
+>>>>>>> polyploids
 
     void operator()(size_t begin, size_t end) {
         int het = 0;
@@ -1234,7 +1340,8 @@ NumericMatrix run_fb(NumericMatrix ref,
                      int & n_h,
                      int & n_o,
                      int & n_m,
-                     IntegerVector p_geno
+                     IntegerVector p_geno,
+                     IntegerVector ploidy
 ){
 
 
@@ -1269,10 +1376,268 @@ NumericMatrix run_fb(NumericMatrix ref,
                   init_prob,
                   trans_prob,
                   dim,
+<<<<<<< HEAD
                   p_geno);
+=======
+                  p_geno,
+                  ploidy);
+>>>>>>> polyploids
 
     parallelFor(0, iter_sample.length(), calc_fb);
 
     gamma.attr("dim") = Dimension(n_o, 3, n_m);
     return gamma;
+<<<<<<< HEAD
+=======
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+// Function to calculate probabilities of founder genotype patterns.
+vector<double> calcDosProb(RMatrix<double> ref,
+                           RMatrix<double> alt,
+                           RMatrix<double> ratio,
+                           RVector<double> eseq,
+                           size_t & m,
+                           size_t & sample_i,
+                           RVector<int> ploidy,
+                           RVector<int> mindp
+){
+
+    RMatrix<double>::Row ref_i = ref.row(sample_i);
+    RMatrix<double>::Row alt_i = alt.row(sample_i);
+    RMatrix<double>::Row ratio_i = ratio.row(sample_i);
+
+    size_t plex = ploidy[0] + 1;
+    vector<double> prob(plex);
+    vector<double> w(plex);
+    const double dp = ref_i[m] + alt_i[m];
+
+    double p;
+    for(size_t i = 0; i < plex; ++i){
+        p = (1 / (double)ploidy[0]) * (double)i;
+        if(p > eseq[0]){
+            w[i] = eseq[0];
+        } else if(p < eseq[1]){
+            w[i] = eseq[1];
+        } else {
+            w[i] = p;
+        }
+    }
+
+    if(ref_i[m] == -1){
+        if(ratio_i[m] < 0){
+            double even_p = 1 / ((double)ploidy[0] + 1);
+            for(size_t i = 0; i < plex; ++i){
+                prob[i] = even_p;
+            }
+        } else {
+            for(size_t i = 0; i < plex; ++i){
+                prob[i] = calcpdf(ratio_i[m], w[i]);
+            }
+        }
+
+        double sum_prob;
+        for(size_t g = 0; g < plex; ++g){
+            sum_prob += prob[g];
+        }
+        for(size_t g = 0; g < plex; ++g){
+            prob[g] = prob[g] / sum_prob;
+        }
+
+    } else {
+        if(dp > mindp[0]){
+            if(ratio_i[m] < 0){
+                double even_p = 1 / plex;
+                for(size_t i = 0; i < plex; ++i){
+                    prob[i] = even_p;
+                }
+            } else {
+                for(size_t i = 0; i < plex; ++i){
+                    prob[i] = calcpdf(ratio_i[m], w[i]);
+                }
+            }
+
+            double sum_prob;
+            for(size_t g = 0; g < plex; ++g){
+                sum_prob += prob[g];
+            }
+            for(size_t g = 0; g < plex; ++g){
+                prob[g] = prob[g] / sum_prob;
+            }
+
+        } else {
+
+            for(size_t i = 0; i < plex; ++i){
+                w[i] = log10_safe_d(w[i]);
+            }
+            for(size_t g = 0; g < plex; ++g){
+                prob[g] = ref_i[m] * w[ploidy[0] - g] + alt_i[m] * w[g];
+            }
+
+            lognorm_vec(prob);
+            for(size_t g = 0; g < plex; ++g){
+                prob[g] = pow10(prob[g]);
+            }
+        }
+    }
+    double sum_prob;
+    for(size_t i = 0; i < plex; ++i){
+        sum_prob += prob[i];
+    }
+    if(sum_prob == 0){
+        prob.assign(plex, 1/plex);
+    }
+
+    return prob;
+}
+
+// Functions for the Viterbi algorithm For OFFSPRING
+struct ParVitDosage : public Worker {
+
+    RMatrix<int> o_dos;
+    const RVector<int> iter_sample;
+    const RMatrix<double> ref;
+    const RMatrix<double> alt;
+    const RMatrix<double> ratio;
+    const RVector<double> eseq;
+    const RVector<double> init_prob;
+    const RMatrix<double> trans_prob;
+    const RVector<int> dim;
+    const RVector<int> ploidy;
+    const RVector<int> mindp;
+
+    ParVitDosage(IntegerMatrix o_dos,
+                 const LogicalVector iter_sample,
+                 const NumericMatrix ref,
+                 const NumericMatrix alt,
+                 const NumericMatrix ratio,
+                 const NumericVector eseq,
+                 const NumericVector init_prob,
+                 const NumericMatrix trans_prob,
+                 const IntegerVector dim,
+                 const IntegerVector ploidy,
+                 const IntegerVector mindp)
+        : o_dos(o_dos),
+          iter_sample(iter_sample),
+          ref(ref),
+          alt(alt),
+          ratio(ratio),
+          eseq(eseq),
+          init_prob(init_prob),
+          trans_prob(trans_prob),
+          dim(dim),
+          ploidy(ploidy),
+          mindp(mindp) {}
+
+    void operator()(size_t begin, size_t end) {
+        for(RVector<int>::const_iterator i=iter_sample.begin() + begin;
+            i<iter_sample.begin() + end; ++i){
+            size_t sample_i = distance(iter_sample.begin(), i);
+            RMatrix<int>::Column o_dos_i = o_dos.column(sample_i);
+            size_t n_m = dim[0];
+            size_t plex = ploidy[0] + 1;
+            vector<vector<unsigned short>> o_path(n_m,
+                                                  vector<unsigned short>(plex));
+            vector<double> vit(plex);
+            double trans_kk;
+            size_t max_i;
+            vector<double> score_jkk(plex);
+            vector<double> max_scores_jk(plex);
+            size_t o_prev;
+
+            for(size_t m=0; m<n_m; ++m){
+                vector<double> prob_i = calcDosProb(ref,
+                                                    alt,
+                                                    ratio,
+                                                    eseq,
+                                                    m,
+                                                    sample_i,
+                                                    ploidy,
+                                                    mindp);
+
+                for(size_t i = 0; i < prob_i.size(); ++i){
+                    log10_safe(prob_i[i]);
+                }
+
+                size_t trans_prob_col;
+
+                if(m == 0){
+                    for(size_t k=0; k<plex; ++k){
+                        vit[k] = prob_i[k] + init_prob[k];
+                    }
+                } else {
+                    for(size_t k2 = 0; k2 < plex; ++k2){
+                        trans_prob_col = (m-1) * plex + k2;
+                        RMatrix<double>::Column trans_prob_k =
+                            trans_prob.column(trans_prob_col);
+
+                        for(size_t k1 = 0; k1 < plex; ++k1){
+                            trans_kk = trans_prob_k[k1];
+                            score_jkk[k1] = vit[k1] + trans_kk;
+                        }
+                        max_i = get_max_int(score_jkk);
+                        o_path[m][k2] = max_i;
+                        max_scores_jk[k2] = score_jkk[max_i];
+                    }
+                    for(size_t k2 = 0; k2 < plex; ++k2){
+                        vit[k2] = max_scores_jk[k2] + prob_i[k2];
+                    }
+                }
+                if(m == n_m - 1){
+                    o_dos_i[m] = get_max_int(vit);
+                }
+            }
+
+            // Backtracking
+            for(size_t m=n_m-1; m>0; --m){
+                o_prev = o_dos_i[m];
+                o_dos_i[m-1] = o_path[m][o_prev];
+            }
+        }
+    }
+};
+
+
+// Solve the HMM
+// [[Rcpp::export]]
+IntegerMatrix dosage_viterbi(NumericMatrix ref,
+                             NumericMatrix alt,
+                             NumericMatrix ratio,
+                             NumericVector eseq_in,
+                             NumericMatrix trans_prob,
+                             NumericVector init_prob,
+                             int & n_o,
+                             int & n_m,
+                             IntegerVector & ploidy,
+                             IntegerVector & mindp
+){
+    // Initialize arrays to store output, alpha values,
+    // emittion probs, and beta values.
+    IntegerMatrix o_dos(n_m, n_o);
+
+    // Convert values to ones used here.
+    IntegerVector dim = {n_m, n_o};
+    NumericVector eseq(2);
+    eseq = clone(eseq_in);
+
+    LogicalVector iter_sample(n_o);
+
+    ParVitDosage vit_dosage(o_dos,
+                            iter_sample,
+                            ref,
+                            alt,
+                            ratio,
+                            eseq,
+                            init_prob,
+                            trans_prob,
+                            dim,
+                            ploidy,
+                            mindp);
+
+    parallelFor(0, iter_sample.length(), vit_dosage);
+
+    Rcpp::Rcout << "\r" << string(70, ' ');
+    return o_dos;
+>>>>>>> polyploids
 }

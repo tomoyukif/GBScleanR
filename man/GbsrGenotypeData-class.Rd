@@ -10,43 +10,35 @@ The \code{GbsrGenotypeData} class is the main class of \link{GBScleanR} and
 user work with this class object.
 }
 \details{
-The \code{GbsrGenotypeData} class has slots to store summarized genotype
-data, a \link{GbsrScheme} object, and the connection information
-to a GDS file which can be generated from a VCF file of your
-genotype data via \code{\link[=gbsrVCF2GDS]{gbsrVCF2GDS()}}.
-The \link{GbsrGenotypeData} class has four slots: \code{data}, \code{snpAnnot},
-and \code{scanAnnot} and \code{scheme.} "Samples" or "individuals" subjected to
-genotyping are called "scan" here with following the way used
-in \link{GWASTools}. The slots \code{snpAnnot} and \code{scanAnnot} store
-a \link{SnpAnnotationDataFrame} object and a
-\link{ScanAnnotationDataFrame} object, respectively.
-The slot \code{data} stores a \link{GdsGenotypeReader} object.
-Those three classes are included from \link{GWASTools}.
-The slot \code{scheme} holds a \link{GbsrScheme} object.
-The function \code{\link[=loadGDS]{loadGDS()}} initialize those class objects internally.
+The \code{GbsrGenotypeData} class is an extention of \code{SeqVarGDSClass} in the
+\link{SeqArray} package to store summary data of genotypes and reads and a
+\link{GbsrScheme} object that contains mating scheme information of the given
+population..
+The slots \code{marker} and \code{sample} store a \link{data.frame} object for variant-wise
+and sample-wise summary information, respectively. The \code{scheme} slot holds a
+\link{GbsrScheme} object. The function \code{\link[=loadGDS]{loadGDS()}} initialize the
+\code{GbsrGenotypeData} class.
 }
 \section{Slots}{
 
 \describe{
-\item{\code{data}}{A \link{GdsGenotypeReader} object.}
+\item{\code{data}}{A \link{SeqVarGDSClass} object.}
 
-\item{\code{snpAnnot}}{A \link{SnpAnnotationDataFrame} object.}
+\item{\code{marker}}{A \link{data.frame} object.}
 
-\item{\code{scanAnnot}}{A \link{ScanAnnotationDataFrame} object.}
+\item{\code{sample}}{A \link{data.frame} object.}
 
 \item{\code{scheme}}{A \link{GbsrScheme} object.}
 }}
 
 \examples{
-# `loadGDS()` initialize objects in the slots of a `GbsrGenotypeData`
-# object internally.
+# `loadGDS()` initialize the `GbsrGenotypeData` object.
 
-# Load data in the GDS file and instantiate
-# a `GbsrGenotypeData` object.
+# Load a GDS file and instantiate a `GbsrGenotypeData` object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Close connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }

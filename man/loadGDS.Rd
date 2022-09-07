@@ -4,11 +4,17 @@
 \alias{loadGDS}
 \title{Load a GDS file and construct a \code{GbsrGenotypeData} object.}
 \usage{
-loadGDS(x, verbose = TRUE)
+loadGDS(x, load_filter = FALSE, ploidy = 2, verbose = TRUE)
 }
 \arguments{
 \item{x}{A string of the path to an input GDS file or
 a \code{GbsrGenotypeData} object to reload.}
+
+\item{load_filter}{A logical whether to load the filtering information made
+via \code{\link[=setSamFilter]{setSamFilter()}} and \code{\link[=setMarFilter]{setMarFilter()}} and saved in the GDS file via
+\code{\link[=closeGDS]{closeGDS()}} with \code{save_filter = TRUE}.}
+
+\item{ploidy}{Set the ploidy of the population.}
 
 \item{verbose}{if TRUE, show information.}
 }

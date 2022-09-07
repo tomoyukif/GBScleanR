@@ -4,12 +4,15 @@
 \alias{gbsrVCF2GDS}
 \title{Convert a VCF file to a GDS file}
 \usage{
-gbsrVCF2GDS(vcf_fn, out_fn, force = FALSE, verbose = TRUE)
+gbsrVCF2GDS(vcf_fn, out_fn, gt = "GT", force = FALSE, verbose = TRUE)
 }
 \arguments{
 \item{vcf_fn}{A string to indicate path to an input VCF file.}
 
 \item{out_fn}{A string to indicate path to an output GDS file.}
+
+\item{gt}{the ID for genotypic data in the FORMAT column; "GT" by default,
+VCFv4.0.}
 
 \item{force}{A logical value to overwrite a GDS file even if
 the file specified in "out_fn" exists.}
@@ -30,14 +33,7 @@ You may use "bcftools" or "vcftools" for filtering.
 \details{
 gbsrVCF2GDS converts a VCF file to a GDS file.
 The data structure of the GDS file created via this functions is same with
-those created by \code{snpgdsVCF2GDS} of \code{SNPRelate}.
-Unlike the GDS files created by \code{SNPRelate} \code{GBScleanR}'s GDS files: \cr
-\itemize{
-\item{"Include annotation information of variants
-recorded in the \code{INFO} filed of the input VCF."}
-\item{"Include allelic read count data (indicated as AD)
-recoreded in the \code{FORMAT} filed of the input VCF."}
-}
+those created by \code{seqVCF2GDS()} of \code{SeqArray}.
 }
 \examples{
 # Create a GDS file from a sample VCF file.
