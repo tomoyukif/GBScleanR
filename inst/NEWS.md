@@ -56,5 +56,5 @@ Changes in version 0.99.40 (2022-4-25)
 Changes in version 1.0.2 (2022-9-7)
 + Fix a bug in GBSR_HMM.cpp.
 
-Changes in version 1.1.0 (2022-9-7)
+Changes in version 1.0.3 (2022-9-7)
 + Rewrote some scripts and replaced some function names for better user experience and code readability
