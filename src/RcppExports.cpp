@@ -62,10 +62,50 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// count_geno
+IntegerVector count_geno(IntegerMatrix geno);
+RcppExport SEXP _GBScleanR_count_geno(SEXP genoSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerMatrix >::type geno(genoSEXP);
+    rcpp_result_gen = Rcpp::wrap(count_geno(geno));
+    return rcpp_result_gen;
+END_RCPP
+}
+// count_read
+NumericVector count_read(NumericVector read, NumericVector tot_read);
+RcppExport SEXP _GBScleanR_count_read(SEXP readSEXP, SEXP tot_readSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type read(readSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type tot_read(tot_readSEXP);
+    rcpp_result_gen = Rcpp::wrap(count_read(read, tot_read));
+    return rcpp_result_gen;
+END_RCPP
+}
+// thinout_marker
+LogicalVector thinout_marker(IntegerVector chr, IntegerVector pos, IntegerVector missing_count, int range);
+RcppExport SEXP _GBScleanR_thinout_marker(SEXP chrSEXP, SEXP posSEXP, SEXP missing_countSEXP, SEXP rangeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerVector >::type chr(chrSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type pos(posSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type missing_count(missing_countSEXP);
+    Rcpp::traits::input_parameter< int >::type range(rangeSEXP);
+    rcpp_result_gen = Rcpp::wrap(thinout_marker(chr, pos, missing_count, range));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_GBScleanR_run_viterbi", (DL_FUNC) &_GBScleanR_run_viterbi, 19},
     {"_GBScleanR_run_fb", (DL_FUNC) &_GBScleanR_run_fb, 13},
+    {"_GBScleanR_count_geno", (DL_FUNC) &_GBScleanR_count_geno, 1},
+    {"_GBScleanR_count_read", (DL_FUNC) &_GBScleanR_count_read, 2},
+    {"_GBScleanR_thinout_marker", (DL_FUNC) &_GBScleanR_thinout_marker, 4},
     {NULL, NULL, 0}
 };
 

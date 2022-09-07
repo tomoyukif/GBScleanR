@@ -9,3 +9,15 @@ run_fb <- function(ref, alt, eseq_in, bias, mismap, possiblehap, trans_prob, ini
     .Call(`_GBScleanR_run_fb`, ref, alt, eseq_in, bias, mismap, possiblehap, trans_prob, init_prob, n_h, n_o, n_m, p_geno, ploidy)
 }
 
+count_geno <- function(geno) {
+    .Call(`_GBScleanR_count_geno`, geno)
+}
+
+count_read <- function(read, tot_read) {
+    .Call(`_GBScleanR_count_read`, read, tot_read)
+}
+
+thinout_marker <- function(chr, pos, missing_count, range) {
+    .Call(`_GBScleanR_thinout_marker`, chr, pos, missing_count, range)
+}
+
