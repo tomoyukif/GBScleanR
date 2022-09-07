@@ -24,7 +24,7 @@ double log10_safe_d(const double & d){
     } else {
         out = log10(d);
     }
-    return(out);
+    return out;
 }
 
 // Calculate the log10 of the sum of probabilities.
@@ -180,6 +180,7 @@ vector<double> calcGenoprob(const double & ref,
                             const double & w2,
                             const int & het){
     vector<double> prob(3);
+
     double logeseq0 = log10_safe_d(eseq0);
     double logeseq1 = log10_safe_d(eseq1);
     double logw1 = log10_safe_d(w1);
@@ -197,7 +198,7 @@ vector<double> calcGenoprob(const double & ref,
     for(int g=0; g<3;++g){
         prob[g] = pow10(prob[g]);
     }
-    return(prob);
+    return prob;
 }
 
 // Calculate mismap accounted genotype probabilities
@@ -240,7 +241,8 @@ NumericVector calcPemit(NumericMatrix p_ref,
                         int & m,
                         int & n_f,
                         int & n_p,
-                        LogicalVector het
+                        LogicalVector het,
+                        IntegerVector ploidy
 ){
     vector<double> prob;
     double p_prob;
@@ -322,6 +324,7 @@ struct ParInitVit : public Worker {
     const RVector<int> dim;
     const RVector<int> valid_p_indices;
     const RVector<int> vec_m;
+    const RVector<int> ploidy;
 
     ParInitVit(NumericMatrix vit_score,
                const LogicalVector iter_sample,
@@ -336,7 +339,8 @@ struct ParInitVit : public Worker {
                const NumericVector init_prob,
                const IntegerVector dim,
                const IntegerVector valid_p_indices,
-               const IntegerVector m)
+               const IntegerVector m,
+               const IntegerVector ploidy)
         : vit_score(vit_score),
           iter_sample(iter_sample),
           ref(ref),
@@ -350,7 +354,8 @@ struct ParInitVit : public Worker {
           init_prob(init_prob),
           dim(dim),
           valid_p_indices(valid_p_indices),
-          vec_m(m) {}
+          vec_m(m),
+          ploidy(ploidy) {}
 
     void operator()(size_t begin, size_t end) {
         int het = 0;
@@ -465,6 +470,7 @@ struct ParCalcPathFounder : public Worker {
     const RVector<int> valid_p_indices1;
     const RVector<int> valid_p_indices2;
     const RVector<int> vec_m;
+    const RVector<int> ploidy;
 
     ParCalcPathFounder(IntegerMatrix f_path,
                        NumericMatrix vit_score,
@@ -483,7 +489,8 @@ struct ParCalcPathFounder : public Worker {
                        const NumericVector p_emit2,
                        const IntegerVector valid_p_indices1,
                        const IntegerVector valid_p_indices2,
-                       const IntegerVector m)
+                       const IntegerVector m,
+                       const IntegerVector ploidy)
         : f_path(f_path),
           vit_score(vit_score),
           in_score(in_score),
@@ -501,7 +508,8 @@ struct ParCalcPathFounder : public Worker {
           p_emit2(p_emit2),
           valid_p_indices1(valid_p_indices1),
           valid_p_indices2(valid_p_indices2),
-          vec_m(m) {}
+          vec_m(m),
+          ploidy(ploidy) {}
 
     void operator()(size_t begin, size_t end) {
         int het = 0;
@@ -694,7 +702,7 @@ void backtrack(IntegerMatrix f_path,
 // Functions for the Viterbi algorithm For OFFSPRING
 struct ParVitOffspring : public Worker {
 
-    const RMatrix<int> o_seq;
+    RMatrix<int> o_seq;
     const RVector<int> iter_sample;
     const RMatrix<double> ref;
     const RMatrix<double> alt;
@@ -708,7 +716,7 @@ struct ParVitOffspring : public Worker {
     const RMatrix<double> trans_prob;
     const RVector<int> dim;
     const RVector<int> f_seq;
-
+    const RVector<int> ploidy;
 
     ParVitOffspring(IntegerMatrix o_seq,
                     const LogicalVector iter_sample,
@@ -723,7 +731,8 @@ struct ParVitOffspring : public Worker {
                     const NumericVector init_prob,
                     const NumericMatrix trans_prob,
                     const IntegerVector dim,
-                    const IntegerVector f_seq)
+                    const IntegerVector f_seq,
+                    const IntegerVector ploidy)
         : o_seq(o_seq),
           iter_sample(iter_sample),
           ref(ref),
@@ -737,7 +746,8 @@ struct ParVitOffspring : public Worker {
           init_prob(init_prob),
           trans_prob(trans_prob),
           dim(dim),
-          f_seq(f_seq) {}
+          f_seq(f_seq),
+          ploidy(ploidy) {}
 
     void operator()(size_t begin, size_t end) {
         int het = 0;
@@ -839,7 +849,8 @@ List run_viterbi(NumericMatrix p_ref,
                  LogicalVector het,
                  IntegerVector possiblehap,
                  IntegerVector possiblegeno,
-                 IntegerVector p_geno_fix
+                 IntegerVector p_geno_fix,
+                 IntegerVector ploidy
 ){
     // Initialize arrays to store output, alpha values,
     // emittion probs, and beta values.
@@ -878,7 +889,8 @@ List run_viterbi(NumericMatrix p_ref,
                         m,
                         n_f,
                         n_p,
-                        het);
+                        het,
+                        ploidy);
 
     int int_fix_p = p_geno_fix[0];
     if(int_fix_p >= 0){
@@ -914,7 +926,8 @@ List run_viterbi(NumericMatrix p_ref,
                         init_prob,
                         dim,
                         valid_p_indices1,
-                        in_m);
+                        in_m,
+                        ploidy);
     parallelFor(0, iter_sample.length(), init_vit);
     NumericMatrix in_score;
     in_score = clone(vit_score);
@@ -947,7 +960,8 @@ List run_viterbi(NumericMatrix p_ref,
                             m,
                             n_f,
                             n_p,
-                            het);
+                            het,
+                            ploidy);
 
         R_xlen_t fix_p_len = p_geno_fix.size();
         if(fix_p_len > m){
@@ -988,7 +1002,8 @@ List run_viterbi(NumericMatrix p_ref,
                                      p_emit2,
                                      valid_p_indices1,
                                      valid_p_indices2,
-                                     in_m);
+                                     in_m,
+                                     ploidy);
 
         parallelFor(0, iter_p_pat.length(), calc_path);
         p_emit1 = clone(p_emit2);
@@ -1025,7 +1040,8 @@ List run_viterbi(NumericMatrix p_ref,
                                   init_prob,
                                   trans_prob,
                                   dim,
-                                  f_seq);
+                                  f_seq,
+                                  ploidy);
     parallelFor(0, iter_sample.length(), vit_offspring);
 
     Rcpp::Rcout << "\r" << string(70, ' ');
@@ -1052,6 +1068,7 @@ struct ParFB : public Worker {
     const RMatrix<double> trans_prob;
     const RVector<int> dim;
     const RVector<int> p_geno;
+    const RVector<int> ploidy;
 
     ParFB(NumericMatrix gamma,
           const LogicalVector iter_sample,
@@ -1066,7 +1083,8 @@ struct ParFB : public Worker {
           const NumericVector init_prob,
           const NumericMatrix trans_prob,
           const IntegerVector dim,
-          const IntegerVector p_geno)
+          const IntegerVector p_geno,
+          const IntegerVector ploidy)
         : gamma(gamma),
           iter_sample(iter_sample),
           ref(ref),
@@ -1080,7 +1098,8 @@ struct ParFB : public Worker {
           init_prob(init_prob),
           trans_prob(trans_prob),
           dim(dim),
-          p_geno(p_geno) {}
+          p_geno(p_geno),
+          ploidy(ploidy) {}
 
     void operator()(size_t begin, size_t end) {
         int het = 0;
@@ -1222,7 +1241,8 @@ NumericMatrix run_fb(NumericMatrix ref,
                      int & n_h,
                      int & n_o,
                      int & n_m,
-                     IntegerVector p_geno
+                     IntegerVector p_geno,
+                     IntegerVector ploidy
 ){
 
 
@@ -1257,7 +1277,8 @@ NumericMatrix run_fb(NumericMatrix ref,
                   init_prob,
                   trans_prob,
                   dim,
-                  p_geno);
+                  p_geno,
+                  ploidy);
 
     parallelFor(0, iter_sample.length(), calc_fb);
 

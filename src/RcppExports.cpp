@@ -11,8 +11,8 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // run_viterbi
-List run_viterbi(NumericMatrix p_ref, NumericMatrix p_alt, NumericMatrix ref, NumericMatrix alt, NumericVector eseq_in, NumericVector bias, NumericMatrix mismap, NumericMatrix trans_prob, NumericVector init_prob, int& n_p, int& n_h, int& n_o, int& n_f, int& n_m, LogicalVector het, IntegerVector possiblehap, IntegerVector possiblegeno, IntegerVector p_geno_fix);
-RcppExport SEXP _GBScleanR_run_viterbi(SEXP p_refSEXP, SEXP p_altSEXP, SEXP refSEXP, SEXP altSEXP, SEXP eseq_inSEXP, SEXP biasSEXP, SEXP mismapSEXP, SEXP trans_probSEXP, SEXP init_probSEXP, SEXP n_pSEXP, SEXP n_hSEXP, SEXP n_oSEXP, SEXP n_fSEXP, SEXP n_mSEXP, SEXP hetSEXP, SEXP possiblehapSEXP, SEXP possiblegenoSEXP, SEXP p_geno_fixSEXP) {
+List run_viterbi(NumericMatrix p_ref, NumericMatrix p_alt, NumericMatrix ref, NumericMatrix alt, NumericVector eseq_in, NumericVector bias, NumericMatrix mismap, NumericMatrix trans_prob, NumericVector init_prob, int& n_p, int& n_h, int& n_o, int& n_f, int& n_m, LogicalVector het, IntegerVector possiblehap, IntegerVector possiblegeno, IntegerVector p_geno_fix, IntegerVector ploidy);
+RcppExport SEXP _GBScleanR_run_viterbi(SEXP p_refSEXP, SEXP p_altSEXP, SEXP refSEXP, SEXP altSEXP, SEXP eseq_inSEXP, SEXP biasSEXP, SEXP mismapSEXP, SEXP trans_probSEXP, SEXP init_probSEXP, SEXP n_pSEXP, SEXP n_hSEXP, SEXP n_oSEXP, SEXP n_fSEXP, SEXP n_mSEXP, SEXP hetSEXP, SEXP possiblehapSEXP, SEXP possiblegenoSEXP, SEXP p_geno_fixSEXP, SEXP ploidySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -34,13 +34,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< IntegerVector >::type possiblehap(possiblehapSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type possiblegeno(possiblegenoSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type p_geno_fix(p_geno_fixSEXP);
-    rcpp_result_gen = Rcpp::wrap(run_viterbi(p_ref, p_alt, ref, alt, eseq_in, bias, mismap, trans_prob, init_prob, n_p, n_h, n_o, n_f, n_m, het, possiblehap, possiblegeno, p_geno_fix));
+    Rcpp::traits::input_parameter< IntegerVector >::type ploidy(ploidySEXP);
+    rcpp_result_gen = Rcpp::wrap(run_viterbi(p_ref, p_alt, ref, alt, eseq_in, bias, mismap, trans_prob, init_prob, n_p, n_h, n_o, n_f, n_m, het, possiblehap, possiblegeno, p_geno_fix, ploidy));
     return rcpp_result_gen;
 END_RCPP
 }
 // run_fb
-NumericMatrix run_fb(NumericMatrix ref, NumericMatrix alt, NumericVector eseq_in, NumericVector bias, NumericMatrix mismap, IntegerVector possiblehap, NumericMatrix trans_prob, NumericVector init_prob, int& n_h, int& n_o, int& n_m, IntegerVector p_geno);
-RcppExport SEXP _GBScleanR_run_fb(SEXP refSEXP, SEXP altSEXP, SEXP eseq_inSEXP, SEXP biasSEXP, SEXP mismapSEXP, SEXP possiblehapSEXP, SEXP trans_probSEXP, SEXP init_probSEXP, SEXP n_hSEXP, SEXP n_oSEXP, SEXP n_mSEXP, SEXP p_genoSEXP) {
+NumericMatrix run_fb(NumericMatrix ref, NumericMatrix alt, NumericVector eseq_in, NumericVector bias, NumericMatrix mismap, IntegerVector possiblehap, NumericMatrix trans_prob, NumericVector init_prob, int& n_h, int& n_o, int& n_m, IntegerVector p_geno, IntegerVector ploidy);
+RcppExport SEXP _GBScleanR_run_fb(SEXP refSEXP, SEXP altSEXP, SEXP eseq_inSEXP, SEXP biasSEXP, SEXP mismapSEXP, SEXP possiblehapSEXP, SEXP trans_probSEXP, SEXP init_probSEXP, SEXP n_hSEXP, SEXP n_oSEXP, SEXP n_mSEXP, SEXP p_genoSEXP, SEXP ploidySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -56,14 +57,15 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int& >::type n_o(n_oSEXP);
     Rcpp::traits::input_parameter< int& >::type n_m(n_mSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type p_geno(p_genoSEXP);
-    rcpp_result_gen = Rcpp::wrap(run_fb(ref, alt, eseq_in, bias, mismap, possiblehap, trans_prob, init_prob, n_h, n_o, n_m, p_geno));
+    Rcpp::traits::input_parameter< IntegerVector >::type ploidy(ploidySEXP);
+    rcpp_result_gen = Rcpp::wrap(run_fb(ref, alt, eseq_in, bias, mismap, possiblehap, trans_prob, init_prob, n_h, n_o, n_m, p_geno, ploidy));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_GBScleanR_run_viterbi", (DL_FUNC) &_GBScleanR_run_viterbi, 18},
-    {"_GBScleanR_run_fb", (DL_FUNC) &_GBScleanR_run_fb, 12},
+    {"_GBScleanR_run_viterbi", (DL_FUNC) &_GBScleanR_run_viterbi, 19},
+    {"_GBScleanR_run_fb", (DL_FUNC) &_GBScleanR_run_fb, 13},
     {NULL, NULL, 0}
 };
 

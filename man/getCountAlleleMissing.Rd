@@ -5,7 +5,13 @@
 \alias{getCountAlleleMissing,GbsrGenotypeData-method}
 \title{Obtain total missing allele counts per SNP or per scan (sample)}
 \usage{
-getCountAlleleMissing(object, target = "snp", valid = TRUE, prop = FALSE, ...)
+getCountAlleleMissing(
+  object,
+  target = "marker",
+  valid = TRUE,
+  prop = FALSE,
+  ...
+)
 
 \S4method{getCountAlleleMissing}{GbsrGenotypeData}(object, target, valid, prop)
 }

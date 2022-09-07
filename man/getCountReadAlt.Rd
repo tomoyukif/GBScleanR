@@ -5,7 +5,7 @@
 \alias{getCountReadAlt,GbsrGenotypeData-method}
 \title{Obtain total alternative read counts per SNP or per scan (sample)}
 \usage{
-getCountReadAlt(object, target = "snp", valid = TRUE, prop = FALSE, ...)
+getCountReadAlt(object, target = "marker", valid = TRUE, prop = FALSE, ...)
 
 \S4method{getCountReadAlt}{GbsrGenotypeData}(object, target, valid, prop)
 }

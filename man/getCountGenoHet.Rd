@@ -5,7 +5,7 @@
 \alias{getCountGenoHet,GbsrGenotypeData-method}
 \title{Obtain total heterozygote counts per SNP or per scan (sample)}
 \usage{
-getCountGenoHet(object, target = "snp", valid = TRUE, prop = FALSE, ...)
+getCountGenoHet(object, target = "marker", valid = TRUE, prop = FALSE, ...)
 
 \S4method{getCountGenoHet}{GbsrGenotypeData}(object, target, valid, prop)
 }

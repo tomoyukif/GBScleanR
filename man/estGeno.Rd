@@ -14,13 +14,12 @@ estGeno(
   het_parent = FALSE,
   optim = TRUE,
   iter = 2,
-  n_threads = NULL,
+  n_threads = 1,
   ...
 )
 
 \S4method{estGeno}{GbsrGenotypeData}(
   object,
-  chr,
   recomb_rate,
   error_rate,
   call_threshold,
@@ -56,8 +55,8 @@ error correction.}
 iterative parameter updates.}
 
 \item{n_threads}{An integer value to specify the number of
-threads used for the calculation. The default is \code{n_threads = NULL}
-and automatically set half the number of available threads on the computer.}
+threads used for the calculation. The default is 1 and if \code{n_threads = NULL},
+automatically set half the number of available threads on the computer.}
 
 \item{...}{Unused.}
 }

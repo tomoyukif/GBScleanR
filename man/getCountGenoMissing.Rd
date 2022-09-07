@@ -5,7 +5,7 @@
 \alias{getCountGenoMissing,GbsrGenotypeData-method}
 \title{Obtain total missing genotype counts per SNP or per scan (sample)}
 \usage{
-getCountGenoMissing(object, target = "snp", valid = TRUE, prop = FALSE, ...)
+getCountGenoMissing(object, target = "marker", valid = TRUE, prop = FALSE, ...)
 
 \S4method{getCountGenoMissing}{GbsrGenotypeData}(object, target, valid, prop)
 }
