@@ -613,22 +613,41 @@ setMethod("estGeno",
                       best_pat_f$best_seq[latter,])
     border_geno <- cbind(best_seq[half, ], best_seq[half + 1, ])
     diff_geno <- border_geno[, 1] != border_geno[, 2]
-    diff_border_geno1 <- param_list$pat$hap_progeny[border_geno[diff_geno, 1], ]
-    diff_border_geno2 <- param_list$pat$hap_progeny[border_geno[diff_geno, 2], ]
-    fliped_geno <- which(rowSums(diff_border_geno1 == diff_border_geno2[, 2:1]) == 2)
-    fliped_seq <- sapply(seq_along(fliped_geno), function(i){
-        g1 <- best_seq[, diff_geno][, fliped_geno[i]][half]
-        g2 <- best_seq[, diff_geno][, fliped_geno[i]][half + 1]
-        g2_pos <- which(best_seq[, diff_geno][, fliped_geno[i]][latter] == g2)
-        check <- which(diff(g2_pos) != 1)
-        if(length(check) == 0){
-            best_seq[, diff_geno][, fliped_geno[i]][latter][g2_pos] <- g1
+    diff_seq <- subset(best_seq, select = diff_geno)
+    if(any(diff_geno)){
+        border_geno1 <- border_geno[diff_geno, 1]
+        border_geno2 <- border_geno[diff_geno, 2]
+        diff_border_geno1 <- param_list$pat$hap_progeny[border_geno1, ]
+        diff_border_geno2 <- param_list$pat$hap_progeny[border_geno2, ]
+        if(is.matrix(diff_border_geno1)){
+            check_flip <- diff_border_geno1 == diff_border_geno2[, 2:1]
+            fliped_geno <- which(rowSums(check_flip) == 2)
         } else {
-            best_seq[, diff_geno][, fliped_geno[i]][latter][seq_len(min(check))] <- g1
+            check_flip <- diff_border_geno1 == diff_border_geno2[2:1]
+            fliped_geno <- which(sum(check_flip) == 2)
         }
-        return(best_seq[, diff_geno][, fliped_geno[i]])
-    })
-    best_seq[, diff_geno][, fliped_geno] <- fliped_seq
+
+        if(length(fliped_geno) > 0){
+            fliped_seq <- sapply(seq_along(fliped_geno), function(i){
+                g1 <- diff_seq[, fliped_geno[i]][half]
+                g2 <- diff_seq[, fliped_geno[i]][half + 1]
+                g2_pos <- which(diff_seq[, fliped_geno[i]][latter] == g2)
+                check <- which(diff(g2_pos) != 1)
+                if(length(check) == 0){
+                    diff_seq[, fliped_geno[i]][latter][g2_pos] <- g1
+                } else {
+                    diff_seq[, fliped_geno[i]][latter][seq_len(min(check))] <- g1
+                }
+                return(diff_seq[, fliped_geno[i]])
+            })
+
+            if(is.matrix(diff_border_geno1)){
+                best_seq[, diff_geno][, fliped_geno] <- fliped_seq
+            } else {
+                best_seq[, diff_geno] <- fliped_seq
+            }
+        }
+    }
 
     p_geno <- c(best_pat_r$p_geno[first], best_pat_f$p_geno[latter])
 
