@@ -191,25 +191,25 @@ vector<double> calcGenoprob(const double & ref,
                             const int & het){
     vector<double> prob(3);
     const double dp = ref + alt;
-//
-//     if(dp > 50){
-//         const double ratio = ref / dp;
-//         prob[0] = calcpdf(ratio, eseq0);
-//         prob[1] = calcpdf(ratio, w1);
-//         prob[2] = calcpdf(ratio, eseq1);
-//
-//         if(het){ setHetZero(prob); }
-//
-//         double sum_prob;
-//         for(int g=0; g<3;++g){
-//             sum_prob += prob[g];
-//         }
-//
-//         for(int g=0; g<3;++g){
-//             prob[g] = prob[g] / sum_prob;
-//         }
-//
-//     } else {
+
+    if(dp > 50){
+        const double ratio = ref / dp;
+        prob[0] = calcpdf(ratio, eseq0);
+        prob[1] = calcpdf(ratio, w1);
+        prob[2] = calcpdf(ratio, eseq1);
+
+        if(het){ setHetZero(prob); }
+
+        double sum_prob;
+        for(int g=0; g<3;++g){
+            sum_prob += prob[g];
+        }
+
+        for(int g=0; g<3;++g){
+            prob[g] = prob[g] / sum_prob;
+        }
+
+    } else {
         double logeseq0 = log10_safe_d(eseq0);
         double logeseq1 = log10_safe_d(eseq1);
         double logw1 = log10_safe_d(w1);
@@ -227,7 +227,7 @@ vector<double> calcGenoprob(const double & ref,
         for(int g=0; g<3;++g){
             prob[g] = pow10(prob[g]);
         }
-    // }
+    }
     return prob;
 }
 
