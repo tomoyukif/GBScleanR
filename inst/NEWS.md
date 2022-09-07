@@ -53,5 +53,5 @@ Changes in version 0.99.39 (2022-3-24)
 Changes in version 0.99.40 (2022-4-25)
 + Fix a bug in plotReadRatio().
 
-Changes in version 0.99.40 (2022-9-7)
+Changes in version 1.0.1 (2022-9-7)
 + Fix a bug in GBSR_HMM.cpp.
