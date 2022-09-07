@@ -24,11 +24,7 @@ double log10_safe_d(const double & d){
     } else {
         out = log10(d);
     }
-<<<<<<< HEAD
-    return(out);
-=======
     return out;
->>>>>>> polyploids
 }
 
 // Calculate the log10 of the sum of probabilities.
@@ -358,10 +354,7 @@ struct ParInitVit : public Worker {
     const RVector<int> dim;
     const RVector<int> valid_p_indices;
     const RVector<int> vec_m;
-<<<<<<< HEAD
-=======
     const RVector<int> ploidy;
->>>>>>> polyploids
 
     ParInitVit(NumericMatrix vit_score,
                const LogicalVector iter_sample,
@@ -376,12 +369,8 @@ struct ParInitVit : public Worker {
                const NumericVector init_prob,
                const IntegerVector dim,
                const IntegerVector valid_p_indices,
-<<<<<<< HEAD
-               const IntegerVector m)
-=======
                const IntegerVector m,
                const IntegerVector ploidy)
->>>>>>> polyploids
         : vit_score(vit_score),
           iter_sample(iter_sample),
           ref(ref),
@@ -395,12 +384,8 @@ struct ParInitVit : public Worker {
           init_prob(init_prob),
           dim(dim),
           valid_p_indices(valid_p_indices),
-<<<<<<< HEAD
-          vec_m(m) {}
-=======
           vec_m(m),
           ploidy(ploidy) {}
->>>>>>> polyploids
 
     void operator()(size_t begin, size_t end) {
         int het = 0;
@@ -515,10 +500,7 @@ struct ParCalcPathFounder : public Worker {
     const RVector<int> valid_p_indices1;
     const RVector<int> valid_p_indices2;
     const RVector<int> vec_m;
-<<<<<<< HEAD
-=======
     const RVector<int> ploidy;
->>>>>>> polyploids
 
     ParCalcPathFounder(IntegerMatrix f_path,
                        NumericMatrix vit_score,
@@ -537,12 +519,8 @@ struct ParCalcPathFounder : public Worker {
                        const NumericVector p_emit2,
                        const IntegerVector valid_p_indices1,
                        const IntegerVector valid_p_indices2,
-<<<<<<< HEAD
-                       const IntegerVector m)
-=======
                        const IntegerVector m,
                        const IntegerVector ploidy)
->>>>>>> polyploids
         : f_path(f_path),
           vit_score(vit_score),
           in_score(in_score),
@@ -560,12 +538,8 @@ struct ParCalcPathFounder : public Worker {
           p_emit2(p_emit2),
           valid_p_indices1(valid_p_indices1),
           valid_p_indices2(valid_p_indices2),
-<<<<<<< HEAD
-          vec_m(m) {}
-=======
           vec_m(m),
           ploidy(ploidy) {}
->>>>>>> polyploids
 
     void operator()(size_t begin, size_t end) {
         int het = 0;
@@ -758,11 +732,7 @@ void backtrack(IntegerMatrix f_path,
 // Functions for the Viterbi algorithm For OFFSPRING
 struct ParVitOffspring : public Worker {
 
-<<<<<<< HEAD
-    const RMatrix<int> o_seq;
-=======
     RMatrix<int> o_seq;
->>>>>>> polyploids
     const RVector<int> iter_sample;
     const RMatrix<double> ref;
     const RMatrix<double> alt;
@@ -776,11 +746,7 @@ struct ParVitOffspring : public Worker {
     const RMatrix<double> trans_prob;
     const RVector<int> dim;
     const RVector<int> f_seq;
-<<<<<<< HEAD
-=======
     const RVector<int> ploidy;
->>>>>>> polyploids
-
 
     ParVitOffspring(IntegerMatrix o_seq,
                     const LogicalVector iter_sample,
@@ -795,12 +761,8 @@ struct ParVitOffspring : public Worker {
                     const NumericVector init_prob,
                     const NumericMatrix trans_prob,
                     const IntegerVector dim,
-<<<<<<< HEAD
-                    const IntegerVector f_seq)
-=======
                     const IntegerVector f_seq,
                     const IntegerVector ploidy)
->>>>>>> polyploids
         : o_seq(o_seq),
           iter_sample(iter_sample),
           ref(ref),
@@ -814,12 +776,8 @@ struct ParVitOffspring : public Worker {
           init_prob(init_prob),
           trans_prob(trans_prob),
           dim(dim),
-<<<<<<< HEAD
-          f_seq(f_seq) {}
-=======
           f_seq(f_seq),
           ploidy(ploidy) {}
->>>>>>> polyploids
 
     void operator()(size_t begin, size_t end) {
         int het = 0;
@@ -998,12 +956,8 @@ List run_viterbi(NumericMatrix p_ref,
                         init_prob,
                         dim,
                         valid_p_indices1,
-<<<<<<< HEAD
-                        in_m);
-=======
                         in_m,
                         ploidy);
->>>>>>> polyploids
     parallelFor(0, iter_sample.length(), init_vit);
     NumericMatrix in_score;
     in_score = clone(vit_score);
@@ -1036,12 +990,8 @@ List run_viterbi(NumericMatrix p_ref,
                             m,
                             n_f,
                             n_p,
-<<<<<<< HEAD
-                            het);
-=======
                             het,
                             ploidy);
->>>>>>> polyploids
 
         R_xlen_t fix_p_len = p_geno_fix.size();
         if(fix_p_len > m){
@@ -1082,12 +1032,8 @@ List run_viterbi(NumericMatrix p_ref,
                                      p_emit2,
                                      valid_p_indices1,
                                      valid_p_indices2,
-<<<<<<< HEAD
-                                     in_m);
-=======
                                      in_m,
                                      ploidy);
->>>>>>> polyploids
 
         parallelFor(0, iter_p_pat.length(), calc_path);
         p_emit1 = clone(p_emit2);
@@ -1124,12 +1070,8 @@ List run_viterbi(NumericMatrix p_ref,
                                   init_prob,
                                   trans_prob,
                                   dim,
-<<<<<<< HEAD
-                                  f_seq);
-=======
                                   f_seq,
                                   ploidy);
->>>>>>> polyploids
     parallelFor(0, iter_sample.length(), vit_offspring);
 
     Rcpp::Rcout << "\r" << string(70, ' ');
@@ -1156,10 +1098,7 @@ struct ParFB : public Worker {
     const RMatrix<double> trans_prob;
     const RVector<int> dim;
     const RVector<int> p_geno;
-<<<<<<< HEAD
-=======
     const RVector<int> ploidy;
->>>>>>> polyploids
 
     ParFB(NumericMatrix gamma,
           const LogicalVector iter_sample,
@@ -1174,12 +1113,8 @@ struct ParFB : public Worker {
           const NumericVector init_prob,
           const NumericMatrix trans_prob,
           const IntegerVector dim,
-<<<<<<< HEAD
-          const IntegerVector p_geno)
-=======
           const IntegerVector p_geno,
           const IntegerVector ploidy)
->>>>>>> polyploids
         : gamma(gamma),
           iter_sample(iter_sample),
           ref(ref),
@@ -1193,12 +1128,8 @@ struct ParFB : public Worker {
           init_prob(init_prob),
           trans_prob(trans_prob),
           dim(dim),
-<<<<<<< HEAD
-          p_geno(p_geno) {}
-=======
           p_geno(p_geno),
           ploidy(ploidy) {}
->>>>>>> polyploids
 
     void operator()(size_t begin, size_t end) {
         int het = 0;
@@ -1376,19 +1307,13 @@ NumericMatrix run_fb(NumericMatrix ref,
                   init_prob,
                   trans_prob,
                   dim,
-<<<<<<< HEAD
-                  p_geno);
-=======
                   p_geno,
                   ploidy);
->>>>>>> polyploids
 
     parallelFor(0, iter_sample.length(), calc_fb);
 
     gamma.attr("dim") = Dimension(n_o, 3, n_m);
     return gamma;
-<<<<<<< HEAD
-=======
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1639,5 +1564,4 @@ IntegerMatrix dosage_viterbi(NumericMatrix ref,
 
     Rcpp::Rcout << "\r" << string(70, ' ');
     return o_dos;
->>>>>>> polyploids
 }
