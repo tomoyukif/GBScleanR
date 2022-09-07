@@ -192,22 +192,41 @@ vector<double> calcGenoprob(const double & ref,
     vector<double> prob(3);
     const double dp = ref + alt;
 
-    double logeseq0 = log10_safe_d(eseq0);
-    double logeseq1 = log10_safe_d(eseq1);
-    double logw1 = log10_safe_d(w1);
-    double logw2 = log10_safe_d(w2);
-    vector<double> ref_multiplier = {logeseq0, logw1, logeseq1};
-    vector<double> alt_multiplier = {logeseq1, logw2, logeseq0};
-    for(int g=0; g<3;++g){
-        prob[g] = ref * ref_multiplier[g] +
-            alt * alt_multiplier[g];
-    }
+    if(dp > 50){
+        const double ratio = ref / dp;
+        prob[0] = calcpdf(ratio, eseq0);
+        prob[1] = calcpdf(ratio, w1);
+        prob[2] = calcpdf(ratio, eseq1);
 
-    if(het){ setHetZero(prob); }
+        if(het){ setHetZero(prob); }
 
-    lognorm_vec(prob);
-    for(int g=0; g<3;++g){
-        prob[g] = pow10(prob[g]);
+        double sum_prob;
+        for(int g=0; g<3;++g){
+            sum_prob += prob[g];
+        }
+
+        for(int g=0; g<3;++g){
+            prob[g] = prob[g] / sum_prob;
+        }
+
+    } else {
+        double logeseq0 = log10_safe_d(eseq0);
+        double logeseq1 = log10_safe_d(eseq1);
+        double logw1 = log10_safe_d(w1);
+        double logw2 = log10_safe_d(w2);
+        vector<double> ref_multiplier = {logeseq0, logw1, logeseq1};
+        vector<double> alt_multiplier = {logeseq1, logw2, logeseq0};
+        for(int g=0; g<3;++g){
+            prob[g] = ref * ref_multiplier[g] +
+                alt * alt_multiplier[g];
+        }
+
+        if(het){ setHetZero(prob); }
+
+        lognorm_vec(prob);
+        for(int g=0; g<3;++g){
+            prob[g] = pow10(prob[g]);
+        }
     }
     return prob;
 }
@@ -267,7 +286,6 @@ NumericVector calcPemit(NumericMatrix p_ref,
         prob = calcGenoprob(ref_i[m], alt_i[m],
                             eseq[0], eseq[1],
                                          w1[m], w2[m], het[0]);
-        calcMissmap(prob, mismap1[m], mismap2[m]);
         for(int j=0; j<n_p; ++j){
             col_i = j * n_f + i;
             p_prob = prob[possiblegeno[col_i]];
