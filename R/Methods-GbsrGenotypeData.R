@@ -134,7 +134,7 @@ setMethod("validSam",
                       if(is.null(slot(object, "sample")[["parents"]])){
                           stop("No parents info.", call. = FALSE)
                       } else {
-                          out[slot(object, "sample")[["parents"]]] <- TRUE
+                          out[slot(object, "sample")[["parents"]] != 0] <- TRUE
                       }
                   }
               }
