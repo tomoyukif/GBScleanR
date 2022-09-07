@@ -6,7 +6,7 @@
 \title{Obtain mean values of total alternative read counts
 per SNP or per scan (sample)}
 \usage{
-getMeanReadAlt(object, target = "snp", valid = TRUE, ...)
+getMeanReadAlt(object, target = "marker", valid = TRUE, ...)
 
 \S4method{getMeanReadAlt}{GbsrGenotypeData}(object, target, valid)
 }

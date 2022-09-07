@@ -6,7 +6,7 @@
 \title{Obtain mean values of total reference read counts per
 SNP or per scan (sample)}
 \usage{
-getMeanReadRef(object, target = "snp", valid = TRUE, ...)
+getMeanReadRef(object, target = "marker", valid = TRUE, ...)
 
 \S4method{getMeanReadRef}{GbsrGenotypeData}(object, target, valid)
 }

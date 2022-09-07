@@ -5,12 +5,17 @@
 \alias{closeGDS,GbsrGenotypeData-method}
 \title{Close the connection to the GDS file}
 \usage{
-closeGDS(object, verbose = TRUE, ...)
+closeGDS(object, save_filter = FALSE, verbose = TRUE, ...)
 
-\S4method{closeGDS}{GbsrGenotypeData}(object, verbose)
+\S4method{closeGDS}{GbsrGenotypeData}(object, save_filter, verbose)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
+
+\item{save_filter}{A logical whether to save the filtering information made
+via \code{\link[=setSamFilter]{setSamFilter()}} and \code{\link[=setMarFilter]{setMarFilter()}} in the GDS file. The saved
+filter information can be reused if set \code{load_filter = TRUE} for
+\code{\link[=loadGDS]{loadGDS()}}.}
 
 \item{verbose}{if TRUE, show information.}
 

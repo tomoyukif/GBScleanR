@@ -55,7 +55,7 @@ sample_missing_rate <- getCountGenoMissing(gds,
                                            prop = TRUE)
 
 # Get the minor allele frequency per marker.
-marker_minor_allele_freq <- getMAF(gds, target = "snp")
+marker_minor_allele_freq <- getMAF(gds, target = "marker")
 
 # Draw histograms of the missing rate per sample and marker.
 histGBSR(gds, stats = "missing")

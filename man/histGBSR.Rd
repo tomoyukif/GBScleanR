@@ -7,7 +7,7 @@
 histGBSR(
   x,
   stats = c("dp", "missing", "het"),
-  target = c("snp", "scan"),
+  target = c("marker", "sample"),
   q = 0.5,
   binwidth = NULL,
   color = c(Marker = "darkblue", Sample = "darkblue"),
@@ -19,7 +19,7 @@ histGBSR(
 
 \item{stats}{A string to specify statistics to be drawn.}
 
-\item{target}{Either or both of "snp" and "scan", e.g. \code{target = "snp"}
+\item{target}{Either or both of "marker" and "sample", e.g. \code{target = "marker"}
 to draw a histogram only for SNPs.}
 
 \item{q}{An integer to specify a quantile calculated via \code{\link[=calcReadStats]{calcReadStats()}}.}
@@ -69,10 +69,8 @@ the following values:
 To draw histograms for "missing", "het", "raf", you need to run
 \code{\link[=countGenotype]{countGenotype()}} first to obtain statistics. Similary, "dp",
 "ad_ref", "ad_alt", "rrf" requires values obtained via
-\code{\link[=countRead]{countRead()}}. \code{\link[=calcReadStats]{calcReadStats()}} should be executed before drawing
-histograms of "mean_ref", "sd_ref", "qtile_ref", "mean_alt", "sd_alt",
-and "qtile_alt". "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
-and "baseqranksum" only work with \code{target = "snp"}, if your data
+\code{\link[=countRead]{countRead()}}. "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
+and "baseqranksum" only work with \code{target = "marker"}, if your data
 contains those values supplied via SNP calling tools like
 \href{https://gatk.broadinstitute.org/hc/en-us}{GATK}.
 }
@@ -87,11 +85,6 @@ gdata <- countGenotype(gdata)
 # Draw histograms of missing rate, heterozygosity, and reference
 # allele frequency per SNP and per sample.
 histGBSR(gdata, stats = "missing")
-
-
-# Calculate means, standard deviations, quantile values of read counts
-# to be used in `histGBSR()`
-gdata <- calcReadStats(gdata, q = 0.9)
 
 # Draw histograms of 90 percentile values of reference read counts
 # and alternative read counts per SNP and per sample.

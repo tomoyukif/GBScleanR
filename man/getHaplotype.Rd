@@ -5,20 +5,20 @@
 \alias{getHaplotype,GbsrGenotypeData-method}
 \title{Get haplotype call data.}
 \usage{
-getHaplotype(object, valid = TRUE, chr = NULL, parents = FALSE, ...)
+getHaplotype(object, parents = FALSE, valid = TRUE, chr = NULL, ...)
 
-\S4method{getHaplotype}{GbsrGenotypeData}(object, chr, parents)
+\S4method{getHaplotype}{GbsrGenotypeData}(object, parents, valid, chr)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
+
+\item{parents}{A logical value or "only" to include data for
+parents or to get data only for parents.}
 
 \item{valid}{A logical value. See details.}
 
 \item{chr}{A integer vector of indexes indicating chromosomes
 to get read count data.}
-
-\item{parents}{A logical value or "only" to include data for
-parents or to get data only for parents.}
 
 \item{...}{Unused.}
 }

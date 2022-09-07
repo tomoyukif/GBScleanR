@@ -7,27 +7,27 @@
 \usage{
 getGenotype(
   object,
-  valid = TRUE,
-  chr = NULL,
   node = "raw",
   parents = FALSE,
+  valid = TRUE,
+  chr = NULL,
   ...
 )
 
-\S4method{getGenotype}{GbsrGenotypeData}(object, valid, chr, node, parents)
+\S4method{getGenotype}{GbsrGenotypeData}(object, node, parents, valid, chr)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
+
+\item{node}{Either of "raw", "filt", "cor", and "parents". See details.}
+
+\item{parents}{A logical value or "only" whether to include data for
+parents or not or to get data only for parents. Ignored if \verb{node = "parents}.}
 
 \item{valid}{A logical value. See details.}
 
 \item{chr}{A integer vector of indexes indicating chromosomes
 to get read count data.}
-
-\item{node}{Either of "raw", "filt", and "cor. See details.}
-
-\item{parents}{A logical value or "only" to include data for
-parents or to get data only for parents.}
 
 \item{...}{Unused.}
 }
@@ -40,18 +40,17 @@ Genotype calls are retrieved from the GDS file linked to the given
 \link{GbsrGenotypeData} object.
 }
 \details{
-Genotype call data can be obtained from the "genotype" node,
-the "filt.genotype" node, or the "corrected.genotype" node
-of the GDS file with \code{node = "raw"}, \code{node = "filt"}, or \code{node = "raw"},
-respectively. If \verb{node = "parents}, the data in the "parents.genotype"
-node will be returned. The "parents.genotype" node stores phased
-parental genotypes estimated by the \code{\link[=estGeno]{estGeno()}} function.
-The \code{\link[=setCallFilter]{setCallFilter()}} function generate filtered genotype call data in the
-"filt.genotype" node which can be accessed as mentioned above.
-On the other hand, the "corrected.genotype" node can be generated
-via the \code{\link[=estGeno]{estGeno()}} function.
-If \code{valid = TRUE}, read counts for only valid marker and valid samples will
-be obtained.
+When \verb{node = "raw}, the raw genotype data stored in the "genotype/data" node
+will be returned, while \verb{node = "filt} make the function to return the
+filtered genotype data stored in the "annotation/format/FGT/data" that can
+be generated via the \code{\link[=setCallFilter]{setCallFilter()}} function. \verb{node = "cor} indicates to
+get the corrected genotype data stored in the "annotation/format/CGT/data"
+that can be generated via the \code{\link[=estGeno]{estGeno()}} function. The estimated parental
+genotypes, which also can be generated via the \code{\link[=estGeno]{estGeno()}} function and
+stored in the "annotation/info/PGT" node, can be obtained with
+\code{node = "parents"}.
+If \code{valid = TRUE}, genotype calls for only valid marker and valid samples
+will be obtained.
 }
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.

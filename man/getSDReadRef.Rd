@@ -6,7 +6,7 @@
 \title{Obtain standard deviations of total reference read counts
 per SNP or per scan (sample)}
 \usage{
-getSDReadRef(object, target = "snp", valid = TRUE, ...)
+getSDReadRef(object, target = "marker", valid = TRUE, ...)
 
 \S4method{getSDReadRef}{GbsrGenotypeData}(object, target, valid)
 }

@@ -5,7 +5,7 @@
 \alias{getCountGenoRef,GbsrGenotypeData-method}
 \title{Obtain total reference genotype counts per SNP or per scan (sample)}
 \usage{
-getCountGenoRef(object, target = "snp", valid = TRUE, prop = FALSE, ...)
+getCountGenoRef(object, target = "marker", valid = TRUE, prop = FALSE, ...)
 
 \S4method{getCountGenoRef}{GbsrGenotypeData}(object, target, valid, prop)
 }

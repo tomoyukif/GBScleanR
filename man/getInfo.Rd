@@ -16,7 +16,7 @@ getInfo(object, var, valid = TRUE, chr = NULL, ...)
 
 \item{valid}{A logical value. See details.}
 
-\item{chr}{A index to spefcify chromosome to get information.}
+\item{chr}{A index to specify chromosome to get information.}
 
 \item{...}{Unused.}
 }
@@ -28,9 +28,10 @@ The "annotation/info" node stores annotation infromation of markers obtained
 via SNP calling tools like bcftools and GATK.
 }
 \details{
-If \code{valid = TRUE}, the chromosome information of markers which are
-labeled \code{TRUE} in the \link{ScanAnnotationDataFrame} slot will be returned.
-\code{\link[=getValidSnp]{getValidSnp()}} tells you which samples are valid.
+If \code{valid = TRUE}, the information of the markers which are labeled \code{TRUE}
+in the "valid" column of the "marker" slot will be returned. If you need the
+number of over all markers, set \code{valid = FALSE}. \code{\link[=validMar]{validMar()}} tells you
+which markers are valid.
 }
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.

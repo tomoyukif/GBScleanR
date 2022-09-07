@@ -5,7 +5,7 @@
 \alias{getCountAlleleAlt,GbsrGenotypeData-method}
 \title{Obtain total alternative allele counts per SNP or per scan (sample)}
 \usage{
-getCountAlleleAlt(object, target = "snp", valid = TRUE, prop = FALSE, ...)
+getCountAlleleAlt(object, target = "marker", valid = TRUE, prop = FALSE, ...)
 
 \S4method{getCountAlleleAlt}{GbsrGenotypeData}(object, target, valid, prop)
 }
