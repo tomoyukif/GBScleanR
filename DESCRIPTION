@@ -24,7 +24,8 @@ License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LinkingTo: Rcpp, RcppParallel
 SystemRequirements: GNU make, C++11
-Imports: GWASTools, graphics, stats, utils, methods, gdsfmt, ggplot2, tidyr, SeqArray, Rcpp, RcppParallel, expm, Biobase
+Depends: SeqArray
+Imports: graphics, stats, utils, methods, ggplot2, tidyr, expm, Rcpp, RcppParallel, gdsfmt
 Suggests: BiocStyle, testthat (>= 3.0.0), knitr, rmarkdown
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)

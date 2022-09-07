@@ -8,7 +8,7 @@ pairsGBSR(
   x,
   stats1 = "dp",
   stats2 = "missing",
-  target = "snp",
+  target = "marker",
   q = 0.5,
   size = 0.5,
   alpha = 0.8,
@@ -24,8 +24,8 @@ pairsGBSR(
 
 \item{stats2}{A string to specify statistics to be drawn.}
 
-\item{target}{Either or both of "snp" and "scan", e.g.
-\code{target = "snp"} to draw a histogram only for SNPs.}
+\item{target}{Either or both of "marker" and "sample", e.g.
+\code{target = "marker"} to draw a histogram only for SNPs.}
 
 \item{q}{An integer to specify a quantile calculated via
 \code{\link[=calcReadStats]{calcReadStats()}}.}
@@ -81,10 +81,8 @@ arguments can take the following values:
 To draw scatter plots for "missing", "het", "raf", you need to run
 \code{\link[=countGenotype]{countGenotype()}} first to obtain statistics. Similary, "dp",
 "ad_ref", "ad_alt", "rrf" requires values obtained via \code{\link[=countRead]{countRead()}}.
-\code{\link[=calcReadStats]{calcReadStats()}} should be executed before drawing line plots of
-"mean_ref", "sd_ref", "qtile_ref", "mean_alt", "sd_alt", and
-"qtile_alt". "mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
-and "baseqranksum" only work with \code{target = "snp"}, if your data
+"mq", "fs", "qd", "sor", "mqranksum", "readposranksum",
+and "baseqranksum" only work with \code{target = "marker"}, if your data
 contains those values supplied via SNP calling tools like
 \href{https://gatk.broadinstitute.org/hc/en-us}{GATK}.
 }

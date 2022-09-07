@@ -5,22 +5,22 @@
 \alias{getRead,GbsrGenotypeData-method}
 \title{Get read count data.}
 \usage{
-getRead(object, valid = TRUE, chr = NULL, node = "raw", parents = FALSE, ...)
+getRead(object, node = "raw", parents = FALSE, valid = TRUE, chr = NULL, ...)
 
-\S4method{getRead}{GbsrGenotypeData}(object, valid, chr, node, parents)
+\S4method{getRead}{GbsrGenotypeData}(object, node, parents, valid, chr)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
 
-\item{valid}{A logical value. See details.}
-
-\item{chr}{A integer vector of indexes indicating
-chromosomes to get read count data.}
-
 \item{node}{Either of "raw" and "filt". See details.}
 
-\item{parents}{A logical value or "only" to include data
-for parents or to get data only for parents.}
+\item{parents}{A logical value or "only" whether to include data for
+parents or not or to get data only for parents.}
+
+\item{valid}{A logical value. See details.}
+
+\item{chr}{An integer vector of indexes indicating
+chromosomes to get read count data.}
 
 \item{...}{Unused.}
 }
@@ -34,15 +34,11 @@ Read counts for reference allele and alternative allele are retrieved
 from the GDS file linked to the given \link{GbsrGenotypeData} object.
 }
 \details{
-Read count data can be obtained from the "annotation/format/AD/data" node,
-the "annotation/format/AD/norm" node or the
-"annotation/format/AD/filt.data" node of the GDS file with
-\code{node = "raw"},  \code{node = "norm"}, or \code{node = "filt"}, respectively.
-The \code{\link[=calcReadStats]{calcReadStats()}} function generate normalized read count data
-in the "annotation/format/AD/norm" node, while \code{\link[=setCallFilter]{setCallFilter()}}
-function generate filtered read count data
-in the "annotation/format/AD/filt.data" node which can be accessed as
-mentioned above.
+When \verb{node = "raw}, the raw read counts stored in the
+"annotation/format/AD/data" node will be returned, while \verb{node = "filt} make
+the function to return the filtered read counts stored in the
+"annotation/format/FAD/data" that can be generated via the \code{\link[=setCallFilter]{setCallFilter()}}
+function.
 If \code{valid = TRUE}, read counts for only valid marker and valid samples will
 be obtained.
 }

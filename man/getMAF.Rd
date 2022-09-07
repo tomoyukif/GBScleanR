@@ -5,7 +5,7 @@
 \alias{getMAF,GbsrGenotypeData-method}
 \title{Obtain minor allele frequencies per SNP or per scan (sample)}
 \usage{
-getMAF(object, target = "snp", valid = TRUE, ...)
+getMAF(object, target = "marker", valid = TRUE, ...)
 
 \S4method{getMAF}{GbsrGenotypeData}(object, target, valid)
 }

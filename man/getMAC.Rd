@@ -5,7 +5,7 @@
 \alias{getMAC,GbsrGenotypeData-method}
 \title{Obtain minor allele counts per SNP or per scan (sample)}
 \usage{
-getMAC(object, target = "snp", valid = TRUE, ...)
+getMAC(object, target = "marker", valid = TRUE, ...)
 
 \S4method{getMAC}{GbsrGenotypeData}(object, target, valid)
 }

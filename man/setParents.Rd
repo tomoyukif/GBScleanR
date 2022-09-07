@@ -6,19 +6,16 @@
 \title{Set labels to samples which should be recognized as
 parents of the population to be subjected to error correction.}
 \usage{
-setParents(object, parents, flip = FALSE, mono = FALSE, bi = FALSE, ...)
+setParents(object, parents, mono = FALSE, bi = FALSE, ...)
 
-\S4method{setParents}{GbsrGenotypeData}(object, parents, flip, mono, bi)
+\S4method{setParents}{GbsrGenotypeData}(object, parents, mono, bi)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{parents}{A vector of strings with at least length two.
 The specified strings should match with the samples
-ID available via \code{\link[=getScanID]{getScanID()}}.}
-
-\item{flip}{A logical value to indicate whether markers should
-be checked for "flip". See details.}
+ID available via \code{\link[=getSamID]{getSamID()}}.}
 
 \item{mono}{A logical value whether to filter out markers which
 are not monomorphic in parents.}
@@ -41,20 +38,7 @@ samples and their parents separately to estimate most probable
 genotype calls of them. Therefore, you must specify proper samples
 as parents via this function. If you would like to remove SNP markers
 which are not biallelic and/or not monomorphic in each parent,
-set \code{mono = TRUE} and \code{bi = TRUE}. \code{flip = TRUE} flips alleles of
-markers where the alleles expected as reference allele are called
-as alternative allele. The alleles found in the parent specified as
-the first element to the \code{parents} argument are supposed as reference
-alleles of the markers. If the "expected" reference alleles are not
-actually called as reference alleles but alternative alleles
-in the given data. setParents() will automatically labels
-those markers "flipped".
-The SnpAnnotatoinDataFrame slot sores this information and accessible
-via \code{\link[=getFlipped]{getFlipped()}} which gives you a logical vector
-indicating which markers are labeled as flipped \code{TRUE} or
-not flipped \code{FALSE}. \code{\link[=hasFlipped]{hasFlipped()}} just tells you whether
-the SnpAnnotatoinDataFrame slot has the information of flipped
-markers or not.
+set \code{mono = TRUE} and \code{bi = TRUE}.
 }
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.

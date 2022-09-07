@@ -10,7 +10,7 @@ plotDosage(
   chr = NULL,
   ind = 1,
   node = "raw",
-  dot_fill = "green",
+  showratio = TRUE,
   line_color = "magenta"
 )
 }
@@ -28,7 +28,7 @@ and columns to draw faceted line plots for chromosomes.}
 genotype data, filtered genotype data, or corrected genotype data,
 respectively.}
 
-\item{dot_fill}{A string to indicate the dot color in the plot.}
+\item{showratio}{If \code{TRUE}, draw dots indicating read ratio.}
 
 \item{line_color}{A string to indicate the line color in the plot.}
 }
