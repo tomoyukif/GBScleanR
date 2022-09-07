@@ -428,9 +428,13 @@ setMethod("getInfo",
                   return(NULL)
               }
               info_node <- .getNodeIndex(object, path)
+              if(!is.null(chr)){
+                  chr <- getChromosome(object, FALSE) == chr
+              } else {
+                  chr <- TRUE
+              }
               if(valid){
-                  sel <- list(getValidSnp(object) & getChromosome(object, FALSE) == chr)
-                  out <- readex.gdsn(info_node, sel)
+                  out <- readex.gdsn(info_node, list(getValidSnp(object) & chr))
 
               } else {
                   out <- read.gdsn(info_node)
@@ -1960,12 +1964,9 @@ setMethod("setCallFilter",
 
     for(j in 7:9){
         if(any(filt_list[[j]] != qtile_default)){
-            threshold <- c(quantile(read_list[[j-6]],
-                                    filt_list[[j]][1],
-                                    TRUE),
-                           quantile(read_list[[j-6]],
-                                    filt_list[[j]][2],
-                                    TRUE))
+            threshold <- quantile(read_list[[j-6]][read_list[[j-6]] != 0],
+                                    filt_list[[j]][1:2],
+                                    TRUE)
             valid_df[, j] <- .calcSubFilter(read_list[[j-6]],
                                             threshold,
                                             c(-1,-1),
@@ -2006,12 +2007,9 @@ setMethod("setCallFilter",
 
         for(j in 10:12){
             if(any(filt_list[[j]] != qtile_default)){
-                threshold <- c(quantile(read_list[[j-9]],
-                                        filt_list[[j]][1],
-                                        TRUE),
-                               quantile(read_list[[j-9]],
-                                        filt_list[[j]][2],
-                                        TRUE))
+                threshold <- quantile(read_list[[j-9]][read_list[[j-9]] != 0],
+                                        filt_list[[j]][1:2],
+                                        TRUE)
                 valid_df[, j-9] <- .calcSubFilter(read_list[[j-9]],
                                                   threshold,
                                                   c(-1,-1),
@@ -2506,8 +2504,14 @@ setMethod("subsetGDS",
 
               closeGDS(object, FALSE)
               if(!file.copy(.getGDSFileName(object), out_fn)){
-                  stop("Failed to create a new file to the following path \n",
-                       out_fn, call. = FALSE)
+                  ans <- readline("Are you sure to overwrite the existing file?(y/n)")
+                  while(ans != "y"){
+                      if(ans == "n"){
+                          stop("Subsetting was cancelled.",
+                               out_fn, call. = FALSE)
+                      }
+                  }
+                  file.copy(.getGDSFileName(object), out_fn, TRUE)
               }
               newgds <- openfn.gds(out_fn, FALSE)
               on.exit({closefn.gds(newgds)})
@@ -2539,15 +2543,19 @@ setMethod("subsetGDS",
                   } else if(length(i_desc$dim) == 2){
                       if(i_desc$name == "parents.genotype"){
                           times <- i_desc$dim[2] / n_snp
-                          panrets_index <- seq_len(i_desc$dim[1])
-                          seldim <- list(panrets_index,
+                          seldim <- list(seq_len(i_desc$dim[1]),
                                          which(rep(snp_incl, each=times)))
                           assign.gdsn(newgds_i_node, seldim=seldim)
 
                       } else {
                           times <- i_desc$dim[2] / n_snp
-                          seldim <- list(which(scan_incl),
-                                         which(rep(snp_incl, each=times)))
+                          if(i_desc$dim[1] == n_scan){
+                              seldim <- list(which(scan_incl),
+                                             which(rep(snp_incl, each=times)))
+                          } else {
+                              seldim <- list(seq_len(i_desc$dim[1]),
+                                             which(rep(snp_incl, each=times)))
+                          }
                           assign.gdsn(newgds_i_node, seldim=seldim)
                       }
                   }
@@ -2851,6 +2859,10 @@ setMethod("addScan", "GbsrGenotypeData",
                   stop("Please specify non empty sample id.")
               }
 
+              if(any(id %in% getScanID(object, FALSE))){
+                  stop("Sample IDs must be unique.")
+              }
+
               n_snp <- nsnp(object, FALSE)
               if(length(id) == 1){
                   if(!is.numeric(genotype)){
@@ -2924,7 +2936,7 @@ setMethod("addScan", "GbsrGenotypeData",
                   put.attr.gdsn(ad_node, names(ad_attr)[i], val = ad_attr[[i]])
               }
               .gds_comp(object)
-              invisible(TRUE)
+              return(loadGDS(gds))
           })
 
 
