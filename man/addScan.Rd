@@ -26,6 +26,9 @@ nsnp() with \code{valid = FALSE}.}
 
 \item{...}{Unused.}
 }
+\value{
+A \link{GbsrGenotypeData} object.
+}
 \description{
 Add genotype data into the GDS file
 }
@@ -44,7 +47,7 @@ reads[ref_pos + 1] <- 0
 alt_pos <- which(genotype == 0)
 reads[alt_pos] <- 0
 
-addScan(gds, id, genotype, reads)
+gds <- addScan(gds, id, genotype, reads)
 
 # Close the connection to the GDS file
 closeGDS(gds)
