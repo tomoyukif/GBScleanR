@@ -9,23 +9,3 @@ run_fb <- function(ref, alt, eseq_in, bias, mismap, possiblehap, trans_prob, ini
     .Call(`_GBScleanR_run_fb`, ref, alt, eseq_in, bias, mismap, possiblehap, trans_prob, init_prob, n_h, n_o, n_m, p_geno, ploidy)
 }
 
-dosage_viterbi <- function(ref, alt, ratio, eseq_in, trans_prob, init_prob, n_o, n_m, ploidy, mindp) {
-    .Call(`_GBScleanR_dosage_viterbi`, ref, alt, ratio, eseq_in, trans_prob, init_prob, n_o, n_m, ploidy, mindp)
-}
-
-calc_ratio <- function(ref, alt, pos, window) {
-    .Call(`_GBScleanR_calc_ratio`, ref, alt, pos, window)
-}
-
-count_geno <- function(geno) {
-    .Call(`_GBScleanR_count_geno`, geno)
-}
-
-count_read <- function(read, tot_read) {
-    .Call(`_GBScleanR_count_read`, read, tot_read)
-}
-
-thinout_marker <- function(chr, pos, missing_count, range) {
-    .Call(`_GBScleanR_thinout_marker`, chr, pos, missing_count, range)
-}
-
