@@ -168,16 +168,6 @@ size_t get_max_int(vector<double> & v){
     return out_index;
 }
 
-
-// Function to calculate the value of the probability density function.
-double calcpdf(const double & ratio,
-               const double & mean){
-    double var = 0.25;
-    double inv_sqrt_2pi = 0.3989422804014327;
-    double a = (ratio - mean) / var;
-    return inv_sqrt_2pi / var * exp(-0.5 * a * a);
-}
-
 void setHetZero(vector<double> & prob){
     prob[1] = 0;
 }
@@ -190,8 +180,6 @@ vector<double> calcGenoprob(const double & ref,
                             const double & w2,
                             const int & het){
     vector<double> prob(3);
-    const double dp = ref + alt;
-
     double logeseq0 = log10_safe_d(eseq0);
     double logeseq1 = log10_safe_d(eseq1);
     double logw1 = log10_safe_d(w1);
