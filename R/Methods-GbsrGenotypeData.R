@@ -287,14 +287,31 @@ setMethod("getGenotype",
                            "corrected genotype data.")
                   }
 
-                  filters <- .makeFilter(object, parents = parents,
-                                         valid = valid, chr = chr)
-                  out <- .filtData(object, node, filters)
-
                   p_id <- getParents(object)
                   ploidy <- attributes(slot(object, "sample"))$ploidy
+
+                  filt_mar <- rep(TRUE, nmar(object, FALSE))
+                  if(valid){
+                      filt_mar <- validMar(object)
+                      filt_sam <- validSam(object, parents)
+                  }
+                  if(!is.null(chr)){
+                      if(length(chr) > 1){
+                          warning("More than one values were specified to chr,",
+                                  " but use the first one")
+                      }
+                      filt_mar <- filt_mar & seqGetData(object,
+                                                        "chromosome") == chr[1]
+                  }
+
+                  out <- readex.gdsn(index.gdsn(object, node),
+                                     list(rep(TRUE, nrow(p_id) * ploidy),
+                                          filt_mar))
+
                   rownames(out) <- paste(rep(p_id$memberID, each=ploidy),
                                          seq_len(ploidy), sep="_")
+                  filters <- .makeFilter(object, parents = parents,
+                                         valid = valid, chr = chr)
                   colnames(out) <- .filtData(object, "variant.id", filters)
 
               } else {
@@ -726,7 +743,7 @@ setMethod("isOpenGDS",
 #' @rdname setParents
 setMethod("setParents",
           "GbsrGenotypeData",
-          function(object, parents, mono, bi){
+          function(object, parents, nonmiss, mono, bi){
               if(length(parents) == 0 | any(is.na(parents))){
                   stop('Specify valid sample names as parents.', call. = FALSE)
               }
@@ -759,33 +776,32 @@ setMethod("setParents",
               slot(object, "sample")[["parents"]] <- p_vec
 
               if(mono | bi){
-                  object <- .pGenoFilt(object, mono, bi)
+                  object <- .pGenoFilt(object, nonmiss, mono, bi)
               }
               return(object)
           })
 
-.pGenoFilt <- function(object, mono, bi){
-    read <- getRead(object, "raw", "only", FALSE, NULL)
-    ref <- read$ref
-    alt <- read$alt
+.pGenoFilt <- function(object, nonmiss, mono, bi){
+    gt <- getGenotype(object, "raw", "only", FALSE, NULL)
 
-    # Find markers which are homozygous in each parent and biallelic
-    missing <- ref == 0 & alt == 0
-    het <- ref > 0 & alt > 0
+    if(nonmiss){
+        nonmiss <- colSums(gt %in% NA) == 0
+    } else {
+        nonmiss <- rep(TRUE, nmar(object, FALSE))
+    }
+
     if(mono){
-        mono <- !het & !missing
-        mono <- colSums(mono) == sum(slot(object, "sample")[["parents"]] != 0)
+        mono <- colSums(gt == 2) == 0
     } else {
         mono <- rep(TRUE, nmar(object, FALSE))
     }
 
     if(bi){
-        bi <- ref > 0 & alt == 0 & !het & !missing
-        bi <- colSums(bi) != sum(slot(object, "sample")[["parents"]] != 0)
+        bi <- colSums(gt == 1) != 0 | colSums(gt == 2) != 0
     } else {
         bi <- rep(TRUE, nmar(object, FALSE))
     }
-    validMar(object) <- mono & bi & validMar(object)
+    validMar(object) <- nonmiss & mono & bi & validMar(object)
     return(object)
 }
 
@@ -993,7 +1009,7 @@ setMethod("thinMarker",
                        call. = FALSE)
               }
 
-              missing_count <- slot(object, "marker")[["countGenoMissing"]]
+              missing_count <- getCountGenoMissing(object)
 
               chr <- as.integer(factor(getChromosome(object)))
               pos <- getPosition(object)
@@ -1263,12 +1279,23 @@ setMethod("setMarFilter",
               return(object)
           })
 
-.checkArgValid <- function(filt_list){
+.checkArgValid <- function(filt_list, target){
+    if(target == "sample"){
+        if(!is.character(filt_list$id)){
+            stop("id should be a character vector.", call. = FALSE)
+        }
+    } else {
+        if(!is.numeric(filt_list$id)){
+            stop("id should be a integer vector.", call. = FALSE)
+        }
+    }
+
     if(!{is.numeric(filt_list$missing) & length(filt_list$missing) == 1 &
             filt_list$missing <= 1 & filt_list$missing >= 0}){
         stop("missing should be a number in [0-1].",
              call. = FALSE)
     }
+
     if(!{is.numeric(filt_list$het) & length(filt_list$het) == 2 &
             all(filt_list$het <= 1) & all(filt_list$het >= 0)}){
         stop("het should be two numbers in [0-1].",
@@ -1277,16 +1304,19 @@ setMethod("setMarFilter",
         stop("het[1] should be smaller than het[2].",
              call. = FALSE)
     }
+
     if(!{is.numeric(filt_list$mac) &
             length(filt_list$mac) == 1 & filt_list$mac >= 0}){
         stop("mac should be a number greater or equal to zero.",
              call. = FALSE)
     }
+
     if(!{is.numeric(filt_list$maf) & length(filt_list$maf) == 1 &
             filt_list$maf <= 1 & filt_list$maf >= 0}){
         stop("maf should be a number in [0-1].",
              call. = FALSE)
     }
+
     if(!{is.numeric(filt_list$ad_ref) &
             length(filt_list$ad_ref) == 2 & all(filt_list$ad_ref >= 0)}){
         stop("ad_ref should be two numbers greater or equal to zero.",
@@ -1295,6 +1325,7 @@ setMethod("setMarFilter",
         stop("ad_ref[1] should be smaller than ad_ref[2].",
              call. = FALSE)
     }
+
     if(!{is.numeric(filt_list$ad_alt) &
             length(filt_list$ad_alt) == 2 & all(filt_list$ad_alt >= 0)}){
         stop("ad_alt should be two numbers greater or equal to zero.",
@@ -1303,6 +1334,7 @@ setMethod("setMarFilter",
         stop("ad_alt[1] should be smaller than ad_alt[2].",
              call. = FALSE)
     }
+
     if(!{is.numeric(filt_list$dp) &
             length(filt_list$dp) == 2 & all(filt_list$dp >= 0)}){
         stop("dp should be two numbers greater or equal to zero.",
@@ -1311,6 +1343,7 @@ setMethod("setMarFilter",
         stop("dp[1] should be smaller than dp[2].",
              call. = FALSE)
     }
+
     if(!{is.numeric(filt_list$mean_ref) &
             length(filt_list$mean_ref) == 2 & all(filt_list$mean_ref >= 0)}){
         stop("mean_ref should be two numbers greater or equal to zero.",
@@ -1319,6 +1352,7 @@ setMethod("setMarFilter",
         stop("mean_ref[1] should be smaller than mean_ref[2].",
              call. = FALSE)
     }
+
     if(!{is.numeric(filt_list$mean_alt) &
             length(filt_list$mean_alt) == 2 & all(filt_list$mean_alt >= 0)}){
         stop("mean_alt should be two numbers greater or equal to zero.",
@@ -1327,11 +1361,13 @@ setMethod("setMarFilter",
         stop("mean_alt[1] should be smaller than mean_alt[2].",
              call. = FALSE)
     }
+
     if(!{is.numeric(filt_list$sd_ref) &
             length(filt_list$sd_ref) == 1 & all(filt_list$sd_ref >= 0)}){
         stop("sd_ref should be two numbers greater or equal to zero.",
              call. = FALSE)
     }
+
     if(!{is.numeric(filt_list$sd_alt) &
             length(filt_list$sd_alt) == 1 & all(filt_list$sd_alt >= 0)}){
         stop("sd_alt should be two numbers greater or equal to zero.",
@@ -1339,74 +1375,109 @@ setMethod("setMarFilter",
     }
 }
 
+.checkDefault <- function(filt_list){
+    return(list(id = !all(filt_list$id %in% c(NA_character_, NA_character_)),
+                missing = filt_list$missing != 1,
+                het = any(filt_list$het != c(0, 1)),
+                mac = filt_list$mac != 0,
+                maf = filt_list$maf != 0,
+                ad_ref = any(filt_list$ad_ref != c(0, Inf)),
+                ad_alt = any(filt_list$ad_alt != c(0, Inf)),
+                dp = any(filt_list$dp != c(0, Inf)),
+                mean_ref = any(filt_list$mean_ref != c(0, Inf)),
+                mean_alt = any(filt_list$mean_alt != c(0, Inf)),
+                sd_ref = filt_list$sd_ref != Inf,
+                sd_alt = filt_list$sd_alt != Inf))
+}
+
 .makeStatsFilter <- function(object, filt_list, target){
-    .checkArgValid(filt_list)
+    .checkArgValid(filt_list, target)
+    check_list <- .checkDefault(filt_list)
+
+
 
     if(target == "sample"){
-        if(!is.character(filt_list$id)){
-            stop("id should be a character vector.", call. = FALSE)
-        }
-        if(all(filt_list$id == "")){
-            v <- rep(TRUE, nsam(object, TRUE))
-        } else {
+        if(check_list$id){
             v <- !getSamID(object) %in% filt_list$id
+        } else {
+            v <- rep(TRUE, nsam(object, TRUE))
         }
 
     } else {
-        if(!is.numeric(filt_list$id)){
-            stop("id should be a integer vector.", call. = FALSE)
-        }
-        if(all(is.na(filt_list$id))){
-            v <- rep(TRUE, nmar(object, TRUE))
-        } else {
+        if(check_list$id){
             v <- !getMarID(object) %in% filt_list$id
+        } else {
+            v <- rep(TRUE, nmar(object, TRUE))
         }
     }
 
     # Filtering for samples.
     ## Missing rate
-    v <- v & .calcSubFilter(getCountGenoMissing(object, target, TRUE, TRUE),
-                            filt_list$missing, 1, FALSE, TRUE)
+    if(check_list$missing){
+        v <- v & .calcSubFilter(getCountGenoMissing(object, target, TRUE, TRUE),
+                                filt_list$missing, 1, FALSE, TRUE)
+    }
 
     ## Heterozygosity
-    v <- v & .calcSubFilter(getCountGenoHet(object, target, TRUE, TRUE),
+    if(check_list$het){
+        v <- v & .calcSubFilter(getCountGenoHet(object, target, TRUE, TRUE),
                             filt_list$het, c(0, 1), TRUE, TRUE)
+    }
 
     ## Minor allele count
+    if(check_list$mac){
     v <- v & .calcSubFilter(getMAC(object, target, TRUE),
                             filt_list$mac, 0, TRUE, TRUE)
+    }
 
     ## Minor allele frequency
+    if(check_list$maf){
     v <- v & .calcSubFilter(getMAF(object, target, TRUE),
                             filt_list$maf, 0, TRUE, TRUE)
+    }
 
     ## Reference allele read count
+    if(check_list$ad_ref){
     v <- v & .calcSubFilter(getCountReadRef(object, target, TRUE, FALSE),
                             filt_list$ad_ref, c(0, Inf), TRUE, TRUE)
+    }
 
     ## Alternative allele read count
+    if(check_list$ad_alt){
     v <- v & .calcSubFilter(getCountReadAlt(object, target, TRUE, FALSE),
                             filt_list$ad_alt, c(0, Inf), TRUE, TRUE)
+    }
 
     ## Total read count
+    if(check_list$dp){
     v <- v & .calcSubFilter(getCountRead(object, target, TRUE),
                             filt_list$dp, c(0, Inf), TRUE, TRUE)
+    }
 
     ## Mean reference allele read count
+    if(check_list$mean_ref){
     v <- v & .calcSubFilter(getMeanReadRef(object, target,  TRUE),
                             filt_list$mean_ref, c(0, Inf), TRUE, TRUE)
+    }
 
     ## Mean alternative allele read count
+    if(check_list$mean_alt){
     v <- v & .calcSubFilter(getMeanReadAlt(object, target, TRUE),
                             filt_list$mean_alt, c(0, Inf), TRUE, TRUE)
+    }
 
     ## SD of reference allele read count
+    if(check_list$sd_ref){
     v <- v & .calcSubFilter(getSDReadRef(object, target,  TRUE),
                             filt_list$sd_ref,  Inf,  FALSE, TRUE)
+    }
 
     ## SD of alternative allele read count
+    if(check_list$sd_alt){
     v <- v & .calcSubFilter(getSDReadAlt(object, target, TRUE),
                             filt_list$sd_alt,  Inf,  FALSE,  TRUE)
+    }
+
     return(v)
 }
 

@@ -420,8 +420,12 @@ setGeneric("getRead", function(object, node = "raw", parents = FALSE,
 #'
 #' @export
 #'
-setGeneric("getGenotype", function(object, node = "raw",
-                                   parents = FALSE, valid = TRUE, chr = NULL,
+setGeneric("getGenotype", function(object,
+                                   node = "raw",
+                                   parents = FALSE,
+                                   valid = TRUE,
+                                   chr = NULL,
+                                   phased = FALSE,
                                    ...)
     standardGeneric("getGenotype"))
 
@@ -1370,6 +1374,8 @@ setGeneric("closeGDS", function(object, save_filter = FALSE, verbose = TRUE, ...
 #' @param parents A vector of strings with at least length two.
 #' The specified strings should match with the samples
 #' ID available via [getSamID()].
+#' @param nonmiss A logical value whether to filter out markers which
+#' are missing in parents.
 #' @param mono A logical value whether to filter out markers which
 #' are not monomorphic in parents.
 #' @param bi A logical value whether to filter out marekrs which
@@ -1426,6 +1432,7 @@ setGeneric("closeGDS", function(object, save_filter = FALSE, verbose = TRUE, ...
 #'
 setGeneric("setParents", function(object,
                                   parents,
+                                  nonmiss = FALSE,
                                   mono = FALSE,
                                   bi = FALSE,
                                   ...)
@@ -1739,7 +1746,7 @@ setGeneric("setCallFilter", function(object,
 #' @export
 #'
 setGeneric("setSamFilter", function(object,
-                                     id = "",
+                                     id = NA_character_,
                                      missing = 1,
                                      het = c(0, 1),
                                      mac = 0,

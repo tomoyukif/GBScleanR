@@ -157,14 +157,6 @@ loadGDS <- function(x, load_filter = FALSE, ploidy = 2, verbose = TRUE) {
         gds <- seqOpen(gds.fn = gds$filename, readonly = FALSE)
     }
 
-    n_allele <- seqNumAllele(gdsfile = gds)
-    bi <- n_allele == 2
-    if(any(!bi)){
-        stop("Some markers are not bi-allelic.",
-             "\nGBScleanR accepts biallelic markers only.",
-             "\nYou can filter out non-biallelic markers with gbsrVCF2GDS().")
-    }
-
     d <- seqSummary(gdsfile = gds, varname = "genotype", verbose = FALSE)
     marker <- data.frame(valid = rep(TRUE, d$dim[3]))
     sample <- data.frame(valid = rep(TRUE, d$dim[2]))
@@ -179,10 +171,6 @@ loadGDS <- function(x, load_filter = FALSE, ploidy = 2, verbose = TRUE) {
         } else {
             warnings("No filtering information stored in the GDS.")
         }
-    }
-
-    if(exist.gdsn(gds, "annotation/format/CFT")){
-        .makeCallFilterData(gds)
     }
 
     return(gds)
