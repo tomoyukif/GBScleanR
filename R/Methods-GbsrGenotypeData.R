@@ -1123,7 +1123,7 @@ setMethod("setCallFilter",
                                             TRUE)
         } else {
             if(any(filt_list[[j]] != qtile_default)){
-                threshold <- quantile(read_list[[j-3]][read_list[[j-3]] != 0],
+                threshold <- quantile(read_list[[j-3]],
                                       filt_list[[j]][1:2],
                                       TRUE)
                 valid_df[, j] <- .calcSubFilter(read_list[[j-3]],

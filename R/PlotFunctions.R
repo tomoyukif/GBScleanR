@@ -908,7 +908,7 @@ plotDosage <- function(x,
         parents <- TRUE
     }
 
-    if(!is.null(showratio)){
+    if(showratio){
         ploidy <- attributes(slot(x, "sample"))[["ploidy"]]
         read <- getRead(x, node="raw", parents=parents)
         ref <- read$ref[ind, chr]
@@ -923,12 +923,12 @@ plotDosage <- function(x,
                      pos = getPosition(x)[chr],
                      geno = geno,
                      ad = ad,
-                     dp)
+                     dp = dp)
     df <- df[!is.na(df$geno), ]
     ploidy <- attributes(slot(x, "sample"))[["ploidy"]]
     p <- ggplot(df)
 
-    if(!is.null(showratio)){
+    if(showratio){
         p <- p + geom_point(mapping = aes(x = pos * 10^-6, y=ad),
                             size=0.8, alpha=0.2, stroke=0, colour=dp) +
             scale_colour_gradient(low = "green", high = "darkblue")
