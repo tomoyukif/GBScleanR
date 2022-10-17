@@ -34,12 +34,12 @@ gds_fn <- tempfile("sample", fileext = ".gds")
 gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
 
 # Load data in the GDS file and instantiate a `GbsrGenotypeData` object.
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Reload data from the GDS file.
-gdata <- loadGDS(gdata)
+gds <- loadGDS(gds)
 
 # Close the connection to the GDS file.
-closeGDS(gdata)
+closeGDS(gds)
 
 }

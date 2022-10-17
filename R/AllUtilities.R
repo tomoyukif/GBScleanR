@@ -33,14 +33,14 @@ print.GbsrGenotypeData <- function(x) {
 #' gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
 #'
 #' # Load data in the GDS file and instantiate a `GbsrGenotypeData` object.
-#' gdata <- loadGDS(gds_fn)
+#' gds <- loadGDS(gds_fn)
 #'
 #' # Close the connection to the GDS file.
-#' closeGDS(gdata)
+#' closeGDS(gds)
 #'
 #' @export
 #'
-#' @importFrom SeqArray seqVCF2GDS seqOptimize seqStorageOption seqExport
+#' @importFrom SeqArray seqVCF2GDS seqOptimize seqStorageOption seqExport seqNumAllele
 #'
 gbsrVCF2GDS <- function(vcf_fn,
                         out_fn,
@@ -84,8 +84,6 @@ gbsrVCF2GDS <- function(vcf_fn,
     } else {
         seqClose(gds)
     }
-    seqOptimize(out_fn, "by.sample",
-                c("AD", "FAD", "HAP", "CGT", "FGT"), verbose = verbose)
     return(out_fn)
 }
 
@@ -110,7 +108,7 @@ gbsrVCF2GDS <- function(vcf_fn,
 #'
 #' @importFrom methods new
 #' @importFrom SeqArray seqOpen seqSummary seqOptimize
-#' @importFrom gdsfmt exist.gdsn
+#' @importFrom gdsfmt exist.gdsn delete.gdsn objdesp.gdsn setdim.gdsn add.gdsn
 #'
 #' @examples
 #' # Create a GDS file from a sample VCF file.
@@ -119,13 +117,13 @@ gbsrVCF2GDS <- function(vcf_fn,
 #' gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
 #'
 #' # Load data in the GDS file and instantiate a `GbsrGenotypeData` object.
-#' gdata <- loadGDS(gds_fn)
+#' gds <- loadGDS(gds_fn)
 #'
 #' # Reload data from the GDS file.
-#' gdata <- loadGDS(gdata)
+#' gds <- loadGDS(gds)
 #'
 #' # Close the connection to the GDS file.
-#' closeGDS(gdata)
+#' closeGDS(gds)
 #'
 loadGDS <- function(x, load_filter = FALSE, ploidy = 2, verbose = TRUE) {
     if(verbose){ message('Loading GDS file.') }
@@ -145,6 +143,41 @@ loadGDS <- function(x, load_filter = FALSE, ploidy = 2, verbose = TRUE) {
     } else {
         stop("x must be a file path or a GbsrGenotypeData object",
              call. = FALSE)
+    }
+
+    for(node in c("FGT", "CGT", "HAP")){
+        gdsn <- paste0("annotation/format/", node)
+        if(exist.gdsn(gds, gdsn)){
+            message("Reformatting ", node)
+            i_gdsn <- index.gdsn(gds, paste0(gdsn, "/data"))
+            gdsn_dim <- objdesp.gdsn(i_gdsn)
+            if(length(gdsn_dim$dim) != 3){
+                if(node == "FGT"){storage <- "bit2"; na_val <- 3}
+                if(node == "CGT"){storage <- "bit2"; na_val <- 3}
+                if(node == "HAP"){storage <- "bit6"; na_val <- 0}
+
+                tmp_gdsn <- add.gdsn(index.gdsn(gds, gdsn),
+                                     "tmp", NULL, storage, NULL,
+                                     replace = T)
+                apply.gdsn(i_gdsn, margin = 1,
+                           function(x){
+                                x <- unlist(strsplit(x, "\\||/"))
+                                x <- suppressWarnings(as.integer(x))
+                                x[is.na(x)] <- na_val
+                                return(x)
+                           },
+                           as.is = "gdsnode",
+                           target.node = tmp_gdsn)
+                setdim.gdsn(tmp_gdsn, c(2, gdsn_dim$dim[2], gdsn_dim$dim[1]))
+                i_gdsn <- add.gdsn(index.gdsn(gds, gdsn),
+                                   "data", NULL, storage, NULL,
+                                   replace = T)
+                apply.gdsn(tmp_gdsn, margin = 2, c, as.is = "gdsnode",
+                           target.node = i_gdsn)
+                setdim.gdsn(i_gdsn, c(2, gdsn_dim$dim[1], gdsn_dim$dim[2]))
+                delete.gdsn(tmp_gdsn)
+            }
+        }
     }
 
     opt <- exist.gdsn(node = gds, path = "genotype/~data") &
@@ -173,5 +206,8 @@ loadGDS <- function(x, load_filter = FALSE, ploidy = 2, verbose = TRUE) {
         }
     }
 
+
+
     return(gds)
 }
+

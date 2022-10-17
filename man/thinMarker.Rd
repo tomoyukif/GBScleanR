@@ -43,7 +43,7 @@ the second marker was removed as invalid marker,
 next the distance between the first marker
 and the third marker will be checked and
 this cycle is repeated until reaching the
-end of each chromosome. Run \code{\link[=getValidSnp]{getValidSnp()}}
+end of each chromosome. Run \code{\link[=validMar]{validMar()}}
 to check the valid SNP markers.
 }
 \examples{

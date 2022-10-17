@@ -39,14 +39,14 @@ upper limit of reference read counts.}
 upper limit of alternative read counts.}
 
 \item{dp_qtile}{A numeric vector with length two specifying lower
-and upper limit of quantile of total read counts in each scan (sample).}
+and upper limit of quantile of total read counts in each sample.}
 
 \item{ref_qtile}{A numeric vector with length two specifying lower
-and upper limit of quantile of reference read counts in each scan (sample).}
+and upper limit of quantile of reference read counts in each sample.}
 
 \item{alt_qtile}{A numeric vector with length two specifying lower
 and upper limit of quantile of alternative read counts in each
-scan (sample).}
+sample.}
 
 \item{...}{Unused.}
 }

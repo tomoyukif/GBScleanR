@@ -4,7 +4,6 @@
 #' @param stats A string to specify statistics to be drawn.
 #' @param target Either or both of "marker" and "sample", e.g. `target = "marker"`
 #' to draw a histogram only for SNPs.
-#' @param q An integer to specify a quantile calculated via [calcReadStats()].
 #' @param binwidth An integer to specify bin width of the histogram.
 #' This value is passed to the ggplot function.
 #' @param color A named vector "Marker" and "Sample" to specify border
@@ -26,10 +25,10 @@
 #' \item{"rrf"}{"Reference allele read frequency."},
 #' \item{"mean_ref"}{"Mean of reference allele read counts."},
 #' \item{"sd_ref"}{"Standard deviation of reference allele read counts."},
-#' \item{"qtile_ref"}{"Quantile of reference allele read counts."},
+#' \item{"median_ref"}{"Quantile of reference allele read counts."},
 #' \item{"mean_alt"}{"Mean of alternative allele read counts."},
 #' \item{"sd_alt"}{"Standard deviation of alternative allele read counts."},
-#' \item{"qtile_alt"}{"Quantile of alternative allele read counts."},
+#' \item{"median_alt"}{"Quantile of alternative allele read counts."},
 #' \item{"mq"}{"Mapping quality."},
 #' \item{"fs"}{"Phred-scaled p-value (strand bias)"},
 #' \item{"qd"}{"Variant Quality by Depth"},
@@ -57,25 +56,20 @@
 #' @examples
 #' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 #' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-#' gdata <- loadGDS(gds_fn)
+#' gds <- loadGDS(gds_fn)
 #'
 #' # Summarize genotype count information to be used in `histGBSR()`
-#' gdata <- countGenotype(gdata)
+#' gds <- countGenotype(gds)
 #'
 #' # Draw histograms of missing rate, heterozygosity, and reference
 #' # allele frequency per SNP and per sample.
-#' histGBSR(gdata, stats = "missing")
-#'
-#' # Draw histograms of 90 percentile values of reference read counts
-#' # and alternative read counts per SNP and per sample.
-#' histGBSR(gdata, stats = "qtile_ref", q = 0.9)
+#' histGBSR(gds, stats = "missing")
 #'
 #' # Close the connection to the GDS file
-#' closeGDS(gdata)
+#' closeGDS(gds)
 histGBSR  <- function(x,
                       stats = c("dp", "missing", "het"),
                       target = c("marker", "sample"),
-                      q = 0.5,
                       binwidth = NULL,
                       color = c(Marker = "darkblue", Sample = "darkblue"),
                       fill = c(Marker = "skyblue", Sample = "skyblue")) {
@@ -88,10 +82,10 @@ histGBSR  <- function(x,
                    "rrf",
                    "mean_ref",
                    "sd_ref",
-                   "qtile_ref",
+                   "median_ref",
                    "mean_alt",
                    "sd_alt",
-                   "qtile_alt",
+                   "median_alt",
                    "mq",
                    "fs",
                    "qd",
@@ -113,10 +107,10 @@ histGBSR  <- function(x,
                 "Reference allele read frequency",
                 "Mean of reference read depth",
                 "SD of reference read depth",
-                paste0("Quantile of reference read depth (q=", q, ")"),
+                "Median of reference read depth",
                 "Mean of alternative read depth",
                 "SD of alternative read depth",
-                paste0("Quantile of alternative read depth (q=", q, ")"),
+                "Median of alternative read depth",
                 "Phred-scaled p-value (strand bias)",
                 "Variant Quality by Depth",
                 "Symmetric Odds Ratio (strand bias)",
@@ -135,10 +129,10 @@ histGBSR  <- function(x,
         }
     }
 
-    df <- .df.maker(x, stats, q, target)
+    df <- .df.maker(x, stats, target)
     p <- ggplot(df)
     p <- .hist.maker(p, stats, binwidth)
-    p <- p + xlab(.lab.maker(stats, q)) +
+    p <- p + xlab(.lab.maker(stats)) +
         ylab("Count") +
         xlim(.limit.maker(stats)) +
         scale_fill_manual(values=fill, breaks=names(fill)) +
@@ -156,8 +150,6 @@ histGBSR  <- function(x,
 #' @param stats A string to specify statistics to be drawn.
 #' @param target Either or both of "marker" and "sample", e.g. `target = "marker"`
 #' to draw a histogram only for SNPs.
-#' @param q An integer to specify a quantile calculated via
-#' [calcReadStats()].
 #' @param color A named vector "Marker" and "Sample" to specify
 #' border color of bins in the histograms.
 #' @param fill A named vector "Marker" and "Sample" to specify
@@ -178,10 +170,10 @@ histGBSR  <- function(x,
 #' \item{"rrf"}{"Reference allele read frequency."},
 #' \item{"mean_ref"}{"Mean of reference allele read counts."},
 #' \item{"sd_ref"}{"Standard deviation of reference allele read counts."},
-#' \item{"qtile_ref"}{"Quantile of reference allele read counts."},
+#' \item{"median_ref"}{"Quantile of reference allele read counts."},
 #' \item{"mean_alt"}{"Mean of alternative allele read counts."},
 #' \item{"sd_alt"}{"Standard deviation of alternative allele read counts."},
-#' \item{"qtile_alt"}{"Quantile of alternative allele read counts."},
+#' \item{"median_alt"}{"Quantile of alternative allele read counts."},
 #' \item{"mq"}{"Mapping quality."},
 #' \item{"fs"}{"Phred-scaled p-value (strand bias)"},
 #' \item{"qd"}{"Variant Quality by Depth"},
@@ -209,24 +201,19 @@ histGBSR  <- function(x,
 #' @examples
 #' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 #' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-#' gdata <- loadGDS(gds_fn)
+#' gds <- loadGDS(gds_fn)
 #'
 #' # Summarize genotype count information to be used in `boxplotGBSR()`
-#' gdata <- countGenotype(gdata)
+#' gds <- countGenotype(gds)
 #'
-#' boxplotGBSR(gdata, stats = "missing")
-#'
-#' # Draw boxplots of 90 percentile values of reference read counts and
-#' # alternative read counts per SNP and per sample.
-#' boxplotGBSR(gdata, stats = "qtile_ref", q = 0.9)
+#' boxplotGBSR(gds, stats = "missing")
 #'
 #' # Close the connection to the GDS file
-#' closeGDS(gdata)
+#' closeGDS(gds)
 #'
 boxplotGBSR <- function(x,
                         stats = "missing",
                         target = c("marker", "sample"),
-                        q = 0.5,
                         color = c(Marker = "darkblue", Sample = "darkblue"),
                         fill = c(Marker = "skyblue", Sample = "skyblue")) {
     stats_list = c("dp",
@@ -238,10 +225,10 @@ boxplotGBSR <- function(x,
                    "rrf",
                    "mean_ref",
                    "sd_ref",
-                   "qtile_ref",
+                   "median_ref",
                    "mean_alt",
                    "sd_alt",
-                   "qtile_alt",
+                   "median_alt",
                    "mq",
                    "fs",
                    "qd",
@@ -263,10 +250,10 @@ boxplotGBSR <- function(x,
                 "Reference allele read frequency",
                 "Mean of reference read depth",
                 "SD of reference read depth",
-                paste0("Quantile of reference read depth (q=", q, ")"),
+                "Median of reference read depth",
                 "Mean of alternative read depth",
                 "SD of alternative read depth",
-                paste0("Quantile of alternative read depth (q=", q, ")"),
+                "Median of alternative read depth",
                 "Phred-scaled p-value (strand bias)",
                 "Variant Quality by Depth",
                 "Symmetric Odds Ratio (strand bias)",
@@ -279,11 +266,11 @@ boxplotGBSR <- function(x,
 
     stats <- match.arg(stats, stats_list)
 
-    df <- .df.maker(x, stats, q, target)
+    df <- .df.maker(x, stats, target)
     p <- ggplot(df)
     p <- .boxplot.maker(p, stats)
     p <- p + ylab("") +
-        xlab(.lab.maker(stats, q)) +
+        xlab(.lab.maker(stats)) +
         xlim(.limit.maker(stats)) +
         scale_fill_manual(values=fill, breaks=names(fill)) +
         scale_color_manual(values=color, breaks=names(color)) +
@@ -301,8 +288,6 @@ boxplotGBSR <- function(x,
 #' @param stats A string to specify statistics to be drawn.
 #' @param coord A vector with two integer specifying the number of rows
 #' and columns to draw faceted line plots for chromosomes.
-#' @param q An integer to specify a quantile calculated via
-#' [calcReadStats()].
 #' @param lwd A numeric value to specify the line width in plots.
 #' @param binwidth An integer to specify bin width of the histogram.
 #' This argument only work with `stats = "marker"` and is passed to the ggplot
@@ -327,10 +312,10 @@ boxplotGBSR <- function(x,
 #' \item{"rrf"}{"Reference allele read frequency."},
 #' \item{"mean_ref"}{"Mean of reference allele read counts."},
 #' \item{"sd_ref"}{"Standard deviation of reference allele read counts."},
-#' \item{"qtile_ref"}{"Quantile of reference allele read counts."},
+#' \item{"median_ref"}{"Quantile of reference allele read counts."},
 #' \item{"mean_alt"}{"Mean of alternative allele read counts."},
 #' \item{"sd_alt"}{"Standard deviation of alternative allele read counts."},
-#' \item{"qtile_alt"}{"Quantile of alternative allele read counts."},
+#' \item{"median_alt"}{"Quantile of alternative allele read counts."},
 #' \item{"mq"}{"Mapping quality."},
 #' \item{"fs"}{"Phred-scaled p-value (strand bias)"},
 #' \item{"qd"}{"Variant Quality by Depth"},
@@ -357,26 +342,21 @@ boxplotGBSR <- function(x,
 #' @examples
 #' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 #' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-#' gdata <- loadGDS(gds_fn)
+#' gds <- loadGDS(gds_fn)
 #'
 #' # Summarize genotype count information to be used in `plotGBSR()`
-#' gdata <- countGenotype(gdata)
+#' gds <- countGenotype(gds)
 #'
 #' # Draw line plots of missing rate, heterozygosity, proportion of genotype
 #' # calls per SNP.
-#' plotGBSR(gdata, stats = "missing")
-#'
-#' # Draw line plots of 90 percentile values of reference read counts and
-#' # alternative read counts per SNP and per sample.
-#' plotGBSR(gdata, stats = "qtile_ref", q = 0.9)
+#' plotGBSR(gds, stats = "missing")
 #'
 #' # Close the connection to the GDS file
-#' closeGDS(gdata)
+#' closeGDS(gds)
 #'
 plotGBSR  <- function(x,
                       stats = c("dp", "missing", "het"),
                       coord = NULL,
-                      q = 0.5,
                       lwd = 0.5,
                       binwidth = NULL,
                       color = c(
@@ -395,10 +375,10 @@ plotGBSR  <- function(x,
                    "rrf",
                    "mean_ref",
                    "sd_ref",
-                   "qtile_ref",
+                   "median_ref",
                    "mean_alt",
                    "sd_alt",
-                   "qtile_alt",
+                   "median_alt",
                    "mq",
                    "fs",
                    "qd",
@@ -422,10 +402,10 @@ plotGBSR  <- function(x,
                 "Reference allele read frequency",
                 "Mean of reference read depth",
                 "SD of reference read depth",
-                paste0("Quantile of reference read depth (q=", q, ")"),
+                "Median of reference read depth",
                 "Mean of alternative read depth",
                 "SD of alternative read depth",
-                paste0("Quantile of alternative read depth (q=", q, ")"),
+                "Median of alternative read depth",
                 "Phred-scaled p-value (strand bias)",
                 "Variant Quality by Depth",
                 "Symmetric Odds Ratio (strand bias)",
@@ -444,12 +424,12 @@ plotGBSR  <- function(x,
         color <- color[1]
     }
 
-    df <- .df.maker(x, stats, q, "marker", TRUE)
+    df <- .df.maker(x, stats, "marker", TRUE)
     p <- ggplot(df)
     p <- .plot.maker(p, stats, binwidth, lwd, coord)
     p <- p + xlab("Physical position (Mb)") +
         ylab("") +
-        labs(title = .lab.maker(stats, q)) +
+        labs(title = .lab.maker(stats)) +
         ylim(.limit.maker(stats)) +
         scale_x_continuous(expand=expansion(0, 0.5), limits=c(0, NA)) +
         scale_color_manual(values=color, breaks=names(color)) +
@@ -474,8 +454,6 @@ plotGBSR  <- function(x,
 #' @param stats2 A string to specify statistics to be drawn.
 #' @param target Either or both of "marker" and "sample", e.g.
 #' `target = "marker"` to draw a histogram only for SNPs.
-#' @param q An integer to specify a quantile calculated via
-#' [calcReadStats()].
 #' @param size A numeric value to specify the dot size of a scatter plot.
 #' @param alpha A numeric value \[0-1\] to specify the transparency of
 #' dots in a scatter plot.
@@ -501,10 +479,10 @@ plotGBSR  <- function(x,
 #' \item{"rrf"}{"Reference allele read frequency."},
 #' \item{"mean_ref"}{"Mean of reference allele read counts."},
 #' \item{"sd_ref"}{"Standard deviation of reference allele read counts."},
-#' \item{"qtile_ref"}{"Quantile of reference allele read counts."},
+#' \item{"median_ref"}{"Quantile of reference allele read counts."},
 #' \item{"mean_alt"}{"Mean of alternative allele read counts."},
 #' \item{"sd_alt"}{"Standard deviation of alternative allele read counts."},
-#' \item{"qtile_alt"}{"Quantile of alternative allele read counts."},
+#' \item{"median_alt"}{"Quantile of alternative allele read counts."},
 #' \item{"mq"}{"Mapping quality."},
 #' \item{"fs"}{"Phred-scaled p-value (strand bias)"},
 #' \item{"qd"}{"Variant Quality by Depth"},
@@ -531,23 +509,22 @@ plotGBSR  <- function(x,
 #' @examples
 #' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 #' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-#' gdata <- loadGDS(gds_fn)
+#' gds <- loadGDS(gds_fn)
 #'
 #' # Summarize genotype count information to be used in `pairsGBSR()`
-#' gdata <- countGenotype(gdata)
+#' gds <- countGenotype(gds)
 #'
 #' # Draw scatter plots of missing rate vs heterozygosity.
-#' pairsGBSR(gdata, stats1 = "missing", stats2 = "het")
+#' pairsGBSR(gds, stats1 = "missing", stats2 = "het")
 #'
 #' # Close the connection to the GDS file
-#' closeGDS(gdata)
+#' closeGDS(gds)
 #'
 #'
 pairsGBSR  <- function(x,
                        stats1 = "dp",
                        stats2 = "missing",
                        target = "marker",
-                       q = 0.5,
                        size = 0.5,
                        alpha = 0.8,
                        color = c(Marker = "darkblue", Sample = "darkblue"),
@@ -562,10 +539,10 @@ pairsGBSR  <- function(x,
                    "rrf",
                    "mean_ref",
                    "sd_ref",
-                   "qtile_ref",
+                   "median_ref",
                    "mean_alt",
                    "sd_alt",
-                   "qtile_alt",
+                   "median_alt",
                    "mq",
                    "fs",
                    "qd",
@@ -587,10 +564,10 @@ pairsGBSR  <- function(x,
                 "Reference allele read frequency",
                 "Mean of reference read depth",
                 "SD of reference read depth",
-                paste0("Quantile of reference read depth (q=", q, ")"),
+                "Median of reference read depth",
                 "Mean of alternative read depth",
                 "SD of alternative read depth",
-                paste0("Quantile of alternative read depth (q=", q, ")"),
+                "Median of alternative read depth",
                 "Mapping quality",
                 "Phred-scaled p-value (strand bias)",
                 "Variant Quality by Depth",
@@ -607,8 +584,8 @@ pairsGBSR  <- function(x,
     stats2 <-
         match.arg(stats2, stats_list)
 
-    df1 <- .df.maker(x, stats1, q, target)
-    df2 <- .df.maker(x, stats2, q, target)
+    df1 <- .df.maker(x, stats1, target)
+    df2 <- .df.maker(x, stats2, target)
     df <-
         data.frame(val1 = df1$val,
                    val2 = df2$val,
@@ -617,8 +594,8 @@ pairsGBSR  <- function(x,
     val1 <- val2 <- NULL
     p <- ggplot(df)
     p <- .pairs.maker(p, size, alpha)
-    p <- p + xlab(.lab.maker(stats1, q)) +
-        ylab(.lab.maker(stats2, q)) +
+    p <- p + xlab(.lab.maker(stats1)) +
+        ylab(.lab.maker(stats2)) +
         xlim(.limit.maker(stats1)) +
         ylim(.limit.maker(stats2)) +
         scale_fill_manual(values=fill, breaks=names(fill)) +
@@ -639,7 +616,7 @@ pairsGBSR  <- function(x,
 
 # Internal function to build a data.frame passed to ggplot().
 #' @importFrom tidyr pivot_longer
-.df.maker <- function(x, stats, q, target, pos = FALSE) {
+.df.maker <- function(x, stats, target, pos = FALSE) {
     Ref <- NULL
     Alt <- NULL
     if (stats == "geno") {
@@ -676,11 +653,11 @@ pairsGBSR  <- function(x,
                 "ad_ref" = getCountReadRef(x, "marker"),
                 "mean_ref" = getMeanReadRef(x, "marker"),
                 "sd_ref" = getSDReadRef(x, "marker"),
-                "qtile_ref" = getQtileReadRef(x, "marker", q),
+                "median_ref" = getMedianReadRef(x, "marker"),
                 "ad_alt" = getCountReadAlt(x, "marker"),
                 "mean_alt" = getMeanReadAlt(x, "marker"),
                 "sd_alt" = getSDReadAlt(x, "marker"),
-                "qtile_alt" = getQtileReadAlt(x, "marker", q),
+                "median_alt" = getMedianReadAlt(x, "marker"),
                 "mq" = getInfo(x, "MQ"),
                 "fs" = getInfo(x, "FS"),
                 "qd" = getInfo(x, "QD"),
@@ -717,11 +694,11 @@ pairsGBSR  <- function(x,
                 "ad_ref" = getCountReadRef(x, "sample"),
                 "mean_ref" = getMeanReadRef(x, "sample"),
                 "sd_ref" = getSDReadRef(x, "sample"),
-                "qtile_ref" = getQtileReadRef(x, "sample", q),
+                "median_ref" = getMedianReadRef(x, "sample"),
                 "ad_alt" = getCountReadAlt(x, "sample"),
                 "mean_alt" = getMeanReadAlt(x, "sample"),
                 "sd_alt" = getSDReadAlt(x, "sample"),
-                "qtile_alt" = getQtileReadAlt(x, "sample", q)
+                "median_alt" = getMedianReadAlt(x, "sample")
             )
             if (is.null(scan)) {
                 msg <- paste0('No sample summary for the statistic: ', stats)
@@ -738,7 +715,7 @@ pairsGBSR  <- function(x,
 }
 
 # Internal function to build label information passed to ggplot().
-.lab.maker <- function(stats, q) {
+.lab.maker <- function(stats) {
     lab <- switch(
         stats,
         "marker" = "Marker density",
@@ -752,10 +729,10 @@ pairsGBSR  <- function(x,
         "rrf" = "Reference allele read frequency",
         "mean_ref" = "Mean of reference read depth",
         "sd_ref" = "SD of reference read depth",
-        "qtile_ref" = paste0("Quantile of reference read depth (q=", q, ")"),
+        "median_ref" = "Median of reference read depth",
         "mean_alt" = "Mean of alternative read depth",
         "sd_alt" = "SD of alternative read depth",
-        "qtile_alt" = paste0("Quantile of alternative read depth (q=", q, ")"),
+        "median_alt" = "Median of alternative read depth",
         "mq" = "Mapping quality (MQ)",
         "fs" = "Phred-scaled p-value (strand bias) (FS)",
         "qd" = "Variant Quality by Depth (QD)",
@@ -782,10 +759,10 @@ pairsGBSR  <- function(x,
         "rrf" = c(0, 1),
         "mean_ref" = c(0, NA),
         "sd_ref" = c(0, NA),
-        "qtile_ref" = c(0, NA),
+        "median_ref" = c(0, NA),
         "mean_alt" = c(0, NA),
         "sd_alt" = c(0, NA),
-        "qtile_alt" = c(0, NA),
+        "median_alt" = c(0, NA),
         "mq" = c(0, NA),
         "fs" = c(0, NA),
         "qd" = c(0, NA),
@@ -874,12 +851,12 @@ pairsGBSR  <- function(x,
 #' @examples
 #' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 #' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-#' gdata <- loadGDS(gds_fn)
+#' gds <- loadGDS(gds_fn)
 #'
-#' plotDosage(gdata, ind = 1)
+#' plotDosage(gds, ind = 1)
 #'
 #' # Close the connection to the GDS file
-#' closeGDS(gdata)
+#' closeGDS(gds)
 #'
 #' @return A ggplot object.
 #' @export
@@ -929,8 +906,8 @@ plotDosage <- function(x,
     p <- ggplot(df)
 
     if(showratio){
-        p <- p + geom_point(mapping = aes(x = pos * 10^-6, y=ad),
-                            size=0.8, alpha=0.2, stroke=0, colour=dp) +
+        p <- p + geom_point(mapping = aes(x = pos * 10^-6, y=ad, colour=dp),
+                            size=0.8, alpha=0.2, stroke=0) +
             scale_colour_gradient(low = "green", high = "darkblue")
     }
     p <- p + geom_line(mapping = aes(x = pos * 10^-6, y=geno, group=chr),
@@ -967,12 +944,12 @@ plotDosage <- function(x,
 #' @examples
 #' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 #' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-#' gdata <- loadGDS(gds_fn)
+#' gds <- loadGDS(gds_fn)
 #'
-#' plotReadRatio(gdata, ind = 1)
+#' plotReadRatio(gds, ind = 1)
 #'
 #' # Close the connection to the GDS file
-#' closeGDS(gdata)
+#' closeGDS(gds)
 #'
 #' @return A ggplot object.
 #' @export

@@ -1,8 +1,8 @@
 Package: GBScleanR
 Type: Package
 Title: Error correction tool for noisy genotyping by sequencing (GBS) data
-Version: 1.0.5
-Date: 2022-09-07
+Version: 1.1.1
+Date: 2022-10-17
 Authors@R: person("Tomoyuki", "Furuta", 
            email = "f.tomoyuki@okayama-u.ac.jp",
            role = c("aut", "cre"),
@@ -25,7 +25,7 @@ Encoding: UTF-8
 LinkingTo: Rcpp, RcppParallel
 SystemRequirements: GNU make, C++11
 Depends: SeqArray
-Imports: graphics, stats, utils, methods, ggplot2, tidyr, expm, Rcpp, RcppParallel, gdsfmt
+Imports: stats, utils, methods, ggplot2, tidyr, expm, Rcpp, RcppParallel, gdsfmt
 Suggests: BiocStyle, testthat (>= 3.0.0), knitr, rmarkdown
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)

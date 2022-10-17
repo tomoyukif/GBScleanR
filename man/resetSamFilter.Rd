@@ -3,7 +3,7 @@
 \name{resetSamFilter}
 \alias{resetSamFilter}
 \alias{resetSamFilter,GbsrGenotypeData-method}
-\title{Reset the filter made by \code{\link[=setScanFilter]{setScanFilter()}}}
+\title{Reset the filter made by \code{\link[=setSamFilter]{setSamFilter()}}}
 \usage{
 resetSamFilter(object, ...)
 
@@ -34,8 +34,8 @@ gds <- loadGDS(gds_fn)
 gds <- countGenotype(gds)
 gds <- countRead(gds)
 
-gds <- setScanFilter(gds,
-                       id = getScanID(gds)[1:10],
+gds <- setSamFilter(gds,
+                       id = getSamID(gds)[1:10],
                        missing = 0.2,
                        dp = c(5, Inf))
 

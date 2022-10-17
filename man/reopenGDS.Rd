@@ -26,7 +26,7 @@ even after closing the connection the file. This function open again the
 connection to the GDS file at the file path stored in the GbsrGenotypeData
 object. If the GbsrGenotypeData object witch has an open connection to
 the GDS file, this function will reopen the connection. The data stored in
-the SnpAnnotationDataFrame and ScanAnnotationDataFrame will not be changed.
+the marker and sample slots will not be changed.
 Thus, you can open a connection with the GDS file with keeping information
 of filtering and summary statistics.
 }
@@ -40,7 +40,7 @@ gds <- loadGDS(gds_fn)
 # Close the connection to the GDS file
 closeGDS(gds)
 
-gds <- repenGDS(gds)
+gds <- reopenGDS(gds)
 
 # Close the connection to the GDS file
 closeGDS(gds)

@@ -15,7 +15,6 @@ test_that("gbsrGDS2VCF", {
     validSam(gds) <- valid_scan
     out_fn <- tempfile("out", fileext = ".vcf")
     gbsrGDS2VCF(gds, out_fn)
-    gds <- reopenGDS(gds)
     new_gds <- tempfile("newgds", fileext = ".gds")
     gbsrVCF2GDS(out_fn, new_gds)
     newgds <- loadGDS(new_gds)
@@ -27,7 +26,6 @@ test_that("gbsrGDS2VCF", {
     gds <- setCallFilter(gds, dp_qtile = c(0, 0.8))
     out_fn <- tempfile("out", fileext = ".vcf")
     gbsrGDS2VCF(gds, out_fn)
-    gds <- reopenGDS(gds)
     new_gds <- tempfile("newgds", fileext = ".gds")
     gbsrVCF2GDS(out_fn, new_gds)
     newgds <- loadGDS(new_gds)
@@ -38,5 +36,6 @@ test_that("gbsrGDS2VCF", {
     expect_equal(getGenotype(newgds, node = "filt"),
                  getGenotype(gds, node = "filt"),
                  ignore_attr = TRUE)
+    closeGDS(newgds)
     closeGDS(gds)
 })

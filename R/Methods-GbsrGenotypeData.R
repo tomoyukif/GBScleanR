@@ -3,7 +3,7 @@
 #' @importFrom SeqArray seqSetFilter seqGetData
 .filtData <- function(object, node, filters, reduce = FALSE){
     if(!exist.gdsn(object, node)){
-        stop("The GDS node ", node, " does not exists.")
+        stop("The GDS node ", node, " does not exists.", call. = FALSE)
     }
 
     if(reduce){
@@ -29,7 +29,7 @@
     return(out)
 }
 
-#' SeqArray seqGetData
+#' @importFrom SeqArray seqGetData
 .makeFilter <- function(object, valid = FALSE, parents = FALSE, chr = NULL){
     filt_mar <- rep(TRUE, nmar(object, FALSE))
     filt_sam <- rep(TRUE, nsam(object, FALSE))
@@ -105,6 +105,7 @@ setMethod("validMar",
           })
 
 #' @rdname validMar
+#' @importFrom methods slot<-
 setMethod("validMar<-",
           "GbsrGenotypeData",
           function(object, value){
@@ -142,6 +143,7 @@ setMethod("validSam",
           })
 
 #' @rdname validSam
+#' @importFrom methods slot<-
 setMethod("validSam<-",
           "GbsrGenotypeData",
           function(object, value){
@@ -635,17 +637,13 @@ setMethod("getSDReadAlt",
               return(out)
           })
 
-## Get quantile values of the number of reference allele reads
-## per marker and per sample.
+
+## Get the number of mean reference allele reads per marker and per sample.
 #' @rdname getMedianReadRef
 setMethod("getMedianReadRef",
           "GbsrGenotypeData",
-          function(object, target, q, valid){
-              stopifnot(length(q) != 0)
-              out <- .getStatsData(object,
-                                   paste0("qtileReadRef", q),
-                                   target,
-                                   valid)
+          function(object, target, valid){
+              out <- .getStatsData(object, "medianReadRef", target, valid)
               if(is.null(out)){
                   stop("Nothing to rerurn. Run countRead().")
               }
@@ -653,17 +651,12 @@ setMethod("getMedianReadRef",
               return(out)
           })
 
-## Get quantile values of the number of alternative allele reads
-## per marker and per sample.
+## Get the number of mean alternative allele reads per marker and per sample.
 #' @rdname getMedianReadAlt
 setMethod("getMedianReadAlt",
           "GbsrGenotypeData",
-          function(object, target, q, valid){
-              stopifnot(length(q) != 0)
-              out <- .getStatsData(object,
-                                   paste0("qtileReadAlt", q),
-                                   target,
-                                   valid)
+          function(object, target, valid){
+              out <- .getStatsData(object, "medianReadAlt", target, valid)
               if(is.null(out)){
                   stop("Nothing to rerurn. Run countRead().")
               }
@@ -700,7 +693,8 @@ setMethod("getParents",
           "GbsrGenotypeData",
           function(object, bool){
               if(is.null(slot(object, "sample")[["parents"]])){
-                  stop("No parents specified.")
+                  warning("No parents specified.", call. = FALSE)
+                  return(NULL)
               }
 
               parents <- slot(object, "sample")[["parents"]]
@@ -741,6 +735,7 @@ setMethod("isOpenGDS",
 
 ## Set parental samples.
 #' @rdname setParents
+#' @importFrom methods slot<-
 setMethod("setParents",
           "GbsrGenotypeData",
           function(object, parents, nonmiss, mono, bi){
@@ -791,13 +786,13 @@ setMethod("setParents",
     }
 
     if(mono){
-        mono <- colSums(gt == 2) == 0
+        mono <- colSums(gt == 1) == 0
     } else {
         mono <- rep(TRUE, nmar(object, FALSE))
     }
 
     if(bi){
-        bi <- colSums(gt == 1) != 0 | colSums(gt == 2) != 0
+        bi <- colSums(gt == 0) != 0 | colSums(gt == 2) != 0
     } else {
         bi <- rep(TRUE, nmar(object, FALSE))
     }
@@ -909,6 +904,7 @@ setMethod("countGenotype",
           })
 
 #' @importFrom gdsfmt apply.gdsn
+#' @importFrom methods slot<-
 .countGeno <- function(object, node, margin, slotid){
     sel <- list(rep(TRUE, 2), validSam(object), validMar(object))
     out <- apply.gdsn(index.gdsn(object, node), margin, count_geno, sel, "list")
@@ -935,7 +931,7 @@ setMethod("countGenotype",
 #' @rdname countRead
 setMethod("countRead",
           "GbsrGenotypeData",
-          function(object, target, node, q){
+          function(object, target, node){
               node <- match.arg(node, c("raw", "filt"))
               if(node == "raw"){node <- "annotation/format/AD"}
               if(node == "filt"){node <- "annotation/format/FAD"}
@@ -953,13 +949,13 @@ setMethod("countRead",
               # Counts per sample
               if(target %in% c("both", "sample")){
                   object <- .countRead(object, node, "by.sample", "sample",
-                                       tot_read, q)
+                                       tot_read)
               }
 
               # Counts per marker
               if(target %in% c("both", "marker")){
                   object <- .countRead(object, node, "by.variant", "marker",
-                                       tot_read, q)
+                                       tot_read)
               }
 
               seqSetFilter(object, action = "pop", verbose = FALSE)
@@ -967,7 +963,7 @@ setMethod("countRead",
           })
 
 #' @importFrom SeqArray seqApply
-.countRead <- function(object, node, margin, slotid, tot_read, q){
+.countRead <- function(object, node, margin, slotid, tot_read){
     if(margin == "by.sample"){
         tot_read <- 0
     }
@@ -1096,6 +1092,7 @@ setMethod("setCallFilter",
 
 
 #' @importFrom gdsfmt write.gdsn read.gdsn
+#' @importFrom stats quantile
 .callFilterScan <- function(object, i, filt_list){
     ad_data_node <- index.gdsn(object, "annotation/format/AD/data")
     callfilt <- index.gdsn(object, "annotation/format/CFT/data")
@@ -1555,33 +1552,76 @@ setMethod("setInfoFilter",
     v <- rep(TRUE, nmar(object))
     # Filtering for samples.
     ## MQ
-    v <- v & .calcSubFilter(getInfo(object, "MQ"),
-                            filt_list$mq, 0, TRUE, TRUE)
+    info_gdsn <- ls.gdsn(index.gdsn(object, "annotation/info"))
+    if(filt_list$mq != 0){
+        if("MQ" %in% info_gdsn){
+            v <- v & .calcSubFilter(getInfo(object, "MQ"),
+                                    filt_list$mq, 0, TRUE, TRUE)
+        } else {
+            warning("Filtering on MQ was specified but no MQ in the GDS.")
+        }
+    }
 
     ## FS
-    v <- v & .calcSubFilter(getInfo(object, "FS"),
-                            filt_list$fs, Inf, FALSE, TRUE)
+    if(filt_list$fs != Inf){
+        if("FS" %in% info_gdsn){
+            v <- v & .calcSubFilter(getInfo(object, "FS"),
+                                    filt_list$fs, Inf, FALSE, TRUE)
+        } else {
+            warning("Filtering on FS was specified but no FS in the GDS.")
+        }
+    }
 
     ## QD
-    v <- v & .calcSubFilter(getInfo(object, "QD"),
-                            filt_list$qd, 0, TRUE, TRUE)
+    if(filt_list$qd != 0){
+        if("QD" %in% info_gdsn){
+            v <- v & .calcSubFilter(getInfo(object, "QD"),
+                                    filt_list$qd, 0, TRUE, TRUE)
+        } else {
+            warning("Filtering on QD was specified but no QD in the GDS.")
+        }
+    }
 
     ## SOR
-    v <- v & .calcSubFilter(getInfo(object, "SOR"),
-                            filt_list$sor, Inf, FALSE, TRUE)
+    if(filt_list$sor != Inf){
+        if("SOR" %in% info_gdsn){
+            v <- v & .calcSubFilter(getInfo(object, "SOR"),
+                                    filt_list$sor, Inf, FALSE, TRUE)
+        } else {
+            warning("Filtering on SOR was specified but no SOR in the GDS.")
+        }
+    }
 
     ## MQRankSum
-    v <- v & .calcSubFilter(getInfo(object, "MQRankSum"),
-                            filt_list$mqranksum, c(-Inf, Inf), TRUE, TRUE)
+    if(any(filt_list$mqranksum != c(-Inf, Inf))){
+        if("MQRankSum" %in% info_gdsn){
+            v <- v & .calcSubFilter(getInfo(object, "MQRankSum"),
+                                    filt_list$mqranksum, c(-Inf, Inf), TRUE, TRUE)
+        } else {
+            warning("Filtering on MQRankSum was specified but no MQRankSum in the GDS.")
+        }
+    }
 
     ## Alternative allele read count
-    v <- v & .calcSubFilter(getInfo(object,
-                                    "ReadPosRankSum"),
-                            filt_list$readposranksum, c(-Inf, Inf), TRUE, TRUE)
+    if(any(filt_list$readposranksum != c(-Inf, Inf))){
+        if("ReadPosRankSum" %in% info_gdsn){
+            v <- v & .calcSubFilter(getInfo(object,
+                                            "ReadPosRankSum"),
+                                    filt_list$readposranksum, c(-Inf, Inf), TRUE, TRUE)
+        } else {
+            warning("Filtering on ReadPosRankSum was specified but no ReadPosRankSum in the GDS.")
+        }
+    }
 
     ## Total read count
-    v <- v & .calcSubFilter(getInfo(object, "BaseQRankSum"),
-                            filt_list$baseqranksum, c(-Inf, Inf), TRUE, TRUE)
+    if(any(filt_list$baseqranksum != c(-Inf, Inf))){
+        if("BaseQRankSum" %in% info_gdsn){
+            v <- v & .calcSubFilter(getInfo(object, "BaseQRankSum"),
+                                    filt_list$baseqranksum, c(-Inf, Inf), TRUE, TRUE)
+        } else {
+            warning("Filtering on BaseQRankSum was specified but no BaseQRankSum in the GDS.")
+        }
+    }
     return(v)
 }
 
@@ -1590,6 +1630,7 @@ setMethod("setInfoFilter",
 
 ## Reset filters on samples
 #' @rdname resetSamFilter
+#' @importFrom methods slot<-
 setMethod("resetSamFilter",
           "GbsrGenotypeData",
           function(object){
@@ -1599,6 +1640,7 @@ setMethod("resetSamFilter",
 
 ## Reset filters on markers.
 #' @rdname resetMarFilter
+#' @importFrom methods slot<-
 setMethod("resetMarFilter",
           "GbsrGenotypeData",
           function(object){
@@ -1644,7 +1686,7 @@ setMethod("gbsrGDS2VCF",
                    parents){
               if(is.null(slot(object, "sample")[["parents"]])){
                   parents <- FALSE
-                  warnings("No parents info.")
+                  warning("No parents info.")
               }
               sam_sel <- validSam(object, parents = parents)
               mar_sel <- validMar(object)
@@ -1656,9 +1698,10 @@ setMethod("gbsrGDS2VCF",
                   out_gds <- object
               }
 
-              seqSetFilter(out_gds, mar_sel, sam_sel, action = "set",
+              seqSetFilter(out_gds, mar_sel, sam_sel, action = "push+intersect",
                            verbose = FALSE)
               seqGDS2VCF(out_gds, out_fn, verbose = FALSE)
+              seqSetFilter(out_gds, action = "pop", verbose = FALSE)
               return(out_fn)
           })
 
@@ -1670,9 +1713,9 @@ setMethod("gbsrGDS2VCF",
     return(check)
 }
 
+#' @importFrom gdsfmt moveto.gdsn setdim.gdsn append.gdsn
 .modGDS <- function(object, check){
     if(any(check)){
-        closeGDS(object)
         tmp_gds <- tempfile("tmp",tempdir(), ".gds")
         file.copy(object$filename, tmp_gds, overwrite = TRUE)
         tmpgds <- seqOpen(tmp_gds, FALSE)
@@ -1745,7 +1788,7 @@ setMethod("gbsrGDS2VCF",
             apply.gdsn(data_gdsn, 3, as.is = "gdsnode", target.node = tmp_gdsn,
                        FUN = function(x){
                            x[x == 3] <- "."
-                           apply(x, 2, paste, collapse = "|")
+                           apply(x, 2, paste, collapse = "/")
                        })
             setdim.gdsn(tmp_gdsn, obj$dim[-1])
             moveto.gdsn(tmp_gdsn, data_gdsn, "replace+rename")
@@ -1781,7 +1824,8 @@ setMethod("gbsrGDS2CSV",
                       bp2cm <- 1
                   }
               }
-              if(is.null(getParents(object))){
+              parents <- getParents(object)
+              if(is.null(parents)){
                   incl_parents <- FALSE
               }
               node <- match.arg(node,
@@ -1842,6 +1886,7 @@ setMethod("gbsrGDS2CSV",
 
 ## Initialize the GbsrScheme object.
 #' @rdname initScheme
+#' @importFrom methods slot<-
 setMethod("initScheme",
           "GbsrGenotypeData",
           function(object, crosstype, mating){
@@ -1854,6 +1899,7 @@ setMethod("initScheme",
 
 ## Add information to the GbsrScheme object.
 #' @rdname addScheme
+#' @importFrom methods slot<-
 setMethod("addScheme",
           "GbsrGenotypeData",
           function(object, crosstype, mating, pop_size){
@@ -1875,5 +1921,7 @@ setMethod("showScheme",
           "GbsrGenotypeData",
           function(object){
               parents <- getParents(object)
-              showScheme(slot(object, "scheme"), parents$sampleID)
+              if(!is.null(parents)){
+                  showScheme(slot(object, "scheme"), parents$sampleID)
+              }
           })

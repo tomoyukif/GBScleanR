@@ -9,7 +9,6 @@ pairsGBSR(
   stats1 = "dp",
   stats2 = "missing",
   target = "marker",
-  q = 0.5,
   size = 0.5,
   alpha = 0.8,
   color = c(Marker = "darkblue", Sample = "darkblue"),
@@ -26,9 +25,6 @@ pairsGBSR(
 
 \item{target}{Either or both of "marker" and "sample", e.g.
 \code{target = "marker"} to draw a histogram only for SNPs.}
-
-\item{q}{An integer to specify a quantile calculated via
-\code{\link[=calcReadStats]{calcReadStats()}}.}
 
 \item{size}{A numeric value to specify the dot size of a scatter plot.}
 
@@ -65,10 +61,10 @@ arguments can take the following values:
 \item{"rrf"}{"Reference allele read frequency."},
 \item{"mean_ref"}{"Mean of reference allele read counts."},
 \item{"sd_ref"}{"Standard deviation of reference allele read counts."},
-\item{"qtile_ref"}{"Quantile of reference allele read counts."},
+\item{"median_ref"}{"Quantile of reference allele read counts."},
 \item{"mean_alt"}{"Mean of alternative allele read counts."},
 \item{"sd_alt"}{"Standard deviation of alternative allele read counts."},
-\item{"qtile_alt"}{"Quantile of alternative allele read counts."},
+\item{"median_alt"}{"Quantile of alternative allele read counts."},
 \item{"mq"}{"Mapping quality."},
 \item{"fs"}{"Phred-scaled p-value (strand bias)"},
 \item{"qd"}{"Variant Quality by Depth"},
@@ -89,16 +85,16 @@ contains those values supplied via SNP calling tools like
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Summarize genotype count information to be used in `pairsGBSR()`
-gdata <- countGenotype(gdata)
+gds <- countGenotype(gds)
 
 # Draw scatter plots of missing rate vs heterozygosity.
-pairsGBSR(gdata, stats1 = "missing", stats2 = "het")
+pairsGBSR(gds, stats1 = "missing", stats2 = "het")
 
 # Close the connection to the GDS file
-closeGDS(gdata)
+closeGDS(gds)
 
 
 }

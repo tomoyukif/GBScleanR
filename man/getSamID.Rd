@@ -5,7 +5,7 @@
 \alias{getSamID,GbsrGenotypeData-method}
 \title{Obtain the sample IDs}
 \usage{
-getSamID(object, valid = TRUE, parents = TRUE, ...)
+getSamID(object, valid = TRUE, ...)
 
 \S4method{getSamID}{GbsrGenotypeData}(object, valid)
 }
@@ -17,7 +17,7 @@ getSamID(object, valid = TRUE, parents = TRUE, ...)
 \item{...}{Unused.}
 }
 \value{
-A character vector of scan(sample) IDs.
+A character vector of sample IDs.
 }
 \description{
 This function returns sample IDs.

@@ -22,8 +22,6 @@ and sample-wise summary information, respectively. The \code{scheme} slot holds 
 \section{Slots}{
 
 \describe{
-\item{\code{data}}{A \link{SeqVarGDSClass} object.}
-
 \item{\code{marker}}{A \link{data.frame} object.}
 
 \item{\code{sample}}{A \link{data.frame} object.}

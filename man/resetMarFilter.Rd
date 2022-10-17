@@ -3,7 +3,7 @@
 \name{resetMarFilter}
 \alias{resetMarFilter}
 \alias{resetMarFilter,GbsrGenotypeData-method}
-\title{Reset the filter made by \code{\link[=setSnpFilter]{setSnpFilter()}}}
+\title{Reset the filter made by \code{\link[=setMarFilter]{setMarFilter()}}}
 \usage{
 resetMarFilter(object, ...)
 
@@ -26,7 +26,7 @@ gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gds <- loadGDS(gds_fn)
 
 # Check the number of markers.
-nsnp(gds)
+nmar(gds)
 
 # Summarize the information needed for filtering.
 gds <- countGenotype(gds)
@@ -34,18 +34,18 @@ gds <- countRead(gds)
 
 # filter out some markers meeting the criteria.
 gds <- setMarFilter(gds,
-                      id = getSnpID(gds)[1:100],
+                      id = getMarID(gds)[1:100],
                       missing = 0.2,
                       dp = c(5, Inf))
 
 # Check the number of the retained markers.
-nsnp(gds)
+nmar(gds)
 
 # Reset all filters applied above.
 gds <- resetMarFilter(gds)
 
 # Check the number of the markers again.
-nsnp(gds)
+nmar(gds)
 
 # Close the connection to the GDS file.
 closeGDS(gds)

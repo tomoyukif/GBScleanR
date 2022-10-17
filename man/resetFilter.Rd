@@ -36,18 +36,18 @@ gds <- loadGDS(gds_fn)
 # genotype counts and read counts.
 gds <- setCallFilter(gds, dp_count = c(5, Inf))
 
-# `setScanFilter()` and `setSnpFilter()` needs information of
+# `setSamFilter()` and `setMarFilter()` needs information of
 # the genotype count summary and the read count summary.
 gds <- countGenotype(gds)
 gds <- countRead(gds)
 
 gds <- setSamFilter(gds,
-                       id = getScanID(gds)[1:10],
+                       id = getSamID(gds)[1:10],
                        missing = 0.2,
                        dp = c(5, Inf))
 
 gds <- setMarFilter(gds,
-                      id = getSnpID(gds)[1:100],
+                      id = getMarID(gds)[1:100],
                       missing = 0.2,
                       dp = c(5, Inf))
 

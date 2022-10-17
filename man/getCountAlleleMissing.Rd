@@ -3,7 +3,7 @@
 \name{getCountAlleleMissing}
 \alias{getCountAlleleMissing}
 \alias{getCountAlleleMissing,GbsrGenotypeData-method}
-\title{Obtain total missing allele counts per SNP or per scan (sample)}
+\title{Obtain total missing allele counts per SNP or per sample}
 \usage{
 getCountAlleleMissing(
   object,
@@ -18,7 +18,7 @@ getCountAlleleMissing(
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
 
-\item{target}{Either of "snp" and "scan".}
+\item{target}{Either of "marker" and "sample".}
 
 \item{valid}{A logical value. See details.}
 
@@ -31,14 +31,14 @@ total missing allele counts to the total allele number or not.}
 A numeric vector of (proportion of) missing alleles per marker.
 }
 \description{
-Obtain total missing allele counts per SNP or per scan (sample)
+Obtain total missing allele counts per SNP or per sample
 }
 \details{
 You need to execute \code{\link[=countGenotype]{countGenotype()}} to calculate sumaary statisticsto be
 obtained via this function.
 If \code{valid = TRUE}, the chromosome information of markers which are
-labeled \code{TRUE} in the \link{ScanAnnotationDataFrame} slot will be returned.
-\code{\link[=getValidSnp]{getValidSnp()}} tells you which samples are valid.
+labeled \code{TRUE} in the \link{sample} slot will be returned.
+\code{\link[=validMar]{validMar()}} tells you which samples are valid.
 }
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
@@ -46,8 +46,7 @@ gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gds <- loadGDS(gds_fn)
 
 # Summarize the genotype count information and store them in the
-# [SnpAnnotationDataFrame] and [ScanAnnotationDataFrame] objects
-# linked at the slots of the [GbsrGenotypeData] object.
+# [marker] and [sample] slots of the [GbsrGenotypeData] object.
 gds <- countGenotype(gds)
 
 getCountAlleleMissing(gds)

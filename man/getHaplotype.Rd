@@ -49,14 +49,14 @@ gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gds <- loadGDS(gds_fn)
 
 # Find the IDs of parental samples.
-parents <- grep("Founder", getScanID(gds), value = TRUE)
+parents <- grep("Founder", getSamID(gds), value = TRUE)
 
 # Set the parents and flip allele information
 # if the reference sample (Founder1 in our case) has homozygous
 # alternative genotype at some markers of which alleles will
 # be swapped to make the reference sample have homozygous
 # reference genotype.
-gds <- setParents(gds, parents = parents, flip = TRUE)
+gds <- setParents(gds, parents = parents)
 
 # Initialize a scheme object stored in the slot of the GbsrGenotypeData.
 # We chose `crosstype = "pair"` because two inbred founders were mated
