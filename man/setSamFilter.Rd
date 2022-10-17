@@ -7,7 +7,7 @@
 \usage{
 setSamFilter(
   object,
-  id = "",
+  id = NA_character_,
   missing = 1,
   het = c(0, 1),
   mac = 0,
@@ -41,8 +41,8 @@ setSamFilter(
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
 
-\item{id}{A vector of strings matching with scan ID which can
-be retrieve by \code{getScanID()}. The samples with the specified IDs
+\item{id}{A vector of strings matching with sample ID which can
+be retrieve by \code{getSamID()}. The samples with the specified IDs
 will be filtered out.}
 
 \item{missing}{A numeric value [0-1] to specify the maximum
@@ -81,7 +81,7 @@ standard deviation of alternative read counts per sample.}
 \item{...}{Unused.}
 }
 \value{
-A \link{GbsrGenotypeData} object with filters on scan(samples).
+A \link{GbsrGenotypeData} object with filters on samples.
 }
 \description{
 Search samples which do not meet the criteria and label them as "invalid".
@@ -95,7 +95,7 @@ than the upper limit, this function labels the sample as "invalid".
 In the case of \code{sd_ref} and \code{sd_alt}, standard deviations of read counts
 of each sample are checked and the samples having
 a larger standard deviation will be labeled as "invalid".
-To check valid and invalid samples, run \code{\link[=getValidScan]{getValidScan()}}.
+To check valid and invalid samples, run \code{\link[=validSam]{validSam()}}.
 }
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
@@ -107,7 +107,7 @@ gds <- countGenotype(gds)
 gds <- countRead(gds)
 
 gds <- setSamFilter(gds,
-                       id = getScanID(gds)[1:10],
+                       id = getSamID(gds)[1:10],
                        missing = 0.2,
                        dp = c(5, Inf))
 

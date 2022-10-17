@@ -2,11 +2,14 @@
 % Please edit documentation in R/AllGenerics.R, R/Methods-GbsrGenotypeData.R
 \name{validSam}
 \alias{validSam}
+\alias{validSam<-}
 \alias{validSam,GbsrGenotypeData-method}
 \alias{validSam<-,GbsrGenotypeData-method}
 \title{Return a logical vector indicating which are valid samples.}
 \usage{
 validSam(object, parents = FALSE, ...)
+
+validSam(object) <- value
 
 \S4method{validSam}{GbsrGenotypeData}(object, parents)
 
@@ -20,6 +23,9 @@ to parental samples. If you specify \code{parents = "only"}, this
 function returns a logical vector indicating TRUE for only parental samples.}
 
 \item{...}{Unused.}
+
+\item{value}{A logical vector indicating valid samples with the length
+matching with the number of samples}
 }
 \value{
 A logical vector of the same length

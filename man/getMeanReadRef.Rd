@@ -4,7 +4,7 @@
 \alias{getMeanReadRef}
 \alias{getMeanReadRef,GbsrGenotypeData-method}
 \title{Obtain mean values of total reference read counts per
-SNP or per scan (sample)}
+SNP or per sample}
 \usage{
 getMeanReadRef(object, target = "marker", valid = TRUE, ...)
 
@@ -13,7 +13,7 @@ getMeanReadRef(object, target = "marker", valid = TRUE, ...)
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
 
-\item{target}{Either of "snp" and "scan".}
+\item{target}{Either of "marker" and "sample".}
 
 \item{valid}{A logical value. See details.}
 
@@ -25,19 +25,19 @@ reference allele reads per marker.
 }
 \description{
 Obtain mean values of total reference read counts per
-SNP or per scan (sample)
+SNP or per sample
 }
 \details{
-You need to execute \code{\link[=calcReadStats]{calcReadStats()}} to calculate sumaary statisticsto be
+You need to execute \code{\link[=countRead]{countRead()}} to calculate summary statistics to be
 obtained via this function.
 If \code{valid = TRUE}, the chromosome information of markers which are
-labeled \code{TRUE} in the \link{ScanAnnotationDataFrame} slot will be returned.
-\code{\link[=getValidSnp]{getValidSnp()}} tells you which samples are valid.
+labeled \code{TRUE} in the \link{sample} slot will be returned.
+\code{\link[=validMar]{validMar()}} tells you which samples are valid.
 }
 \examples{
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gds <- loadGDS(gds_fn)
-gds <- calcReadStats(gds)
+gds <- countRead(gds)
 getMeanReadRef(gds)
 closeGDS(gds) # Close the connection to the GDS file
 

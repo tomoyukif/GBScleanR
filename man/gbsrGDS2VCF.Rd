@@ -18,10 +18,6 @@ gbsrGDS2VCF(object, out_fn, parents = TRUE, ...)
 samples should be included in an output VCF file or not.}
 
 \item{...}{Unused.}
-
-\item{node}{Either one of "raw", "filt", and "cor" to output raw
-genotype data, filtered genotype data, or corrected genotype data,
-respectively.}
 }
 \value{
 The path to the VCF file.
@@ -34,7 +30,7 @@ stored in a GDS file. The output VCF file contains the GT, AD, and DP fields.
 Create a VCF file at location specified by out_fn.
 The connection to the GDS file of the input \link{GbsrGenotypeData} object will be
 automatically closed for internal file handling in this function. Please use
-\code{\link[=openGDS]{openGDS()}} to open the connection again. If you use \code{\link[=loadGDS]{loadGDS()}}, summary
+\code{\link[=reopenGDS]{reopenGDS()}} to open the connection again. If you use \code{\link[=loadGDS]{loadGDS()}}, summary
 statistics and filtering information will be discarded.
 }
 \examples{
@@ -46,5 +42,8 @@ gds <- loadGDS(gds_fn)
 #  connected to the [GbsrGenotypeData] oobject.
 out_fn <- tempfile("sample_out", fileext = ".vcf.gz")
 gbsrGDS2VCF(gds, out_fn)
+
+# Close the connection to the GDS file.
+closeGDS(gds)
 
 }

@@ -114,13 +114,13 @@ LogicalVector thinout_marker(IntegerVector chr,
       mar1 = pos[i];
       mar2 = pos[j];
       if(mar2 - mar1 <= range){
-        if(missing_count[i] <= missing_count[j]){
-          valid[j] = false;
-          j = j + 1;
-        } else {
-          valid[i] = false;
-          i = j;
-          j = j + 1;
+          if(missing_count[i] <= missing_count[j]){
+              valid[j] = false;
+              j = j + 1;
+          } else {
+              valid[i] = false;
+              i = j;
+              j = j + 1;
         }
       } else {
         i = j;

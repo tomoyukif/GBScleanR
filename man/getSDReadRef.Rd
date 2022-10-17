@@ -4,7 +4,7 @@
 \alias{getSDReadRef}
 \alias{getSDReadRef,GbsrGenotypeData-method}
 \title{Obtain standard deviations of total reference read counts
-per SNP or per scan (sample)}
+per SNP or per sample}
 \usage{
 getSDReadRef(object, target = "marker", valid = TRUE, ...)
 
@@ -13,7 +13,7 @@ getSDReadRef(object, target = "marker", valid = TRUE, ...)
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
 
-\item{target}{Either of "snp" and "scan".}
+\item{target}{Either of "marker" and "sample".}
 
 \item{valid}{A logical value. See details.}
 
@@ -25,14 +25,14 @@ reference allele reads per marker.
 }
 \description{
 Obtain standard deviations of total reference read counts
-per SNP or per scan (sample)
+per SNP or per sample
 }
 \details{
-You need to execute \code{\link[=calcReadStats]{calcReadStats()}} to calculate summary statistics to be
+You need to execute \code{\link[=countRead]{countRead()}} to calculate summary statistics to be
 obtained via this function.
 If \code{valid = TRUE}, the chromosome information of markers which are
-labeled \code{TRUE} in the \link{ScanAnnotationDataFrame} slot will be returned.
-\code{\link[=getValidSnp]{getValidSnp()}} tells you which samples are valid.
+labeled \code{TRUE} in the \link{sample} slot will be returned.
+\code{\link[=validMar]{validMar()}} tells you which samples are valid.
 }
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
@@ -41,10 +41,9 @@ gds <- loadGDS(gds_fn)
 
 # Calculate means, standard deviations, quantiles of read counts
 # per marker and per sample with or without standardization of
-# the counts and store them in the
-# [SnpAnnotationDataFrame] and [ScanAnnotationDataFrame] objects
-# linked at the slots of the [GbsrGenotypeData] object.
-gds <- calcReadStats(gds)
+# the counts and store them in the [marker] and [sample] slots
+# of the [GbsrGenotypeData] object.
+gds <- countRead(gds)
 
 getSDReadRef(gds)
 

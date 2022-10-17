@@ -38,7 +38,6 @@ read count data, respectively.
 \code{\link[=resetCallFilter]{resetCallFilter()}} set back the nodes to
 the original, those are "genotype" and "data" for
 genotype and read count data, respectively.
-You can set the filtered data again by \code{\link[=setFiltGenotype]{setFiltGenotype()}}.
 }
 \examples{
 # Create a GDS file from a sample VCF file.

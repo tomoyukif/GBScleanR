@@ -42,7 +42,7 @@ setMarFilter(
 \item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{id}{A vector of integers matching with snp ID which can
-be retrieve by \code{getSnpID()}. The markers with the specified IDs
+be retrieve by \code{getMarID()}. The markers with the specified IDs
 will be filtered out.}
 
 \item{missing}{A numeric value [0-1] to specify
@@ -95,7 +95,7 @@ this function labels the marker as "invalid". In the case of \code{sd_ref}
 and \code{sd_alt}, standard deviations of read counts of each marker are
 checked and the markers having a larger standard deviation will be
 labeled as "invalid". To check valid and invalid
-markers, run \code{\link[=getValidSnp]{getValidSnp()}}.
+markers, run \code{\link[=validMar]{validMar()}}.
 }
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
@@ -107,7 +107,7 @@ gds <- countGenotype(gds)
 gds <- countRead(gds)
 
 gds <- setMarFilter(gds,
-                      id = getSnpID(gds)[1:100],
+                      id = getMarID(gds)[1:100],
                       missing = 0.2,
                       dp = c(5, Inf))
 

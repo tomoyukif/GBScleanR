@@ -367,8 +367,8 @@ head(getCountReadAlt(gds, target = "marker", prop = TRUE))
 ## Filtering data
 Based on the statistics we obtained, we can filter out less reliable markers and samples using `setMarFilter()` and `setSamFilter()`.
 ```{r eval=FALSE}
-gds <- setMarFilter(missing = 0.2, het = c(0.1, 0.9), maf = 0.05)
-gds <- setSamFilter(missing = 0.8, het = c(0.25, 0.75))
+gds <- setMarFilter(gds, missing = 0.2, het = c(0.1, 0.9), maf = 0.05)
+gds <- setSamFilter(gds, missing = 0.8, het = c(0.25, 0.75))
 ```
 \ 
 

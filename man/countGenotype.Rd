@@ -12,7 +12,7 @@ countGenotype(object, target = "both", node = "raw", ...)
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
 
-\item{target}{Either of "snp" and "scan".}
+\item{target}{Either of "marker" and "sample".}
 
 \item{node}{Either of "raw", "filt", and "cor". See details.}
 
@@ -25,7 +25,7 @@ A \link{GbsrGenotypeData} object with genotype count information.
 This function calculates several summary statistics of
 genotype calls and alleles per marker and per sample.
 Those values will be stored in the SnpAnnotaionDataFrame slot
-and the \link{ScanAnnotationDataFrame} slot and obtained via getter
+and the \link{sample} slot and obtained via getter
 functions, e.g.s
 \code{\link[=getCountGenoRef]{getCountGenoRef()}}, \code{\link[=getCountAlleleRef]{getCountAlleleRef()}}, and \code{\link[=getMAF]{getMAF()}}.
 }
@@ -45,13 +45,12 @@ gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gds <- loadGDS(gds_fn)
 
 # Summarize the genotype count information and store them in the
-# [SnpAnnotationDataFrame] and [ScanAnnotationDataFrame] objects
-# linked at the slots of the [GbsrGenotypeData] object.
+# [marker] and [sample] slots of the [GbsrGenotypeData] object.
 gds <- countGenotype(gds)
 
 # Get the proportion of missing genotype per sample.
 sample_missing_rate <- getCountGenoMissing(gds,
-                                           target = "scan",
+                                           target = "sample",
                                            prop = TRUE)
 
 # Get the minor allele frequency per marker.

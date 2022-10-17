@@ -7,12 +7,12 @@
 \usage{
 countRead(object, target = "both", node = "raw", ...)
 
-\S4method{countRead}{GbsrGenotypeData}(object, target, node, q)
+\S4method{countRead}{GbsrGenotypeData}(object, target, node)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
 
-\item{target}{Either of "snp" and "scan".}
+\item{target}{Either of "marker" and "sample".}
 
 \item{node}{Either of "raw" and "filt". See details.}
 
@@ -24,7 +24,7 @@ A \link{GbsrGenotypeData} object with read count information.
 \description{
 This function calculates several summary statistics of read counts
 per marker and per sample. Those values will be stored
-in the SnpAnnotaionDataFrame slot and the \link{ScanAnnotationDataFrame} slot
+in the SnpAnnotaionDataFrame slot and the \link{sample} slot
 and obtained via getter functions, e.g.
 \code{\link[=getCountReadRef]{getCountReadRef()}} and \code{\link[=getCountReadAlt]{getCountReadAlt()}}.
 This function first calculates normalized allele read counts by dividing
@@ -33,7 +33,7 @@ of the sample followed by multiplication by 10^6. In other words, it
 calculates reads per million (rpm). Then, the function calculates
 mean, standard deviation, quantile values of rpm per marker and per sample.
 The results will be stored in the SnpAnnotaionDataFrame slot and the
-\link{ScanAnnotationDataFrame} slot and obtained via getter functions, e.g.
+\link{sample} slot and obtained via getter functions, e.g.
 \code{\link[=getMeanReadRef]{getMeanReadRef()}} and \code{\link[=getMedianReadAlt]{getMedianReadAlt()}}.
 }
 \details{
@@ -50,8 +50,7 @@ gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gds <- loadGDS(gds_fn)
 
 # Summarize the read count information and store them in the
-# [SnpAnnotationDataFrame] and [ScanAnnotationDataFrame] objects
-# linked at the slots of the [GbsrGenotypeData] object.
+# [marker] and [sample] slots of the [GbsrGenotypeData] object.
 gds <- countRead(gds)
 
 # Get the total read counts per marker

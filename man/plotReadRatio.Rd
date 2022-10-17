@@ -41,11 +41,11 @@ draw line plots of them in facets for each chromosome for each sample.
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
-plotReadRatio(gdata, ind = 1)
+plotReadRatio(gds, ind = 1)
 
 # Close the connection to the GDS file
-closeGDS(gdata)
+closeGDS(gds)
 
 }

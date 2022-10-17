@@ -31,13 +31,13 @@
 #' # Load data in the GDS file and instantiate
 #' # a [GbsrGenotypeData] object.
 #' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-#' gdata <- loadGDS(gds_fn)
+#' gds <- loadGDS(gds_fn)
 #'
 #' # Print the information stored in the `GbsrScheme` object.
-#' showScheme(gdata)
+#' showScheme(gds)
 #'
 #' # Close the connection to the GDS file.
-#' closeGDS(gdata)
+#' closeGDS(gds)
 #'
 setClass(Class = "GbsrScheme",
          slots = c(crosstype = "character",
@@ -64,7 +64,6 @@ setClass(Class = "GbsrScheme",
 #'
 #' @importClassesFrom SeqArray SeqVarGDSClass
 #' @aliases  GbsrGenotypeData-class GbsrGenotypeData
-#' @slot data A [SeqVarGDSClass] object.
 #' @slot marker A [data.frame] object.
 #' @slot sample A [data.frame] object.
 #' @slot scheme A [GbsrScheme] object.

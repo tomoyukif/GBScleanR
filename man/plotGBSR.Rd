@@ -8,7 +8,6 @@ plotGBSR(
   x,
   stats = c("dp", "missing", "het"),
   coord = NULL,
-  q = 0.5,
   lwd = 0.5,
   binwidth = NULL,
   color = c(Marker = "darkblue", Ref = "darkgreen", Het = "magenta", Alt = "blue")
@@ -21,9 +20,6 @@ plotGBSR(
 
 \item{coord}{A vector with two integer specifying the number of rows
 and columns to draw faceted line plots for chromosomes.}
-
-\item{q}{An integer to specify a quantile calculated via
-\code{\link[=calcReadStats]{calcReadStats()}}.}
 
 \item{lwd}{A numeric value to specify the line width in plots.}
 
@@ -57,10 +53,10 @@ the following values:
 \item{"rrf"}{"Reference allele read frequency."},
 \item{"mean_ref"}{"Mean of reference allele read counts."},
 \item{"sd_ref"}{"Standard deviation of reference allele read counts."},
-\item{"qtile_ref"}{"Quantile of reference allele read counts."},
+\item{"median_ref"}{"Quantile of reference allele read counts."},
 \item{"mean_alt"}{"Mean of alternative allele read counts."},
 \item{"sd_alt"}{"Standard deviation of alternative allele read counts."},
-\item{"qtile_alt"}{"Quantile of alternative allele read counts."},
+\item{"median_alt"}{"Quantile of alternative allele read counts."},
 \item{"mq"}{"Mapping quality."},
 \item{"fs"}{"Phred-scaled p-value (strand bias)"},
 \item{"qd"}{"Variant Quality by Depth"},
@@ -81,20 +77,16 @@ contains those values supplied via SNP calling tools like
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
-gdata <- loadGDS(gds_fn)
+gds <- loadGDS(gds_fn)
 
 # Summarize genotype count information to be used in `plotGBSR()`
-gdata <- countGenotype(gdata)
+gds <- countGenotype(gds)
 
 # Draw line plots of missing rate, heterozygosity, proportion of genotype
 # calls per SNP.
-plotGBSR(gdata, stats = "missing")
-
-# Draw line plots of 90 percentile values of reference read counts and
-# alternative read counts per SNP and per sample.
-plotGBSR(gdata, stats = "qtile_ref", q = 0.9)
+plotGBSR(gds, stats = "missing")
 
 # Close the connection to the GDS file
-closeGDS(gdata)
+closeGDS(gds)
 
 }

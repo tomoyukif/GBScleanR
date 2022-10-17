@@ -3,7 +3,6 @@
 \name{validMar}
 \alias{validMar}
 \alias{validMar<-}
-\alias{validSam<-}
 \alias{validMar,GbsrGenotypeData-method}
 \alias{validMar<-,GbsrGenotypeData-method}
 \title{Return a logical vector indicating which are valid SNP markers.}
@@ -11,8 +10,6 @@
 validMar(object, chr = NULL, ...)
 
 validMar(object) <- value
-
-validSam(object) <- value
 
 \S4method{validMar}{GbsrGenotypeData}(object, chr)
 
@@ -24,6 +21,9 @@ validSam(object) <- value
 \item{chr}{A index to spefcify chromosome to get information.}
 
 \item{...}{Unused.}
+
+\item{value}{A logical vector indicating valid markers with the length
+matching with the number of markers.}
 }
 \value{
 A logical vector of the same length with

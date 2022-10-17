@@ -81,6 +81,7 @@ setMethod("estGeno",
                     storage = "single", compress = "", replace = TRUE)
 }
 
+#' @importFrom gdsfmt append.gdsn
 .saveHap <- function(object, best_hap, sel) {
     output <- array(0, c(2, length(sel$sam), length(sel$mar)))
     i_sample <- c(which(slot(object, "sample")$parents != 0), which(validSam(object)))
@@ -96,6 +97,7 @@ setMethod("estGeno",
     }
 }
 
+#' @importFrom gdsfmt append.gdsn
 .saveGeno <- function(object, best_geno, sel) {
     output <- array(3, c(2, length(sel$sam), length(sel$mar)))
     i_sample <- c(which(slot(object, "sample")$parents != 0), which(validSam(object)))
@@ -111,6 +113,7 @@ setMethod("estGeno",
     }
 }
 
+#' @importFrom gdsfmt append.gdsn
 .savePGeno <- function(object, p_geno, sel) {
     output <- matrix(3, nrow(p_geno), length(sel$mar))
     output[, sel$mar] <- p_geno
@@ -124,6 +127,7 @@ setMethod("estGeno",
     }
 }
 
+#' @importFrom gdsfmt append.gdsn
 .saveADB <- function(object, bias, sel) {
     output <- rep(-1, length(sel$mar))
     output[sel$mar] <- bias
@@ -137,6 +141,7 @@ setMethod("estGeno",
     }
 }
 
+#' @importFrom gdsfmt append.gdsn
 .saveMR <- function(object, mismap, sel) {
     output <- matrix(-1, nrow(mismap), length(sel$mar))
     output[, sel$mar] <- mismap

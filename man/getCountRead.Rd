@@ -3,7 +3,7 @@
 \name{getCountRead}
 \alias{getCountRead}
 \alias{getCountRead,GbsrGenotypeData-method}
-\title{Obtain total read counts per SNP or per scan (sample)}
+\title{Obtain total read counts per SNP or per sample}
 \usage{
 getCountRead(object, target = "marker", valid = TRUE, ...)
 
@@ -12,7 +12,7 @@ getCountRead(object, target = "marker", valid = TRUE, ...)
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
 
-\item{target}{Either of "snp" and "scan".}
+\item{target}{Either of "marker" and "sample".}
 
 \item{valid}{A logical value. See details.}
 
@@ -23,19 +23,20 @@ A integer vector of total read counts
 (reference allele reads + alternative allele reads) per marker.
 }
 \description{
-Obtain total read counts per SNP or per scan (sample)
+Obtain total read counts per SNP or per sample
 }
 \details{
 You need to execute \code{\link[=countRead]{countRead()}} to calculate sumaary statisticsto be
 obtained via this function.
 If \code{valid = TRUE}, the chromosome information of markers which are
-labeled \code{TRUE} in the \link{ScanAnnotationDataFrame} slot will be returned.
-\code{\link[=getValidSnp]{getValidSnp()}} tells you which samples are valid.
+labeled \code{TRUE} in the \link{sample} slot will be returned.
+\code{\link[=validMar]{validMar()}} tells you which samples are valid.
 }
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gds <- loadGDS(gds_fn)
+gds <- countRead(gds)
 
 getCountRead(gds)
 

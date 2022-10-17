@@ -13,17 +13,17 @@ getParents(object, bool = FALSE, ...)
 \item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{bool}{If TRUE, the function returns a logical vector indicating
-which scans (samples) have been set as parents.}
+which samples have been set as parents.}
 
 \item{...}{Unused.}
 }
 \value{
-A data frame of parents information indicating scanIDs, memberIDs
+A data frame of parents information indicating sampleIDs, memberIDs
 and indexes of parental lines assigned via \code{\link[=setParents]{setParents()}}.
 }
 \description{
-This function returns scan IDs, member IDs and indexes of parental samples
-set via \code{\link[=setParents]{setParents()}}. Scan IDs are IDs given by user or obtained from the
+This function returns sample IDs, member IDs and indexes of parental samples
+set via \code{\link[=setParents]{setParents()}}. Sample IDs are IDs given by user or obtained from the
 original VCF file. Member IDs are serial numbers assigned by \code{\link[=setParents]{setParents()}}.
 }
 \examples{
@@ -32,10 +32,10 @@ gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gds <- loadGDS(gds_fn)
 
 # Find the IDs of parental samples.
-parents <- grep("Founder", getScanID(gds), value = TRUE)
+parents <- grep("Founder", getSamID(gds), value = TRUE)
 
 # Set the parents.
-gds <- setParents(gds, parents = parents, flip = TRUE)
+gds <- setParents(gds, parents = parents)
 
 # Get the information of parents.
 getParents(gds)

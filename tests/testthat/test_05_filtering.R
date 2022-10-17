@@ -301,7 +301,7 @@ test_that("Genotype call filtering", {
     alt <- read$alt
     dp <- ref + alt
     valid <- sapply(1:nrow(dp), function(i){
-        thr <- quantile(dp[i, dp[i, ] != 0], c(0.1, 0.9))
+        thr <- quantile(dp[i, ], c(0.1, 0.9))
         return(dp[i, ] >= thr[1] & dp[i, ] <= thr[2])
     })
     valid <- t(valid)
@@ -323,7 +323,7 @@ test_that("Genotype call filtering", {
     ref <- read$ref
     alt <- read$alt
     valid <- sapply(1:nrow(ref), function(i){
-        thr <- quantile(ref[i, ref[i, ] != 0], c(0.1, 0.9))
+        thr <- quantile(ref[i, ], c(0.1, 0.9))
         return(ref[i, ] >= thr[1] & ref[i, ] <= thr[2])
     })
     valid <- t(valid)
@@ -345,7 +345,7 @@ test_that("Genotype call filtering", {
     ref <- read$ref
     alt <- read$alt
     valid <- sapply(1:nrow(alt), function(i){
-        thr <- quantile(alt[i, alt[i, ] != 0], c(0.1, 0.9))
+        thr <- quantile(alt[i, ], c(0.1, 0.9))
         return(alt[i, ] >= thr[1] & alt[i, ] <= thr[2])
     })
     valid <- t(valid)

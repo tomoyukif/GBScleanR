@@ -50,11 +50,8 @@ test_that("Set parents with checking monomorphic marker",{
     gds <- loadGDS(gds_fn)
     parents <- c("Founder1", "Founder2")
     gds <- setParents(gds, parents)
-    read <- getRead(gds, parents = "only")
-    missing <- read$ref == 0 & read$alt == 0
-    het <- read$ref > 0 & read$alt > 0
-    mono <- !het & !missing
-    mono <- colSums(mono) == sum(gds@sample$parents != 0)
+    gt <- getGenotype(gds, "raw", "only", FALSE, NULL)
+    mono <- colSums(gt == 1) == 0
     gds <- setParents(gds, parents, mono = TRUE, bi = FALSE)
     expect_equal(validMar(gds), mono, ignore_attr = TRUE)
     gds <- setParents(gds, parents, mono = TRUE, bi = FALSE)
@@ -67,11 +64,8 @@ test_that("Set parents with checking biallelic marker",{
     parents <- c("Founder1", "Founder2")
     gds <- setParents(gds, parents)
     geno <- getGenotype(gds, parents = "only")
-    read <- getRead(gds, parents = "only")
-    missing <- read$ref == 0 & read$alt == 0
-    het <- read$ref > 0 & read$alt > 0
-    bi <- read$ref > 0 & read$alt == 0 & !het & !missing
-    bi <- colSums(bi) != sum(gds@sample$parents != 0)
+    gt <- getGenotype(gds, "raw", "only", FALSE, NULL)
+    bi <- colSums(gt == 0) != 0 | colSums(gt == 2) != 0
     gds <- setParents(gds, parents, mono = FALSE, bi = TRUE)
     expect_equal(validMar(gds), bi, ignore_attr = TRUE)
     gds <- setParents(gds, parents, mono = FALSE, bi = TRUE)
@@ -83,16 +77,10 @@ test_that("Set parents with checking marker filtering",{
     gds <- loadGDS(gds_fn)
     parents <- c("Founder1", "Founder2")
     gds <- setParents(gds, parents)
-    read <- getRead(gds, parents = "only")
-    missing <- read$ref == 0 & read$alt == 0
-    het <- read$ref > 0 & read$alt > 0
-    mono <- !het & !missing
-    mono <- colSums(mono) == sum(gds@sample$parents != 0)
-    bi <- read$ref > 0 & read$alt == 0 & !het & !missing
-    bi <- colSums(bi) != sum(gds@sample$parents != 0)
+    gt <- getGenotype(gds, "raw", "only", FALSE, NULL)
+    mono <- colSums(gt == 1) == 0
+    bi <- colSums(gt == 0) != 0 | colSums(gt == 2) != 0
 
-    gds <- setParents(gds, parents, mono = TRUE, bi = TRUE)
-    expect_equal(validMar(gds), bi & mono, ignore_attr = TRUE)
     gds <- setParents(gds, parents, mono = TRUE, bi = TRUE)
     expect_equal(validMar(gds), bi & mono, ignore_attr = TRUE)
     closeGDS(gds)
