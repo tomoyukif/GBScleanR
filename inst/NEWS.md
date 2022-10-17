@@ -59,5 +59,5 @@ Changes in version 1.0.2 (2022-9-7)
 Changes in version 1.0.5 (2022-9-7)
 + Rewrote some scripts and replaced some function names for better user experience and code readability
 
-Changes in version 1.1.1 (2022-10-17)
+Changes in version 1.0.6 (2022-10-17)
 + Rewrote vignette and reference manuals
