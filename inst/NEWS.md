@@ -61,3 +61,6 @@ Changes in version 1.0.5 (2022-9-7)
 
 Changes in version 1.0.6 (2022-10-17)
 + Rewrote vignette and reference manuals
+
+Changes in version 1.1.2 (2022-10-19)
++ Fix a typo in the vignette

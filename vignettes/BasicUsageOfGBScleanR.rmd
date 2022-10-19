@@ -675,7 +675,7 @@ est_hap <- getHaplotype(gds)
 \ 
 
 The function `gbsrGDS2VCF()` generate a VCF file containing the estimated genotype data and phased haplotype information. The estimated haplotypes are indicated in the FORMAT field with the HAP tag. The founder genotypes correspond to each haplotype are indicated in the INFO field with the PGT tag. HAP shows the pair of haplotype for each marker of each sample, while PGT shows the allele of each haplotype.
-```{r}
+```{r eval=FALSE}
 out_fn <- tempfile("sample_est", fileext = ".vcf.gz")
 gbsrGDS2VCF(gds, out_fn)
 ```
