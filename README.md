@@ -1,4 +1,6 @@
 # GBScelaneR
+![GBScleanR_icon](https://github.com/tomoyukif/GBScleanR/blob/main/inst/GSBcleanR_Icon.png?raw=true)
+
 Error correction tool for genotype data derived from reduced representation 
 sequencing(RRS).
 
