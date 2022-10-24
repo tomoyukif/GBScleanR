@@ -1,3 +1,9 @@
+Changes in version 1.1.3 (2022-10-19)
++ Minor bug fix in getRead().
+
+Changes in version 1.1.2 (2022-10-19)
++ Fix a typo in the vignette
+
 Changes in version 0.99.15 (2021-10-20)
 + Submitted to Bioconductor
 
@@ -62,5 +68,3 @@ Changes in version 1.0.5 (2022-9-7)
 Changes in version 1.0.6 (2022-10-17)
 + Rewrote vignette and reference manuals
 
-Changes in version 1.1.2 (2022-10-19)
-+ Fix a typo in the vignette

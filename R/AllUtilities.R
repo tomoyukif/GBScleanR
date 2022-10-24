@@ -110,6 +110,12 @@ gbsrVCF2GDS <- function(vcf_fn,
 #' @importFrom SeqArray seqOpen seqSummary seqOptimize
 #' @importFrom gdsfmt exist.gdsn delete.gdsn objdesp.gdsn setdim.gdsn add.gdsn
 #'
+#' @details
+#' The first time to load a newly produced GDS file will take long time due to
+#' data reformatting for quick access. The `GbsrGenotypeData` object returned
+#' from `loadGDS()` can be also handled as `SeqVarGDSClass` of the [SeqArray]
+#' package.
+#'
 #' @examples
 #' # Create a GDS file from a sample VCF file.
 #' vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")

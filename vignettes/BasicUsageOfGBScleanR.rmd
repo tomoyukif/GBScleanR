@@ -83,7 +83,8 @@ Once we converted the VCF to the GDS, we can create a `GbsrGenotypeData` instanc
 ```{r}
 gds <- loadGDS(gds_fn, verbose = FALSE)
 ```
-
+The first time to load a newly produced GDS file will take long time due to data
+reformatting for quick access.
 
 
 # Utility methods

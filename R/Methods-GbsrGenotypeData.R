@@ -256,8 +256,8 @@ setMethod("getRead",
                                      valid = valid, chr = chr)
 
               out <- .filtData(object, node, filters)
-              ref <- out$data[, c(TRUE, FALSE)]
-              alt <- out$data[, c(FALSE, TRUE)]
+              ref <- subset(out$data, select = c(TRUE, FALSE))
+              alt <- subset(out$data, select = c(FALSE, TRUE))
               rownames(ref) <- rownames(alt) <- .filtData(object, "sample.id",
                                                           filters)
               colnames(ref) <- colnames(alt) <- .filtData(object, "variant.id",
