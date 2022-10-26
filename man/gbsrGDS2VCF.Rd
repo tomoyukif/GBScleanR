@@ -41,7 +41,7 @@ gds <- loadGDS(gds_fn)
 # Create a VCF file with data from the GDS file
 #  connected to the [GbsrGenotypeData] oobject.
 out_fn <- tempfile("sample_out", fileext = ".vcf.gz")
-gbsrGDS2VCF(gds, out_fn)
+# gbsrGDS2VCF(gds, out_fn)
 
 # Close the connection to the GDS file.
 closeGDS(gds)

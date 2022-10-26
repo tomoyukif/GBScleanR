@@ -27,6 +27,12 @@ create a \code{GbsrGenotypeData} instance.
 GBScleanR handles only one class \code{GbsrGenotypeData} and
 conducts all data manipulation via class methods for it.
 }
+\details{
+The first time to load a newly produced GDS file will take long time due to
+data reformatting for quick access. The \code{GbsrGenotypeData} object returned
+from \code{loadGDS()} can be also handled as \code{SeqVarGDSClass} of the \link{SeqArray}
+package.
+}
 \examples{
 # Create a GDS file from a sample VCF file.
 vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
