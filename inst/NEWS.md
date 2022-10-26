@@ -1,4 +1,7 @@
 Changes in version 1.1.4 (2022-10-19)
++ Update in the refernece manual
+
+Changes in version 1.1.4 (2022-10-19)
 + Minor bug fix in gbsrGDS2VCF().
 
 Changes in version 1.1.3 (2022-10-19)
