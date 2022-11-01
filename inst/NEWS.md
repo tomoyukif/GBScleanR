@@ -1,3 +1,6 @@
+Changes in version 1.1.6 (2022-11-01)
++ Minor bug fix in gbsrGDS2CSV().
+
 Changes in version 1.1.4 (2022-10-19)
 + Update in the refernece manual
 
