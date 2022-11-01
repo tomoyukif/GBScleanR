@@ -1839,6 +1839,7 @@ setMethod("gbsrGDS2CSV",
               }
               chr <- getChromosome(object)
               pos <- getPosition(object)
+              id <- getSamID(object)
 
               if(format == "qtl"){
                   geno[geno == 2] <- "A"
@@ -1846,8 +1847,7 @@ setMethod("gbsrGDS2CSV",
                   geno[geno == 0] <- "B"
                   geno <- rbind(paste(chr, pos, sep = "_"),
                                 chr, pos * bp2cm, geno)
-                  geno <- cbind(rownames(geno), geno)
-                  geno[1:3, 1] <- c("id", "", "")
+                  geno <- cbind(c("id", "", "", id), geno)
                   write.table(geno, out_fn, quote = FALSE, row.names = FALSE,
                               col.names = FALSE, sep = ",")
 
