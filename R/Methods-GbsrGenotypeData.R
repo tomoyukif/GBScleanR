@@ -1844,8 +1844,8 @@ setMethod("gbsrGDS2CSV",
                   geno[geno == 2] <- "A"
                   geno[geno == 1] <- "H"
                   geno[geno == 0] <- "B"
-                  geno <- rbind(paste(paste0("S", sprintf("%02d", chr)),
-                                      pos, sep = "_"), chr, pos * bp2cm, geno)
+                  geno <- rbind(paste(chr, pos, sep = "_"),
+                                chr, pos * bp2cm, geno)
                   geno <- cbind(rownames(geno), geno)
                   geno[1:3, 1] <- c("id", "", "")
                   write.table(geno, out_fn, quote = FALSE, row.names = FALSE,
