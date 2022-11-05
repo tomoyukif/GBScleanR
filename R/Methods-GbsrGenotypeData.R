@@ -1829,7 +1829,7 @@ setMethod("gbsrGDS2CSV",
                   incl_parents <- FALSE
               }
               node <- match.arg(node,
-                                c("raw", "filt.genotype", "corrected.genotype"))
+                                c("raw", "filt", "cor"))
               if(format != "qtl" & node == "hap"){
                   geno <- getHaplotype(object, parents = incl_parents)
                   geno <- apply(geno, c(2, 3), paste, collapse = "|")
@@ -1839,7 +1839,8 @@ setMethod("gbsrGDS2CSV",
               }
               chr <- getChromosome(object)
               pos <- getPosition(object)
-              id <- getSamID(object)
+              id <- getSamID(object, valid = FALSE)
+              id <- id[validSam(object, parents = TRUE)]
 
               if(format == "qtl"){
                   geno[geno == 2] <- "A"
@@ -1873,7 +1874,7 @@ setMethod("gbsrGDS2CSV",
                       geno <- matrix(geno, dim_geno[1], dim_geno[2])
                   }
                   geno <- rbind(chr, pos * bp2cm, geno)
-                  rownames(geno) <- c("Chr", "Pos", getSamID(object))
+                  rownames(geno) <- c("Chr", "Pos", id)
                   write.table(geno, out_fn, quote = TRUE, row.names = TRUE,
                               col.names = FALSE, sep = ",")
               }
