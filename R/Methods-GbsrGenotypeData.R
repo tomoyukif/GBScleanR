@@ -1843,9 +1843,9 @@ setMethod("gbsrGDS2CSV",
               id <- id[validSam(object, parents = TRUE)]
 
               if(format == "qtl"){
-                  geno[geno == 2] <- "A"
+                  geno[geno == 0] <- "A"
                   geno[geno == 1] <- "H"
-                  geno[geno == 0] <- "B"
+                  geno[geno == 2] <- "B"
                   geno <- rbind(paste(chr, pos, sep = "_"),
                                 chr, pos * bp2cm, geno)
                   geno <- cbind(c("id", "", "", id), geno)
