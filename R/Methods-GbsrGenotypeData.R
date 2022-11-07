@@ -780,7 +780,7 @@ setMethod("setParents",
     gt <- getGenotype(object, "raw", "only", FALSE, NULL)
 
     if(nonmiss){
-        nonmiss <- colSums(gt %in% NA) == 0
+        nonmiss <- colSums(is.na(gt)) == 0
     } else {
         nonmiss <- rep(TRUE, nmar(object, FALSE))
     }
