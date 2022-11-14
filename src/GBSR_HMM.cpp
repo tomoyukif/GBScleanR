@@ -127,8 +127,8 @@ void lognorm_vec(vector<double> & v){
 }
 
 // Power to ten
-double pow10(double & d){
-    return pow(10, d);
+void getpow10(double & d){
+    d = pow(10, d);
 }
 
 // Get the index of maximum value in a vector.
@@ -196,7 +196,7 @@ vector<double> calcGenoprob(const double & ref,
 
     lognorm_vec(prob);
     for(int g=0; g<3;++g){
-        prob[g] = pow10(prob[g]);
+        getpow10(prob[g]);
     }
     return prob;
 }
