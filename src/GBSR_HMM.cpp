@@ -126,11 +126,6 @@ void lognorm_vec(vector<double> & v){
     }
 }
 
-// Power to ten
-void getpow10(double & d){
-    d = pow(10, d);
-}
-
 // Get the index of maximum value in a vector.
 size_t get_max_int(vector<double> & v){
     size_t out_index;
@@ -168,10 +163,6 @@ size_t get_max_int(vector<double> & v){
     return out_index;
 }
 
-void setHetZero(vector<double> & prob){
-    prob[1] = 0;
-}
-
 vector<double> calcGenoprob(const double & ref,
                             const double & alt,
                             const double & eseq0,
@@ -192,11 +183,11 @@ vector<double> calcGenoprob(const double & ref,
             alt * alt_multiplier[g];
     }
 
-    if(het){ setHetZero(prob); }
+    if(het){ prob[1] = 0; }
 
     lognorm_vec(prob);
-    for(int g=0; g<3;++g){
-        getpow10(prob[g]);
+    for(int g=0; g<3; ++g){
+        prob[g] = pow(10, prob[g]);
     }
     return prob;
 }
