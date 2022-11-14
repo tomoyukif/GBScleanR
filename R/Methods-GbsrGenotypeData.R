@@ -1829,10 +1829,20 @@ setMethod("gbsrGDS2CSV",
                   incl_parents <- FALSE
               }
               node <- match.arg(node,
-                                c("raw", "filt", "cor"))
-              if(format != "qtl" & node == "hap"){
+                                c("raw", "filt", "cor", "hap"))
+              if(node == "hap"){
                   geno <- getHaplotype(object, parents = incl_parents)
-                  geno <- apply(geno, c(2, 3), paste, collapse = "|")
+                  if(format == "qtl"){
+                      if(attributes(slot(object, "sample"))$ploidy == 2){
+                          geno <- apply(geno - 1, c(2, 3), sum)
+
+                      } else {
+                          stop("Haplotype data for non-diploid population can",
+                          " not be exported in the R/QTL format")
+                      }
+                  } else {
+                      geno <- apply(geno, c(2, 3), paste, collapse = "|")
+                  }
               } else {
                   geno <- getGenotype(object, node = node,
                                       parents = incl_parents)
