@@ -1840,7 +1840,11 @@ setMethod("gbsrGDS2CSV",
               chr <- getChromosome(object)
               pos <- getPosition(object)
               id <- getSamID(object, valid = FALSE)
-              id <- id[validSam(object, parents = TRUE)]
+              if(incl_parents){
+                  id <- id[validSam(object, parents = TRUE)]
+              } else {
+                  id <- id[validSam(object, parents = FALSE)]
+              }
 
               if(format == "qtl"){
                   geno[geno == 0] <- "A"
