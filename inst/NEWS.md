@@ -1,3 +1,9 @@
+Changes in version 1.2.4 (2022-11-14)
++ Minor update in gbsrGDS2CSV().
+
+Changes in version 1.2.3 (2022-11-14)
++ Bug fix in GBSR_HMM.cpp that caused a compile error in installation via bioconda.
+
 Changes in version 1.1.8 (2022-11-05)
 + Minor modification in gbsrGDS2CSV().
 
