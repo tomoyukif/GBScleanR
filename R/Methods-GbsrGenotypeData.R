@@ -1709,7 +1709,9 @@ setMethod("gbsrGDS2VCF",
     check <- c(exist.gdsn(object, "annotation/info/PGT"),
                exist.gdsn(object, "annotation/format/HAP"),
                exist.gdsn(object, "annotation/format/CGT"),
-               exist.gdsn(object, "annotation/format/FGT"))
+               exist.gdsn(object, "annotation/format/FGT"),
+               exist.gdsn(object, "annotation/format/ADB"),
+               exist.gdsn(object, "annotation/format/MR"))
     return(check)
 }
 
@@ -1799,9 +1801,24 @@ setMethod("gbsrGDS2VCF",
                           "Filtered genotype data by GBScleanR")
         }
     }
+
+    if(check[5]){
+        data_gdsn <- index.gdsn(tmpgds, "annotation/info/ADB")
+        put.attr.gdsn(data_gdsn, "Number", "1")
+        put.attr.gdsn(data_gdsn, "Type", "String")
+        put.attr.gdsn(data_gdsn, "Description",
+                      "Estimated allele read bias by GBScleanR")
+    }
+
+    if(check[6]){
+        data_gdsn <- index.gdsn(tmpgds, "annotation/info/MR")
+        put.attr.gdsn(data_gdsn, "Number", "1")
+        put.attr.gdsn(data_gdsn, "Type", "String")
+        put.attr.gdsn(data_gdsn, "Description",
+                      "Estimated mismapping rate by GBScleanR")
+    }
     return(tmpgds)
 }
-
 ###############################################################################
 ## Function to output a VCF file data stored in the GDS file.
 
