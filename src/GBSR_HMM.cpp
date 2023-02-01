@@ -4,6 +4,7 @@
 #include <Rcpp.h>
 #include <random>
 #include <vector>
+#include <unistd.h>
 using namespace Rcpp;
 using namespace RcppParallel;
 using namespace std;
@@ -49,10 +50,12 @@ double logsum(vector<double> & v){
     }
 
     for(vector<double>::size_type i=count; i<v.size(); ++i){
-        if(log_sum > v[i]){
-            log_sum = log_sum + log10(1 + pow(10, v[i] - log_sum));
-        } else {
-            log_sum = v[i] + log10(1 + pow(10, log_sum - v[i]));
+        if(!isinf(v[i])){
+            if(log_sum > v[i]){
+                log_sum = log_sum + log10(1 + pow(10, v[i] - log_sum));
+            } else {
+                log_sum = v[i] + log10(1 + pow(10, log_sum - v[i]));
+            }
         }
     }
     return log_sum;
@@ -113,10 +116,12 @@ void lognorm_vec(vector<double> & v){
         }
 
         for(vector<double>::size_type i=count; i<v.size(); ++i){
-            if(log_sum > v[i]){
-                log_sum = log_sum + log10(1 + pow(10, v[i] - log_sum));
-            } else {
-                log_sum = v[i] + log10(1 + pow(10, log_sum - v[i]));
+            if(!isinf(v[i])){
+                if(log_sum > v[i]){
+                    log_sum = log_sum + log10(1 + pow(10, v[i] - log_sum));
+                } else {
+                    log_sum = v[i] + log10(1 + pow(10, log_sum - v[i]));
+                }
             }
         }
 
@@ -1097,6 +1102,7 @@ struct ParFB : public Worker {
         for(RVector<int>::const_iterator i=iter_sample.begin() + begin;
             i<iter_sample.begin() + end; ++i){
             size_t sample_i = distance(iter_sample.begin(), i);
+
             RMatrix<double>::Row gamma_i = gamma.row(sample_i);
 
             size_t n_m = dim[0];
@@ -1106,7 +1112,7 @@ struct ParFB : public Worker {
                                          vector<double>(n_h));
             vector<vector<double>> emit(n_m,
                                         vector<double>(n_h));
-            vector<double> beta(n_h, 1);
+            vector<double> beta(n_h, 0);
 
             vector<double> score_k(n_h);
             double hap_prob;
@@ -1114,6 +1120,7 @@ struct ParFB : public Worker {
             double sum_k;
             size_t col_i;
             size_t j;
+            double neg_inf = -numeric_limits<double>::infinity();
 
             for(size_t m=0; m<n_m; ++m){
                 vector<double> prob_i = calcEmit(ref,
@@ -1155,23 +1162,28 @@ struct ParFB : public Worker {
                 }
             }
 
-            vector<double> gamma_i1;
-            vector<double> gamma_i2;
-            vector<double> gamma_i3;
+            vector<double> gamma_i1{neg_inf};
+            vector<double> gamma_i2{neg_inf};
+            vector<double> gamma_i3{neg_inf};
+            double gamma_tmp;
             vector<double> gamma_i_tmp(3);
             for(size_t k=0; k<n_h; ++k){
                 size_t j = p_geno[n_m-1];
                 col_i = j * n_h + k;
-                if(possiblehap[col_i] == 0){
-                    gamma_i1.push_back(beta[k] + alpha[n_m-1][k]);
-                }
-                if(possiblehap[col_i] == 1){
-                    gamma_i2.push_back(beta[k] + alpha[n_m-1][k]);
-                }
-                if(possiblehap[col_i] == 2){
-                    gamma_i3.push_back(beta[k] + alpha[n_m-1][k]);
+                gamma_tmp = beta[k] + alpha[n_m-1][k];
+                if(!isinf(gamma_tmp)){
+                    if(possiblehap[col_i] == 0){
+                        gamma_i1.push_back(gamma_tmp);
+                    }
+                    if(possiblehap[col_i] == 1){
+                        gamma_i2.push_back(gamma_tmp);
+                    }
+                    if(possiblehap[col_i] == 2){
+                        gamma_i3.push_back(gamma_tmp);
+                    }
                 }
             }
+
             gamma_i_tmp[0] = logsum(gamma_i1);
             gamma_i_tmp[1] = logsum(gamma_i2);
             gamma_i_tmp[2] = logsum(gamma_i3);
@@ -1181,9 +1193,11 @@ struct ParFB : public Worker {
             }
 
             for(size_t m=n_m-1; m>0; --m){
-                vector<double> gamma_i1;
-                vector<double> gamma_i2;
-                vector<double> gamma_i3;
+
+                vector<double> gamma_i1{neg_inf};
+                vector<double> gamma_i2{neg_inf};
+                vector<double> gamma_i3{neg_inf};
+                double gamma_tmp;
                 vector<double> gamma_i_tmp(3);
 
                 for(size_t k1=0; k1<n_h; ++k1){
@@ -1194,19 +1208,22 @@ struct ParFB : public Worker {
                     }
                     sum_k = logsum(score_k);
                     beta[k1] = sum_k;
-
                     j = p_geno[m-1];
                     col_i = j * n_h + k1;
-                    if(possiblehap[col_i] == 0){
-                        gamma_i1.push_back(sum_k + alpha[m-1][k1]);
-                    }
-                    if(possiblehap[col_i] == 1){
-                        gamma_i2.push_back(sum_k + alpha[m-1][k1]);
-                    }
-                    if(possiblehap[col_i] == 2){
-                        gamma_i3.push_back(sum_k + alpha[m-1][k1]);
+                    gamma_tmp = sum_k + alpha[m-1][k1];
+                    if(!isinf(gamma_tmp)){
+                        if(possiblehap[col_i] == 0){
+                            gamma_i1.push_back(gamma_tmp);
+                        }
+                        if(possiblehap[col_i] == 1){
+                            gamma_i2.push_back(gamma_tmp);
+                        }
+                        if(possiblehap[col_i] == 2){
+                            gamma_i3.push_back(gamma_tmp);
+                        }
                     }
                 }
+
                 gamma_i_tmp[0] = logsum(gamma_i1);
                 gamma_i_tmp[1] = logsum(gamma_i2);
                 gamma_i_tmp[2] = logsum(gamma_i3);
@@ -1236,9 +1253,8 @@ NumericMatrix run_fb(NumericMatrix ref,
                      IntegerVector ploidy
 ){
 
-
     // Initialize arrays to store output, alpha values,
-    // emittion probs, and beta values.
+    // // emittion probs, and beta values.
     NumericMatrix gamma(n_o,  n_m * 3);
 
     // Convert values to ones used here.

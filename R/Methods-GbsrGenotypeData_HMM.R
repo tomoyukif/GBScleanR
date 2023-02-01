@@ -185,13 +185,18 @@ setMethod("estGeno",
         jnum <- .initJnum(n_founder)
     } else {
         next_crosstype <- xtype[n_pairing + 1]
+        if(is.na(next_crosstype)){
+            next_crosstype <- "selfing"
+        }
         jnum <- .initJnum(n_founder, n_pairing + het_parent, next_crosstype)
     }
 
     s_gen <- n_pairing + 1
     n_gen <- length(xtype)
-    for (i in s_gen:n_gen) {
-        jnum <- .calcNextJnum(xtype[i], jnum, ps[i])
+    if(s_gen <= n_gen){
+        for (i in s_gen:n_gen) {
+            jnum <- .calcNextJnum(xtype[i], jnum, ps[i])
+        }
     }
     return(jnum)
 }
