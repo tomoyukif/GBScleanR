@@ -329,26 +329,28 @@ setMethod("estGeno",
         }
     }
 
-    for (i in 2:length(xtype)) {
-        if (xtype[i] == "pairing") {
-            chr <- sub("\\|", "/", pat)
-            mating <- matrix(chr[match(mt[[i]], pg[[i - 1]])], dim(mt[[i]]))
-            pat <- apply(mating, 2, paste, collapse="|")
+    if(length(xtype) >= 2){
+        for (i in 2:length(xtype)) {
+            if (xtype[i] == "pairing") {
+                chr <- sub("\\|", "/", pat)
+                mating <- matrix(chr[match(mt[[i]], pg[[i - 1]])], dim(mt[[i]]))
+                pat <- apply(mating, 2, paste, collapse="|")
 
-        } else if (xtype[i] == "sibling") {
-            chr <- strsplit(pat, "\\|")[[1]]
-            pat <- apply(t(expand.grid(chr, chr)), 2, paste, collapse="|")
-            homo <- TRUE
+            } else if (xtype[i] == "sibling") {
+                chr <- strsplit(pat, "\\|")[[1]]
+                pat <- apply(t(expand.grid(chr, chr)), 2, paste, collapse="|")
+                homo <- TRUE
 
-        } else if (xtype[i] == "random") {
-            chr <- sub("\\|", "/", pat)
-            mating <- t(expand.grid(chr, chr))
-            mating <- mating[, apply(mating, 2,
-                                     function(x) length(unique(x)) != 1)]
-            pat <- apply(mating, 2, paste, collapse="|")
-            homo <- TRUE
-        } else if (xtype[i] == "selfing") {
-            homo <- TRUE
+            } else if (xtype[i] == "random") {
+                chr <- sub("\\|", "/", pat)
+                mating <- t(expand.grid(chr, chr))
+                mating <- mating[, apply(mating, 2,
+                                         function(x) length(unique(x)) != 1)]
+                pat <- apply(mating, 2, paste, collapse="|")
+                homo <- TRUE
+            } else if (xtype[i] == "selfing") {
+                homo <- TRUE
+            }
         }
     }
     chr <- strsplit(pat, "\\|")
