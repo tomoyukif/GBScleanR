@@ -15,6 +15,7 @@ estGeno(
   optim = TRUE,
   iter = 2,
   n_threads = 1,
+  fix_mismap = NULL,
   ...
 )
 
@@ -26,7 +27,8 @@ estGeno(
   het_parent,
   optim,
   iter,
-  n_threads
+  n_threads,
+  fix_mismap
 )
 }
 \arguments{
