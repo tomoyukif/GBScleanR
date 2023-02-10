@@ -1,3 +1,6 @@
+Changes in version 1.2.7 (2023-2-10)
++ Minor change in genotype probability calculation algorithm.
+
 Changes in version 1.2.6 (2023-2-1)
 + Bug fix in HMM when a genotype is completely impossible to occur.
 + Bug fix in genotype pattern list for HMM when the pop is F1.
