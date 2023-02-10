@@ -10,7 +10,8 @@ setMethod("estGeno",
                    het_parent,
                    optim,
                    iter,
-                   n_threads) {
+                   n_threads,
+                   fix_mismap) {
 
               if(length(slot(slot(object, "scheme"), "crosstype")) == 0){
                   stop("No scheme information.",
@@ -45,7 +46,7 @@ setMethod("estGeno",
                   message("\nNow cleaning chr ", chr_i, "...")
                   best_seq <- .cleanEachChr(object, chr_i, error_rate,
                                             recomb_rate, call_threshold,
-                                            het_parent, optim, iter)
+                                            het_parent, optim, iter, fix_mismap)
 
                   sel <- list(mar = validMar(object, chr_i),
                               sam = validSam(object, parents = TRUE))
@@ -78,7 +79,7 @@ setMethod("estGeno",
                     storage = "single", compress = "", replace = TRUE)
 
     mr <- add.gdsn(index.gdsn(object, "annotation/info"), "MR",
-                    storage = "single", compress = "", replace = TRUE)
+                   storage = "single", compress = "", replace = TRUE)
 }
 
 #' @importFrom gdsfmt append.gdsn
@@ -484,7 +485,7 @@ setMethod("estGeno",
 }
 
 .getParams <- function(object, chr_i, error_rate, recomb_rate,
-                       call_threshold, het_parent) {
+                       call_threshold, het_parent, fix_mismap) {
     reads <- .loadReadCounts(object, chr_i)
     parents <- getParents(object)
     n_parents <- nrow(parents)
@@ -500,6 +501,13 @@ setMethod("estGeno",
     trans_prob <- .transitionProb(pat, pos, recomb_rate, slot(object, "scheme"),
                                   n_origin, het_parent)
     init_prob <- .getInitProb(trans_prob[, , 1], pat$n_p_pat, n_samples)
+    if(is.null(fix_mismap)){
+        mismap = matrix(0.005, n_mar, 2)
+        fix_mismap <- FALSE
+    } else {
+        mismap = matrix(fix_mismap, n_mar, 2)
+        fix_mismap <- TRUE
+    }
 
     return(list(n_parents = n_parents,
                 n_samples = n_samples,
@@ -515,7 +523,8 @@ setMethod("estGeno",
                 reads = reads,
                 pat = pat,
                 bias = rep(0.5, n_mar),
-                mismap = matrix(0, n_mar, 2),
+                mismap = mismap,
+                fix_mismap = fix_mismap,
                 trans_prob = log10(trans_prob),
                 init_prob = log10(init_prob),
                 count = 0,
@@ -526,10 +535,6 @@ setMethod("estGeno",
 .getBestSeq <- function(param_list, outprob) {
     param_list$trans_prob <- matrix(param_list$trans_prob,
                                     dim(param_list$trans_prob)[1])
-    check <- param_list$bias < param_list$error_rate[2]
-    param_list$bias[check] <- param_list$error_rate[2]
-    check <- param_list$bias > param_list$error_rate[1]
-    param_list$bias[check] <- param_list$error_rate[1]
 
     out_list <- run_viterbi(p_ref = param_list$reads$p_ref,
                             p_alt = param_list$reads$p_alt,
@@ -752,18 +757,31 @@ setMethod("estGeno",
 }
 
 .calcMissmap <- function(best_seq, param_list) {
+    geno_call <- get_genocall(ref = param_list$reads$ref,
+                              alt = param_list$reads$alt,
+                              eseq_in = param_list$error_rate,
+                              bias = param_list$bias,
+                              mismap = param_list$mismap,
+                              n_o = param_list$n_samples,
+                              n_m = param_list$n_mar)
+    missing <- param_list$reads$ref == 0 & param_list$reads$alt == 0
+    geno_call[missing] <- FALSE
+
     i_samples <- -seq_len(param_list$n_parents)
     est <- best_seq[i_samples, ] == 0
     n_ref <- colSums(est, na.rm = TRUE)
     alt <- param_list$reads$alt > 0
-    alt[!est] <- NA
+    alt[!est] <- FALSE
+    alt[!geno_call] <- FALSE
     alt_mis <- colSums(alt, na.rm = TRUE) / n_ref
 
     est <- best_seq[i_samples, ] == 2
     n_alt <- colSums(est, na.rm = TRUE)
     ref <- param_list$reads$ref > 0
-    ref[!est] <- NA
+    ref[!est] <- FALSE
+    ref[!geno_call] <- FALSE
     ref_mis <- colSums(ref, na.rm = TRUE) / n_alt
+
     return(cbind(alt_mis, ref_mis))
 }
 
@@ -778,6 +796,7 @@ setMethod("estGeno",
     nmar <- length(error_f$bias)
     bias <- colMeans(rbind(error_f$bias, error_r$bias), na.rm = TRUE)
     bias[is.na(bias)] <- 0.5
+
     mismap <- cbind(colMeans(rbind(error_f$mismap[, 1],
                                    error_r$mismap[, 1]), na.rm = TRUE),
                     colMeans(rbind(error_f$mismap[, 2],
@@ -840,8 +859,15 @@ setMethod("estGeno",
         error_f <- .calcErrors(best_geno_f, param_list)
         error_r <- .calcErrors(best_geno_r[,,param_list$n_mar:1], param_list)
         error <- .bindErrors(error_f, error_r)
+        check <- error$bias > param_list$error_rate[1]
+        error$bias[check] <- param_list$error_rate[1]
+        check <- error$bias < param_list$error_rate[2]
+        error$bias[check] <- param_list$error_rate[2]
         param_list$bias <- error$bias
-        param_list$mismap <- error$mismap
+
+        if(!param_list$fix_mismap){
+            param_list$mismap <- error$mismap
+        }
     }
 
     if (outgeno) {
@@ -890,9 +916,10 @@ setMethod("estGeno",
                           call_threshold,
                           het_parent,
                           optim,
-                          iter) {
+                          iter,
+                          fix_mismap) {
     param_list <- .getParams(object, chr_i, error_rate, recomb_rate,
-                             call_threshold, het_parent)
+                             call_threshold, het_parent, fix_mismap)
     param_list <- .checkPread(param_list)
 
     if (iter == 1) { optim <- FALSE }
