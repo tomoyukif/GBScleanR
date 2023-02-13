@@ -11,6 +11,7 @@ setMethod("estGeno",
                    optim,
                    iter,
                    n_threads,
+                   fix_bias,
                    fix_mismap) {
 
               if(length(slot(slot(object, "scheme"), "crosstype")) == 0){
@@ -46,7 +47,8 @@ setMethod("estGeno",
                   message("\nNow cleaning chr ", chr_i, "...")
                   best_seq <- .cleanEachChr(object, chr_i, error_rate,
                                             recomb_rate, call_threshold,
-                                            het_parent, optim, iter, fix_mismap)
+                                            het_parent, optim, iter,
+                                            fix_bias, fix_mismap)
 
                   sel <- list(mar = validMar(object, chr_i),
                               sam = validSam(object, parents = TRUE))
@@ -485,7 +487,7 @@ setMethod("estGeno",
 }
 
 .getParams <- function(object, chr_i, error_rate, recomb_rate,
-                       call_threshold, het_parent, fix_mismap) {
+                       call_threshold, het_parent, fix_bias, fix_mismap) {
     reads <- .loadReadCounts(object, chr_i)
     parents <- getParents(object)
     n_parents <- nrow(parents)
@@ -508,6 +510,13 @@ setMethod("estGeno",
         mismap = matrix(fix_mismap, n_mar, 2)
         fix_mismap <- TRUE
     }
+    if(is.null(fix_bias)){
+        bais = rep(0.5, n_mar)
+        fix_bias <- FALSE
+    } else {
+        bias = rep(fix_bias, n_mar)
+        fix_bias <- TRUE
+    }
 
     return(list(n_parents = n_parents,
                 n_samples = n_samples,
@@ -522,9 +531,10 @@ setMethod("estGeno",
                 call_threshold = call_threshold,
                 reads = reads,
                 pat = pat,
-                bias = rep(0.5, n_mar),
+                bias = bais,
                 mismap = mismap,
                 fix_mismap = fix_mismap,
+                fix_bias = fix_bias,
                 trans_prob = log10(trans_prob),
                 init_prob = log10(init_prob),
                 count = 0,
@@ -863,8 +873,10 @@ setMethod("estGeno",
         error$bias[check] <- param_list$error_rate[1]
         check <- error$bias < param_list$error_rate[2]
         error$bias[check] <- param_list$error_rate[2]
-        param_list$bias <- error$bias
 
+        if(!param_list$fix_bias){
+            param_list$bias <- error$bias
+        }
         if(!param_list$fix_mismap){
             param_list$mismap <- error$mismap
         }
@@ -917,9 +929,10 @@ setMethod("estGeno",
                           het_parent,
                           optim,
                           iter,
+                          fix_bias,
                           fix_mismap) {
     param_list <- .getParams(object, chr_i, error_rate, recomb_rate,
-                             call_threshold, het_parent, fix_mismap)
+                             call_threshold, het_parent, fix_bias, fix_mismap)
     param_list <- .checkPread(param_list)
 
     if (iter == 1) { optim <- FALSE }

@@ -2283,6 +2283,7 @@ setGeneric("estGeno", function(object,
                                optim = TRUE,
                                iter = 2,
                                n_threads = 1,
+                               fix_bias = NULL,
                                fix_mismap = NULL,
                                ...)
     standardGeneric("estGeno"))
