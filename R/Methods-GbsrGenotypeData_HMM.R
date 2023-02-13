@@ -511,7 +511,7 @@ setMethod("estGeno",
         fix_mismap <- TRUE
     }
     if(is.null(fix_bias)){
-        bais = rep(0.5, n_mar)
+        bias = rep(0.5, n_mar)
         fix_bias <- FALSE
     } else {
         bias = rep(fix_bias, n_mar)
@@ -531,7 +531,7 @@ setMethod("estGeno",
                 call_threshold = call_threshold,
                 reads = reads,
                 pat = pat,
-                bias = bais,
+                bias = bias,
                 mismap = mismap,
                 fix_mismap = fix_mismap,
                 fix_bias = fix_bias,
