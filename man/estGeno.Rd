@@ -28,6 +28,7 @@ estGeno(
   optim,
   iter,
   n_threads,
+  fix_bias,
   fix_mismap
 )
 }
