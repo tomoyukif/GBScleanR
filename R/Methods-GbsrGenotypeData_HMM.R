@@ -448,7 +448,7 @@ setMethod("estGeno",
     if (!het_parent) {
         valid <- geno_parents[, c(TRUE, FALSE)] == geno_parents[, c(FALSE, TRUE)]
         valid <- apply(valid, 1, all)
-        geno_parents <- geno_parents[valid,]
+        geno_parents <- geno_parents[valid, ]
     }
     attributes(geno_parents) <- list(dim = dim(geno_parents))
 
@@ -504,17 +504,17 @@ setMethod("estGeno",
                                   n_origin, het_parent)
     init_prob <- .getInitProb(trans_prob[, , 1], pat$n_p_pat, n_samples)
     if(is.null(fix_mismap)){
-        mismap = matrix(0.005, n_mar, 2)
+        mismap <-  matrix(0.005, n_mar, 2)
         fix_mismap <- FALSE
     } else {
-        mismap = matrix(fix_mismap, n_mar, 2)
+        mismap <- matrix(fix_mismap, n_mar, 2)
         fix_mismap <- TRUE
     }
     if(is.null(fix_bias)){
-        bias = rep(0.5, n_mar)
+        bias <- rep(0.5, n_mar)
         fix_bias <- FALSE
     } else {
-        bias = rep(fix_bias, n_mar)
+        bias <- rep(fix_bias, n_mar)
         fix_bias <- TRUE
     }
 
@@ -598,7 +598,8 @@ setMethod("estGeno",
 }
 
 .hap2geno <- function(hap, p_geno, param_list) {
-    out_geno <- sapply(seq_len(param_list$n_mar), function(x) {
+    n <- param_list$n_ploidy * (param_list$n_samples + param_list$n_parents)
+    out_geno <- vapply(seq_len(param_list$n_mar), FUN.VALUE = numeric(n), function(x) {
         return(p_geno[hap[,,x], x])
     })
     out_geno <- array(out_geno, c(param_list$n_ploidy,
@@ -655,7 +656,9 @@ setMethod("estGeno",
         }
 
         if(length(fliped_geno) > 0){
-            fliped_seq <- sapply(seq_along(fliped_geno), function(i){
+            fliped_seq <- vapply(seq_along(fliped_geno),
+                                 FUN.VALUE = vector("numeric", nrow(best_seq)),
+                                 function(i){
                 g1 <- diff_seq[, fliped_geno[i]][half]
                 g2 <- diff_seq[, fliped_geno[i]][half + 1]
                 g2_pos <- which(diff_seq[, fliped_geno[i]][latter] == g2)
@@ -902,20 +905,20 @@ setMethod("estGeno",
 }
 
 .checkPread <- function(param_list) {
-    param_list$flip = FALSE
+    param_list$flip <- FALSE
     p_read_s <- sum(param_list$reads$p_ref[, 1] == 0 &
                         param_list$reads$p_alt[, 1] == 0)
     p_read_e <- sum(param_list$reads$p_ref[, param_list$n_mar] == 0 &
                         param_list$reads$p_alt[, param_list$n_mar] == 0)
     if (p_read_s < p_read_e) {
-        param_list$flip = TRUE
+        param_list$flip <- TRUE
     } else if (p_read_s == p_read_e) {
         p_read_s <- sum(param_list$reads$p_ref[, 1] +
                             param_list$reads$p_alt[, 1])
         p_read_e <- sum(param_list$reads$p_ref[, param_list$n_mar] +
                             param_list$reads$p_alt[, param_list$n_mar])
         if (p_read_s < p_read_e) {
-            param_list$flip = TRUE
+            param_list$flip <- TRUE
         }
     }
     return(param_list)
