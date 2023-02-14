@@ -1,5 +1,10 @@
+Changes in version 1.2.8 (2023-2-14)
++ Minor change in genotype probability calculation algorithm which offset 0.5% 
+when the minimum genotype probability is zero.
+
 Changes in version 1.2.7 (2023-2-10)
-+ Minor change in genotype probability calculation algorithm.
++ Minor change in genotype probability calculation algorithm which set 
+heterozygous calls impossible when the founders are inbred lines.
 
 Changes in version 1.2.6 (2023-2-1)
 + Bug fix in HMM when a genotype is completely impossible to occur.

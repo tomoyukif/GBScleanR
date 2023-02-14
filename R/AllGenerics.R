@@ -2225,6 +2225,8 @@ setGeneric("gbsrGDS2CSV", function(object,
 #' @param n_threads An integer value to specify the number of
 #' threads used for the calculation. The default is 1 and if `n_threads = NULL`,
 #' automatically set half the number of available threads on the computer.
+#' @param fix_bias If not NULL, use a fixed bias value for genotype estimation.
+#' @param fix_mismap If not NULL, use a fixed mismapping rate for genotype estimation.
 #' @param ... Unused.
 #'
 #' @return A [GbsrGenotypeData] object in which the "estimated.haplotype",
@@ -2283,6 +2285,7 @@ setGeneric("estGeno", function(object,
                                optim = TRUE,
                                iter = 2,
                                n_threads = 1,
+                               fix_bias = NULL,
                                fix_mismap = NULL,
                                ...)
     standardGeneric("estGeno"))

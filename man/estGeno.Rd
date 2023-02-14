@@ -15,6 +15,7 @@ estGeno(
   optim = TRUE,
   iter = 2,
   n_threads = 1,
+  fix_bias = NULL,
   fix_mismap = NULL,
   ...
 )
@@ -60,6 +61,10 @@ iterative parameter updates.}
 \item{n_threads}{An integer value to specify the number of
 threads used for the calculation. The default is 1 and if \code{n_threads = NULL},
 automatically set half the number of available threads on the computer.}
+
+\item{fix_bias}{If not NULL, use a fixed bias value for genotype estimation.}
+
+\item{fix_mismap}{If not NULL, use a fixed mismapping rate for genotype estimation.}
 
 \item{...}{Unused.}
 }
