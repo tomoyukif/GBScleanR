@@ -7,7 +7,7 @@
     }
 
     if(reduce){
-        if(any(sapply(filters, sum) == 0)){
+        if(any(vapply(filters, sum, numeric(1)) == 0)){
             stop('Nothing to return.')
         }
         obj <- objdesp.gdsn(index.gdsn(object, node))
@@ -1101,8 +1101,8 @@ setMethod("setCallFilter",
 .callFilterScan <- function(object, i, filt_list){
     ad_data_node <- index.gdsn(object, "annotation/format/AD/data")
     callfilt <- index.gdsn(object, "annotation/format/CFT/data")
-    count_default = c(0, Inf)
-    qtile_default = c(0, 1)
+    count_default <- c(0, Inf)
+    qtile_default <- c(0, 1)
     x <- read.gdsn(ad_data_node, start = c(i, 1), count = c(1, -1))
 
     ref <- x[c(TRUE, FALSE)]
@@ -1116,7 +1116,7 @@ setMethod("setCallFilter",
     read_list <- list(dp, ref, alt)
 
     valid_df <- matrix(TRUE, nmar(object, FALSE), 6)
-    for(j in 1:6){
+    for(j in seq_len(ncol(valid_df))){
         if(j <= 3){
             valid_df[, j] <- .calcSubFilter(read_list[[j]],
                                             filt_list[[j]],
@@ -1126,7 +1126,7 @@ setMethod("setCallFilter",
         } else {
             if(any(filt_list[[j]] != qtile_default)){
                 threshold <- quantile(read_list[[j-3]],
-                                      filt_list[[j]][1:2],
+                                      filt_list[[j]][seq_len(2)],
                                       TRUE)
                 valid_df[, j] <- .calcSubFilter(read_list[[j-3]],
                                                 threshold,

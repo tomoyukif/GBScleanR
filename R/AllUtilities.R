@@ -164,11 +164,11 @@ loadGDS <- function(x, load_filter = FALSE, ploidy = 2, verbose = TRUE) {
 
                 tmp_gdsn <- add.gdsn(index.gdsn(gds, gdsn),
                                      "tmp", NULL, storage, NULL,
-                                     replace = T)
+                                     replace = TRUE)
                 apply.gdsn(i_gdsn, margin = 1,
                            function(x){
                                 x <- unlist(strsplit(x, "\\||/"))
-                                x <- suppressWarnings(as.integer(x))
+                                x <- as.integer(x)
                                 x[is.na(x)] <- na_val
                                 return(x)
                            },
@@ -177,7 +177,7 @@ loadGDS <- function(x, load_filter = FALSE, ploidy = 2, verbose = TRUE) {
                 setdim.gdsn(tmp_gdsn, c(2, gdsn_dim$dim[2], gdsn_dim$dim[1]))
                 i_gdsn <- add.gdsn(index.gdsn(gds, gdsn),
                                    "data", NULL, storage, NULL,
-                                   replace = T)
+                                   replace = TRUE)
                 apply.gdsn(tmp_gdsn, margin = 2, c, as.is = "gdsnode",
                            target.node = i_gdsn)
                 setdim.gdsn(i_gdsn, c(2, gdsn_dim$dim[1], gdsn_dim$dim[2]))
