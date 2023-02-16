@@ -1,4 +1,4 @@
-Changes in version 1.2.8 (2023-2-14)
+Changes in version 1.2.9 (2023-2-14)
 + Minor change in genotype probability calculation algorithm which offset 0.5% 
 when the minimum genotype probability is zero.
 
