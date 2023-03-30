@@ -1932,6 +1932,11 @@ setMethod("initScheme",
           "GbsrGenotypeData",
           function(object, crosstype, mating){
               parents <- getParents(object)
+              if(is.null(parents)){
+                  message("set no parents in the given data.")
+                  message("estGeno() will work in the parentless mode.")
+                  message("See the help of estGeno() for the details of the parentless mode.")
+              }
               scheme <- initScheme(slot(object, "scheme"),
                                    crosstype, mating, parents$memberID)
               slot(object, "scheme") <- scheme

@@ -9,7 +9,7 @@
 \usage{
 initScheme(object, crosstype, mating, ...)
 
-\S4method{initScheme}{GbsrGenotypeData}(object, crosstype, mating)
+\S4method{initScheme}{GbsrGenotypeData}(object, crosstype, mating, no_parent = FALSE)
 
 \S4method{initScheme}{GbsrScheme}(object, crosstype, mating, parents)
 }
@@ -24,6 +24,9 @@ The each element should match with IDs of
 parental samples which are 1 to N. see Details.}
 
 \item{...}{Unused.}
+
+\item{no_parent}{A logical value to indicate if your data do not contain
+parental samples of your population.}
 
 \item{parents}{Indices of parental lines.}
 }

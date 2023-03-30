@@ -28,9 +28,7 @@ estGeno(
   het_parent,
   optim,
   iter,
-  n_threads,
-  fix_bias,
-  fix_mismap
+  n_threads
 )
 }
 \arguments{
