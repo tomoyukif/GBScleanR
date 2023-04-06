@@ -1,3 +1,9 @@
+Changes in version 1.2.10 (2023-4-6)
++ Upon the request for multiple pedigree in the scheme, estGeno() supports a 
+population consisting of samples that belongs to different pedigrees. 
++ Deprecated the crosstype argument in initScheme().
++ Add assignScheme() to let user specify which sample belongs to which pedigree.
+
 Changes in version 1.2.9 (2023-2-14)
 + Minor change in genotype probability calculation algorithm which offset 0.5% 
 when the minimum genotype probability is zero.

@@ -167,10 +167,10 @@ loadGDS <- function(x, load_filter = FALSE, ploidy = 2, verbose = TRUE) {
                                      replace = TRUE)
                 apply.gdsn(i_gdsn, margin = 1,
                            function(x){
-                                x <- unlist(strsplit(x, "\\||/"))
-                                x <- as.integer(x)
-                                x[is.na(x)] <- na_val
-                                return(x)
+                               x <- unlist(strsplit(x, "\\||/"))
+                               x[x == "."] <- na_val
+                               x <- as.integer(x)
+                               return(x)
                            },
                            as.is = "gdsnode",
                            target.node = tmp_gdsn)
@@ -211,9 +211,6 @@ loadGDS <- function(x, load_filter = FALSE, ploidy = 2, verbose = TRUE) {
             warnings("No filtering information stored in the GDS.")
         }
     }
-
-
-
     return(gds)
 }
 

@@ -3,6 +3,7 @@
 export("validMar<-")
 export("validSam<-")
 export(addScheme)
+export(assignScheme)
 export(boxplotGBSR)
 export(closeGDS)
 export(countGenotype)

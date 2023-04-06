@@ -14,7 +14,8 @@ std::vector<double> calcGenoprob(const double & ref,
 
 void calcMissmap(std::vector<double> & prob,
                  const double & mismap1,
-                 const double & mismap2);
+                 const double & mismap2,
+                 const bool & het);
 
 Rcpp::NumericVector calcPemit(Rcpp::NumericMatrix p_ref,
                               Rcpp::NumericMatrix p_alt,
@@ -25,9 +26,9 @@ Rcpp::NumericVector calcPemit(Rcpp::NumericMatrix p_ref,
                               Rcpp::NumericVector mismap2,
                               Rcpp::IntegerVector possiblegeno,
                               int & m,
-                              int & n_f,
-                              int & n_p,
-                              bool & het,
+                              Rcpp::IntegerVector n_f,
+                              Rcpp::IntegerVector n_p,
+                              Rcpp::LogicalVector het,
                               Rcpp::IntegerVector ploidy);
 
 std::vector<double> calcEmit(RcppParallel::RMatrix<double> ref,
@@ -37,8 +38,8 @@ std::vector<double> calcEmit(RcppParallel::RMatrix<double> ref,
                              RcppParallel::RVector<double> w2,
                              RcppParallel::RVector<double> mismap1,
                              RcppParallel::RVector<double> mismap2,
-                             size_t & m,
-                             size_t & sample_i,
+                             int m,
+                             int & sample_i,
                              bool & het);
 
 #endif

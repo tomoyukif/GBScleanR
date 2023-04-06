@@ -333,6 +333,11 @@ setMethod("getGenotype",
                   if(grepl("ARR|EDS", node)){
                       out <- .filtData(object, node, filters, reduce = FALSE)
 
+                  } else if(node == "genotype/data"){
+                      out <- seqGetData(object, "$dosage")
+                      out <- out[filters$sam, filters$mar]
+                      out <- abs(out - 2)
+
                   } else {
                       out <- .filtData(object, node, filters, reduce = TRUE)
                   }
@@ -1691,7 +1696,7 @@ setMethod("gbsrGDS2VCF",
                    parents){
               if(is.null(slot(object, "sample")[["parents"]])){
                   parents <- FALSE
-                  warning("No parents info.")
+                  message("No parents info.")
               }
               sam_sel <- validSam(object, parents = parents)
               mar_sel <- validMar(object)
@@ -1926,10 +1931,22 @@ setMethod("gbsrGDS2CSV",
 #' @importFrom methods slot<-
 setMethod("initScheme",
           "GbsrGenotypeData",
-          function(object, crosstype, mating){
+          function(object, mating){
               parents <- getParents(object)
-              scheme <- initScheme(slot(object, "scheme"),
-                                   crosstype, mating, parents$memberID)
+              if(is.null(parents)){
+                  message("set no parents in the given data.")
+                  message("estGeno() will work in the parentless mode unless you specify parents by setParents().")
+                  message("See the help of estGeno() for the details of the parentless mode.")
+                  p_id <- c(1, 2)
+                  mating <- cbind(c(1, 2))
+
+              } else {
+                  p_id <- parents$memberID
+              }
+              scheme <- initScheme(slot(object, "scheme"), mating, p_id)
+              if(is.null(parents)){
+                  slot(scheme, "parents") <- c(NA_real_, NA_real_)
+              }
               slot(object, "scheme") <- scheme
               return(object)
           })
@@ -1939,16 +1956,33 @@ setMethod("initScheme",
 #' @importFrom methods slot<-
 setMethod("addScheme",
           "GbsrGenotypeData",
-          function(object, crosstype, mating, pop_size){
-              if(missing(pop_size)){
-                  pop_size <- NA
-              }
+          function(object, crosstype, mating){
               if(missing(mating)){
-                  mating <- NA
+                  mating <- cbind(c(NA, NA))
               }
               scheme <- addScheme(slot(object, "scheme"),
-                                  crosstype, mating, pop_size)
+                                  crosstype, mating)
               slot(object, "scheme") <- scheme
+              return(object)
+          })
+
+#'
+#' @rdname assignScheme
+#' @importFrom methods slot<-
+setMethod("assignScheme",
+          "GbsrGenotypeData",
+          function(object, id) {
+              if(nsam(object) != length(id)){
+                  stop("`length(id)` should match with the number of valid ",
+                       "samples obtained by nsam().",
+                       call. = FALSE)
+              }
+              scheme <- assignScheme(slot(object, "scheme"), id)
+              slot(object, "scheme") <- scheme
+              sample <- slot(object, "sample")
+              sample$pedigree <- NA
+              sample$pedigree[validSam(object)] <- id
+              slot(object, "sample") <- sample
               return(object)
           })
 
@@ -1959,6 +1993,11 @@ setMethod("showScheme",
           function(object){
               parents <- getParents(object)
               if(!is.null(parents)){
-                  showScheme(slot(object, "scheme"), parents$sampleID)
+                  sample <- slot(object, "sample")
+                  pedigree <- cbind(getSamID(object),
+                                    sample$pedigree[validSam(object)])
+                  showScheme(slot(object, "scheme"),
+                             parents$sampleID,
+                             pedigree)
               }
           })

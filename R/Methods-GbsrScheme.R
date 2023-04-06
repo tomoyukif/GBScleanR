@@ -3,41 +3,48 @@
 #'
 setMethod("initScheme",
           "GbsrScheme",
-          function(object, crosstype, mating, parents) {
-              crosstype <- match.arg(crosstype,
-                                     c("pairing", "random"),
-                                     FALSE)
-              if (length(parents) / 2 != ncol(mating)) {
-                  stop('The number of mating combinations ",
-                       "should match with half the number of parents.')
-              }
+          function(object, mating, parents) {
               if (!all(parents %in% mating)) {
                   stop('All parents should be listed in the matrix ",
-                       "specified as the "mating" argument.')
+                       "specified as the "mating" argument.',
+                       call. = FALSE)
               }
-              if (length(parents) != length(mating) &
-                  crosstype == "pairing") {
-                  stop('Invalid mating combinations.')
+              if (!all(mating %in% parents)) {
+                  stop('Invalid member ID(s) specified to mating.',
+                       call. = FALSE)
               }
               object@parents <- parents
-              object@crosstype <-  crosstype
-              object@pop_size <- length(parents)
+              object@crosstype <- list(rep("pairing", ncol(mating)))
               object@mating <- list(mating)
-              object@progenies <- list(switch(
-                  crosstype,
-                  pairing = seq(
-                      max(parents) + 1,
-                      by = 1,
-                      length.out = length(parents) / 2
-                  ),
-                  random = seq(
-                      max(parents) + 1,
-                      by = 1,
-                      length.out = length(parents)
-                  )
-              ))
+              object@progenies <- list(seq(max(parents) + 1, by = 1,
+                                           length.out = ncol(mating)))
+              object@samples <- numeric()
               return(object)
           })
+
+.validMating <- function(crosstype, mating){
+    if(crosstype == "pairing"){
+        if(any(mating[1] == mating[2])){
+            stop('The same member ID was specified to ',
+                 'mating for "crosstype = pairing"',
+                 call. = FALSE)
+        }
+    }
+    if(crosstype == "sibling"){
+        if(any(mating[1] != mating[2])){
+            stop('Different member IDs were specified to ',
+                 'mating for "crosstype = sibling"',
+                 call. = FALSE)
+        }
+    }
+    if(crosstype == "selfing"){
+        if(any(mating[1] != mating[2])){
+            stop('Different member IDs were specified to ',
+                 'mating for "crosstype = selfing"',
+                 call. = FALSE)
+        }
+    }
+}
 
 #'
 #' @importFrom utils tail
@@ -45,47 +52,75 @@ setMethod("initScheme",
 #'
 setMethod("addScheme",
           "GbsrScheme",
-          function(object, crosstype, mating, pop_size) {
-              crosstype <- match.arg(crosstype,
-                                     c("pairing", "selfing",
-                                       "sibling", "random"),
-                                     FALSE)
+          function(object, crosstype, mating) {
+              crosstype <- sapply(crosstype, match.arg,
+                                  choices = c("pairing", "selfing", "sibling"))
 
               last_gen <- unlist(tail(object@progenies, 1))
-              last_id <- max(last_gen)
-              n_last <- length(last_gen)
+              n_crosstype <- length(crosstype)
+              if(n_crosstype != 1){
+                  stop("length(crosstype) should be 1.", call. = FALSE)
+              }
+              is_na_mating <- any(is.na(mating))
 
-              if (crosstype == "random" & is.na(pop_size)) {
-                  stop('"pop_size" is required for crosstype = "random".')
-              }
-              if (crosstype %in% c("selfing", "sibling")) {
-                  pop_size <- 1
-              } else if (crosstype == "pairing") {
-                  pop_size <- n_last
-              }
-              if (is.na(mating[1])) {
-                  if (crosstype == "pairing") {
-                      stop('Need a "mating" matrix for crosstype = "paring".')
+              if(n_crosstype == 1){
+                  if(is_na_mating){
+                      if (crosstype == "pairing") {
+                          mating <- t(expand.grid(last_gen, last_gen))
+                          mating <- unique(t(apply(mating, 2, sort)))
+                          mating <- t(mating[mating[, 1] != mating[, 2], ])
+                          message("As `mating` was not specified,",
+                                  " set the following mating design.")
+                          print(mating)
+                          crosstype <- rep(crosstype, ncol(mating))
+
+                      } else {
+                          mating <- matrix(rep(last_gen, each = 2), 2)
+                          message("As `mating` was not specified,",
+                                  " set the following mating design.")
+                          print(mating)
+                          crosstype <- rep(crosstype, ncol(mating))
+                      }
                   } else {
-                      mating <- matrix(last_id, 2, 1)
+                      crosstype <- rep(crosstype, ncol(mating))
+                  }
+              } else {
+                  if(length(crosstype) != ncol(mating)){
+                      stop("length(crosstype) and ncol(mating) should be same",
+                           " if length(crosstype) > 1.",
+                           call. = FALSE)
                   }
               }
-
-              object@crosstype <- c(object@crosstype, crosstype)
-              object@pop_size <- c(object@pop_size, pop_size)
+              if (!all(mating %in% last_gen)) {
+                  stop('Invalid member ID(s) specified to mating.',
+                       call. = FALSE)
+              }
+              sapply(seq_along(crosstype), function(i){
+                  .validMating(crosstype[i], mating[, i])
+              })
+              object@crosstype <- c(object@crosstype, list(crosstype))
               object@mating <- c(object@mating, list(mating))
               object@progenies <- c(object@progenies,
-                                    list(switch(
-                                        crosstype,
-                                        pairing = seq(last_id + 1,
-                                                      by = 1,
-                                                      length.out = n_last / 2),
-                                        random = seq(last_id + 1,
-                                                     by = 1,
-                                                     length.out = n_last),
-                                        selfing = last_id + 1,
-                                        sibling = last_id + 1
-                                    )))
+                                    list(seq(max(last_gen) + 1,
+                                             by = 1,
+                                             length.out = ncol(mating))))
+              return(object)
+          })
+
+
+#'
+#' @rdname assignScheme
+setMethod("assignScheme",
+          "GbsrScheme",
+          function(object, id) {
+              valid_id <- unlist(slot(object, "progenies"))
+              if(!all(id %in% valid_id)){
+                  stop("Invalid specification of member ID(s) to sample(s)!\n",
+                       "You can asign only progenies' member ID(s) to sample(s).\n",
+                       "Progenies' member ID(s) are: ", paste(valid_id, collapse = ", "),
+                       call. = FALSE)
+              }
+              slot(object, "samples") <- id
               return(object)
           })
 
@@ -96,47 +131,76 @@ setMethod("addScheme",
 #'
 setMethod("showScheme",
           "GbsrScheme",
-          function(object, parents_name) {
+          function(object, parents_name, pedigree) {
               if(length(object@crosstype) == 0){
                   message("No scheme information.\nRun initScheme().")
               }
-              for (i in seq_along(object@crosstype)) {
+              n_gen <- length(object@progenies)
+              for (i in seq_len(n_gen)) {
                   if (i == 1) {
-                      message('Generation: Parents')
+                      message('\nGeneration: ', appendLF = FALSE)
+                      cat("Parents")
                       parents <- object@parents
-                      message('The number of parents: ', length(parents))
-                      message('Scan IDs: ')
-                      print(parents_name)
-                      message('Member IDs: ')
-                      print(parents)
-                      message('Cross type: ', object@crosstype[i])
-                      message('Mating: ')
+                      message('\nThe number of parents: ', appendLF = FALSE)
+                      cat(length(parents))
+                      message('\nSample IDs: ', appendLF = FALSE)
+                      cat(parents_name)
+                      message('\nMember IDs: ', appendLF = FALSE)
+                      cat(parents)
+                      message('\nCross type: ', appendLF = FALSE)
+                      cat(object@crosstype[[i]])
+                      message('\nMating: ')
                       mating <- object@mating[[i]]
                       rownames(mating) <-
                           paste("mate", seq_len(2), sep = "")
                       colnames(mating) <-
                           paste("combination", seq_len(ncol(mating)), sep = "")
                       print(mating)
-                      message('Member IDs of progenites: ')
-                      print(object@progenies[[i]])
+                      message('Member IDs of progenites: ', appendLF = FALSE)
+                      cat(object@progenies[[i]])
                   } else {
                       message("")
                       message("-------------------------")
-                      message('Generation: ', i - 1)
+                      message('Generation: ', appendLF = FALSE)
+                      cat(i - 1)
                       members <- object@progenies[[i - 1]]
-                      message('The number of members: ', length(members))
-                      message('Member IDs: ')
-                      print(members)
-                      message('Cross type: ', object@crosstype[i])
-                      message('Mating: ')
+                      message('\nThe number of members: ', appendLF = FALSE)
+                      cat(length(members))
+                      message('\nMember IDs: ', appendLF = FALSE)
+                      cat(members)
+                      message('\nCross type: ', appendLF = FALSE)
+                      cat(object@crosstype[[i]])
+                      message('\nMating: ')
                       mating <- object@mating[[i]]
                       rownames(mating) <-
                           paste("mate", seq_len(2), sep = "")
                       colnames(mating) <-
                           paste("combination", seq_len(ncol(mating)), sep = "")
                       print(mating)
-                      message('Member IDs of progenites: ')
-                      print(object@progenies[[i]])
+                      message('Member IDs of progenites: ', appendLF = FALSE)
+                      cat(object@progenies[[i]])
+                  }
+                  if(i == n_gen){
+                      message('\nAssigned member IDs to samples: ',
+                              appendLF = FALSE)
+                      if(length(object@samples) == 0){
+                          cat("Not assigned.")
+                      } else {
+                          message('')
+                          txt <- apply(pedigree, 1, paste, collapse = ":")
+                          n_txt <- length(txt)
+                          for(i in seq_len(n_txt)){
+                              if(i == n_txt){
+                                  cat(txt[i])
+                              } else {
+                                  if(i %% 6 == 0){
+                                      cat(paste0(txt[i], "\n"))
+                                  } else {
+                                      cat(paste0(txt[i], ", "))
+                                  }
+                              }
+                          }
+                      }
                   }
               }
           })
