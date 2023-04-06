@@ -1,4 +1,4 @@
-Changes in version 1.3.13 (2023-4-6)
+Changes in version 1.2.13 (2023-4-6)
 + Upon the request for multiple pedigree in the scheme, estGeno() supports a 
 population consisting of samples that belongs to different pedigrees. 
 + Deprecated the crosstype argument in initScheme().
