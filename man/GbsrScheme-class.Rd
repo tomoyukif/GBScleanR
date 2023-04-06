@@ -20,9 +20,6 @@ sizes of each generation. This class is not exported.
 \item{\code{crosstype}}{A vector of strings indicating the type of
 crossing done at each generation.}
 
-\item{\code{pop_size}}{A vector  of integers of the population size
-of each generation.}
-
 \item{\code{mating}}{A list of matrices showing combinations member
 IDs of samples mated.}
 
@@ -30,6 +27,9 @@ IDs of samples mated.}
 
 \item{\code{progenies}}{A vector of memeber IDs of progenies produced
 at each generation.}
+
+\item{\code{samples}}{A vector of member IDs of samples indicating which samples are
+derived from which pedigrees.}
 }}
 
 \examples{

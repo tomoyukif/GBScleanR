@@ -595,7 +595,12 @@ The function `addScheme()` adds the information about the next breeding step of 
 \  
 If your population was derived from a 4-way or 8-way cross, you need to add more `paring` steps. In the case of 8-way RILs developed by three pairing crosses followed by five selfing cycles, the scheme object should be built as following. First we need to initialize the scheme object with specifying the first mating scheme. The crosstype argument should be "pairing" and the mating argument should be given as a matrix in which each pairing combination of parents are shown in each column. The following case indicates the pairing of parent 1 and 2 as well as 3 and 4, 5 and 6, and 7 and 8.
 ```{r eval=FALSE}
-gds <- initScheme(gds, crosstype = "pair", mating = cbind(c(1:2), c(3:4), c(5:6), c(7:8)))
+# As always the first step of breeding scheme would be "pairing" cross(es) of 
+# founders, never be "selfing" and a "sibling" cross,
+# the argument `crosstype` in initScheme() was deprecated on the update on April 6, 2023.
+# gds <- initScheme(gds, crosstype = "pair", mating = cbind(c(1:2), c(3:4), c(5:6), c(7:8)))
+
+gds <- initScheme(gds, mating = cbind(c(1:2), c(3:4), c(5:6), c(7:8)))
 ```
 \  
 Now the progenies of the crosses above have member ID 9, 10, 11,
@@ -631,6 +636,45 @@ gds <- addScheme(gds, crosstype = "self")
 gds <- addScheme(gds, crosstype = "self")
 ```
 You can set `crosstype = "sibling"` or `crosstype = "random"`, if your population was developed through sibling crosses or random crosses, respectively.｀
+
+The update on April 4, 2023 introduced new function to GBScleanR.
+The genotype estimation algorithm in estGeno() supports populations that consist
+of samples belonging to different pedigree. For example, if you have a population
+ of F1 samples that derived from three different crosses of four founders: 
+Founder1 x Founder2, Founder1 x Founder3, Founder1 x Founder4. You can build a 
+scheme info as following.
+```{r eval=FALSE}
+gds <- setParents(object = gds,
+                  parents = c("Founder1", "Founder2", "Founder3", "Founder4"))
+gds <- initScheme(object = gds, 
+                  mating = cbind(c(1, 2), c(1, 3), c(1,4)))
+# The initScheme() function here automatically set 5, 6, and 7 as member ID to
+# the progenies of the above maiting (pairing) combinations, respectively.
+
+# Then you have to assign member IDs to your samples to indicate which sample 
+# belongs to which pedigree.
+gds <- assignScheme(object = gds, 
+                    id = c(rep(5, 10), rep(6, 15), rep(7, 20)))
+```
+
+The assignScheme() assign member IDs `id` to the samples in order.
+Please confirm the order of the member IDs in `id` and the order of the
+sample IDs shown by getSamID(gds).
+```{r eval=FALSE}
+# Get sample ID
+sample_id <- getSamID(object = gds)
+
+# Initialize the id vector
+id <- integer(nsam(gds))
+
+# Assume your samples were named with prefixes that indicate which 
+# sample was derived from which combination of founders.
+id[grepl("P1xP2", sample_id)] <- 5
+id[grepl("P1xP3", sample_id)] <- 6
+id[grepl("P1xP4", sample_id)] <- 7
+gds <- assignScheme(object = gds, id = id)
+```
+
 
 ### Execute genotype estimation
 The following codes suppose that you built the scheme object for the example data that is a biparental F2 population derived from a cross between inbred parents, not for the 8-way RILs explained above.

@@ -7,17 +7,14 @@
 \alias{initScheme,GbsrScheme-method}
 \title{Build a \link{GbsrScheme} object}
 \usage{
-initScheme(object, crosstype, mating, ...)
+initScheme(object, mating, ...)
 
-\S4method{initScheme}{GbsrGenotypeData}(object, crosstype, mating)
+\S4method{initScheme}{GbsrGenotypeData}(object, mating)
 
-\S4method{initScheme}{GbsrScheme}(object, crosstype, mating, parents)
+\S4method{initScheme}{GbsrScheme}(object, mating, parents)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
-
-\item{crosstype}{A string to indicate the type of
-cross conducted with a given generation.}
 
 \item{mating}{An integer matrix to indicate mating combinations.
 The each element should match with IDs of
@@ -26,6 +23,9 @@ parental samples which are 1 to N. see Details.}
 \item{...}{Unused.}
 
 \item{parents}{Indices of parental lines.}
+
+\item{crosstype}{A string to indicate the type of
+cross conducted with a given generation.}
 }
 \value{
 A \link{GbsrGenotypeData} object storing

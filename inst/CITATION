@@ -1,0 +1,21 @@
+citHeader("To cite GBScleanR in publications use:")
+
+citEntry(
+  entry    = "article",
+  title    = "GBScleanR: Robust genotyping error correction using a hidden Markov model with error pattern recognition",
+  author   = personList(as.person("Tomoyuki Furuta"),
+                        as.person("Toshio Yamamoto"),
+                        as.person("Motoyuki Ashikari")),
+  journal  = "Genetics",
+  year     = 2023,
+  doi = "10.1093/genetics/iyad055"
+  volume   = ,
+  number   = ,
+  pages    = ,
+  url      = "https://doi.org/10.1093/genetics/iyad055",
+  textVersion = paste("Furuta, T., Yamamoto, T., Ashikari, M.",
+                      "GBScleanR: Robust genotyping error correction using ",
+                      "a hidden Markov model with error pattern recognition.",
+                      "Genetics iyad055 (2023)"
+  )
+)
