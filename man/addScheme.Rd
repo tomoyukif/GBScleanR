@@ -7,11 +7,11 @@
 \alias{addScheme,GbsrScheme-method}
 \title{#' Build a \link{GbsrScheme} object}
 \usage{
-addScheme(object, crosstype, mating, pop_size, ...)
+addScheme(object, crosstype, mating, ...)
 
-\S4method{addScheme}{GbsrGenotypeData}(object, crosstype, mating, pop_size)
+\S4method{addScheme}{GbsrGenotypeData}(object, crosstype, mating)
 
-\S4method{addScheme}{GbsrScheme}(object, crosstype, mating, pop_size)
+\S4method{addScheme}{GbsrScheme}(object, crosstype, mating)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
@@ -21,9 +21,6 @@ cross conducted with a given generation.}
 
 \item{mating}{An integer matrix to indicate mating combinations.
 The each element should match with member IDs of the last generation.}
-
-\item{pop_size}{An integer of the number of
-individuals in a given generation.}
 
 \item{...}{Unused.}
 }

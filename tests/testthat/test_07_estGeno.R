@@ -8,7 +8,7 @@ on.exit({unlink(gds_fn)})
 test_that("estGeno", {
     gds <- loadGDS(gds_fn)
     gds <- setParents(gds, grep("Founder", getSamID(gds), value=TRUE))
-    gds <- initScheme(gds, "pair", cbind(c(1:2)))
+    gds <- initScheme(gds, cbind(c(1:2)))
     gds <- addScheme(gds, "self")
     gds <- estGeno(gds)
     p_hap <- getHaplotype(gds, parents = "only")

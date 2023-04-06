@@ -22,7 +22,7 @@ vector<double> calcGenoprob(const double & ref,
     double logw2 = log10_safe_d(w2);
     vector<double> ref_multiplier = {logeseq0, logw1, logeseq1};
     vector<double> alt_multiplier = {logeseq1, logw2, logeseq0};
-    for(int g=0; g<3;++g){
+    for(int g = 0; g < 3; ++g){
         prob[g] = ref * ref_multiplier[g] +
             alt * alt_multiplier[g];
     }
@@ -30,7 +30,7 @@ vector<double> calcGenoprob(const double & ref,
     if(!het){ prob[1] = 0; }
 
     lognorm_vec(prob);
-    for(int g=0; g<3; ++g){
+    for(int g = 0; g < 3; ++g){
         prob[g] = pow(10, prob[g]);
     }
     return prob;
@@ -50,7 +50,7 @@ void calcMissmap(vector<double> & prob,
     double sum_v = 0.0;
     double prob_lowest = 0.005;
 
-    for(size_t g=0; g<3;++g){
+    for(size_t g = 0; g < 3; ++g){
         sum_v1 += v1[g] * prob[g];
         sum_v2 += v2[g] * prob[g];
         sum_v3 += v3[g] * prob[g];
@@ -97,26 +97,26 @@ NumericVector calcPemit(NumericMatrix p_ref,
                         NumericVector mismap2,
                         IntegerVector possiblegeno,
                         int & m,
-                        int & n_f,
-                        int & n_p,
-                        bool & het,
+                        IntegerVector n_f,
+                        IntegerVector n_p,
+                        LogicalVector het,
                         IntegerVector ploidy
 ){
     vector<double> prob;
     double p_prob;
     int col_i;
-    NumericVector p_emit(n_p, 1.0);
+    NumericVector p_emit(n_p[0], 1.0);
 
-    for(int i=0; i<n_f; ++i){
+    for(int i = 0; i < n_f[0]; ++i){
         NumericMatrix::Row ref_i = p_ref.row(i);
         NumericMatrix::Row alt_i = p_alt.row(i);
 
         prob = calcGenoprob(ref_i[m], alt_i[m],
                             eseq[0], eseq[1],
-                                         w1[m], w2[m], het);
-        calcMissmap(prob, mismap1[m], mismap2[m], het);
-        for(int j=0; j<n_p; ++j){
-            col_i = j * n_f + i;
+                                         w1[m], w2[m], het[0]);
+        calcMissmap(prob, mismap1[m], mismap2[m], het[0]);
+        for(int j = 0; j < n_p[0]; ++j){
+            col_i = j * n_f[0] + i;
             p_prob = prob[possiblegeno[col_i]];
 
             if(p_prob < 0.01){
@@ -127,7 +127,7 @@ NumericVector calcPemit(NumericMatrix p_ref,
         }
     }
 
-    for(int j=0; j<n_p; ++j){
+    for(int j = 0; j < n_p[0]; ++j){
         if(p_emit[j] == 0){
             double neg_inf = -numeric_limits<double>::infinity();
             p_emit[j] = neg_inf;
@@ -148,8 +148,8 @@ vector<double> calcEmit(RMatrix<double> ref,
                         RVector<double> w2,
                         RVector<double> mismap1,
                         RVector<double> mismap2,
-                        size_t & m,
-                        size_t & sample_i,
+                        int m,
+                        int & sample_i,
                         bool & het
 ){
     vector<double> prob;

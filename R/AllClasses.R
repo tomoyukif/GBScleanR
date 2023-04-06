@@ -10,13 +10,13 @@
 #'
 #' @slot crosstype A vector of strings indicating the type of
 #' crossing done at each generation.
-#' @slot pop_size A vector  of integers of the population size
-#'  of each generation.
 #' @slot mating A list of matrices showing combinations member
 #' IDs of samples mated.
 #' @slot parents A vector of member IDs of parents.
 #' @slot progenies A vector of memeber IDs of progenies produced
 #' at each generation.
+#' @slot samples A vector of member IDs of samples indicating which samples are
+#' derived from which pedigrees.
 #'
 #' @rdname GbsrScheme-class
 #' @aliases GbsrScheme-class GbsrScheme
@@ -40,11 +40,11 @@
 #' closeGDS(gds)
 #'
 setClass(Class = "GbsrScheme",
-         slots = c(crosstype = "character",
-                   pop_size = "numeric",
+         slots = c(crosstype = "list",
                    mating = "list",
                    parents = "numeric",
-                   progenies = "list"))
+                   progenies = "list",
+                   samples = "numeric"))
 
 
 #' Class `GbsrGenotypeData`

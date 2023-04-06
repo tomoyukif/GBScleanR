@@ -258,10 +258,10 @@ test_that("Genotype call filtering", {
     geno[!valid] <- NA
     ref[!valid] <- 0
     alt[!valid] <- 0
-    expect_equal(getGenotype(gds, node = "filt"), geno)
+    expect_equal(getGenotype(gds, node = "filt"), geno, ignore_attr = TRUE)
     fread <- getRead(gds, node = "filt")
-    expect_equal(fread$ref, ref)
-    expect_equal(fread$alt, alt)
+    expect_equal(fread$ref, ref, ignore_attr = TRUE)
+    expect_equal(fread$alt, alt, ignore_attr = TRUE)
 
     gds <- resetCallFilter(gds)
     gds <- setCallFilter(gds, ref_count = c(5, 10))
@@ -273,10 +273,10 @@ test_that("Genotype call filtering", {
     geno[!valid] <- NA
     ref[!valid] <- 0
     alt[!valid] <- 0
-    expect_equal(getGenotype(gds, node = "filt"), geno)
+    expect_equal(getGenotype(gds, node = "filt"), geno, ignore_attr = TRUE)
     fread <- getRead(gds, node = "filt")
-    expect_equal(fread$ref, ref)
-    expect_equal(fread$alt, alt)
+    expect_equal(fread$ref, ref, ignore_attr = TRUE)
+    expect_equal(fread$alt, alt, ignore_attr = TRUE)
 
     gds <- resetCallFilter(gds)
     gds <- setCallFilter(gds, alt_count = c(5, 10))
@@ -288,10 +288,10 @@ test_that("Genotype call filtering", {
     geno[!valid] <- NA
     ref[!valid] <- 0
     alt[!valid] <- 0
-    expect_equal(getGenotype(gds, node = "filt"), geno)
+    expect_equal(getGenotype(gds, node = "filt"), geno, ignore_attr = TRUE)
     fread <- getRead(gds, node = "filt")
-    expect_equal(fread$ref, ref)
-    expect_equal(fread$alt, alt)
+    expect_equal(fread$ref, ref, ignore_attr = TRUE)
+    expect_equal(fread$alt, alt, ignore_attr = TRUE)
 
     gds <- resetCallFilter(gds)
     gds <- setCallFilter(gds, dp_qtile = c(0.1, 0.9))
@@ -311,10 +311,10 @@ test_that("Genotype call filtering", {
     alt <- read$alt
     ref[!valid] <- 0
     alt[!valid] <- 0
-    expect_equal(getGenotype(gds, node = "filt"), geno)
+    expect_equal(getGenotype(gds, node = "filt"), geno, ignore_attr = TRUE)
     fread <- getRead(gds, node = "filt")
-    expect_equal(fread$ref, ref)
-    expect_equal(fread$alt, alt)
+    expect_equal(fread$ref, ref, ignore_attr = TRUE)
+    expect_equal(fread$alt, alt, ignore_attr = TRUE)
 
     gds <- resetCallFilter(gds)
     gds <- setCallFilter(gds, ref_qtile = c(0.1, 0.9))
@@ -333,10 +333,10 @@ test_that("Genotype call filtering", {
     alt <- read$alt
     ref[!valid] <- 0
     alt[!valid] <- 0
-    expect_equal(getGenotype(gds, node = "filt"), geno)
+    expect_equal(getGenotype(gds, node = "filt"), geno, ignore_attr = TRUE)
     fread <- getRead(gds, node = "filt")
-    expect_equal(fread$ref, ref)
-    expect_equal(fread$alt, alt)
+    expect_equal(fread$ref, ref, ignore_attr = TRUE)
+    expect_equal(fread$alt, alt, ignore_attr = TRUE)
 
     gds <- resetCallFilter(gds)
     gds <- setCallFilter(gds, alt_qtile = c(0.1, 0.9))
@@ -355,10 +355,10 @@ test_that("Genotype call filtering", {
     alt <- read$alt
     ref[!valid] <- 0
     alt[!valid] <- 0
-    expect_equal(getGenotype(gds, node = "filt"), geno)
+    expect_equal(getGenotype(gds, node = "filt"), geno, ignore_attr = TRUE)
     fread <- getRead(gds, node = "filt")
-    expect_equal(fread$ref, ref)
-    expect_equal(fread$alt, alt)
+    expect_equal(fread$ref, ref, ignore_attr = TRUE)
+    expect_equal(fread$alt, alt, ignore_attr = TRUE)
     closeGDS(gds)
 })
 
@@ -374,8 +374,8 @@ test_that("Save and load filter info", {
     validSam(gds) <- valid_scan
     closeGDS(gds, save_filter = TRUE)
     gds <- loadGDS(gds, load_filter = TRUE)
-    expect_equal(validMar(gds), valid_snp)
-    expect_equal(validSam(gds), valid_scan)
+    expect_equal(validMar(gds), valid_snp, ignore_attr = TRUE)
+    expect_equal(validSam(gds), valid_scan, ignore_attr = TRUE)
     closeGDS(gds)
 })
 

@@ -2359,7 +2359,7 @@ setGeneric("estGeno", function(object,
 #' # Close the connection to the GDS file
 #' closeGDS(gds)
 #'
-setGeneric("initScheme", function(object, crosstype, mating, ...)
+setGeneric("initScheme", function(object, mating, ...)
     standardGeneric("initScheme"))
 
 
@@ -2377,8 +2377,6 @@ setGeneric("initScheme", function(object, crosstype, mating, ...)
 #' cross conducted with a given generation.
 #' @param mating An integer matrix to indicate mating combinations.
 #' The each element should match with member IDs of the last generation.
-#' @param pop_size An integer of the number of
-#' individuals in a given generation.
 #' @param ... Unused.
 #'
 #' @return A [GbsrGenotypeData] object storing
@@ -2431,9 +2429,76 @@ setGeneric("initScheme", function(object, crosstype, mating, ...)
 #'
 #' # Close the connection to the GDS file
 #' closeGDS(gds)
-setGeneric("addScheme", function(object, crosstype, mating, pop_size, ...)
+setGeneric("addScheme", function(object, crosstype, mating, ...)
     standardGeneric("addScheme"))
 
+
+#' Assign member IDs to samples
+#'
+#' [GBScleanR] uses breeding scheme information to set the expected
+#' number of cross overs in a chromosome which is a required parameter
+#' for the genotype error correction with the Hidden Markov model
+#' implemented in the `estGeno()` function.
+#' This function assign member IDs to indicate which samples were derived from
+#' which pedigree that recorded in the [GbsrScheme] object.
+#'
+#' @param object A [GbsrGenotypeData] object.
+#' @param id A numeric vector indicating member IDs to assign to samples.
+#' @param ... Unused.
+#'
+#' @return A [GbsrGenotypeData] object storing
+#' a [GbsrScheme] object in the "scheme" slot.
+#'
+#' @details
+#' Member IDs can be shown by [showScheme()]. Only the member IDs assigned to
+#' progenies (not parents) are available to assign to samples. If the last
+#' generation recorded in the [GbsrScheme] object has only one member ID that
+#' should be assigned to all samples in your population, you can omit assigning
+#' IDs by [asignScheme()]. In that case, [estGeno()] automatically assign the
+#' only one member ID to all samples.
+#'
+#' @export
+#'
+#' @seealso [addScheme()] and [showScheme()]
+#'
+#' @examples
+#' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+#' gds <- loadGDS(gds_fn)
+#'
+#' # Biparental F2 population.
+#' gds <- setParents(gds, parents = c("Founder1", "Founder2"))
+#'
+#' # setParents gave member ID 1 and 2 to Founder1 and Founder2, respectively.
+#' gds <- initScheme(gds, crosstype = "pair", mating = cbind(c(1:2)))
+#'
+#' # Now the progeny of the cross above have member ID 3.
+#' # If `crosstype = "selfing"` or `"sibling"`, you can omit a `mating` matrix.
+#' gds <- addScheme(gds, crosstype = "self")
+#'
+#' # The progeny of the selfing above has member ID 4.
+#' # To execute genotype estimation for your samples, you need to assign a member
+#' # ID to each of the samples.
+#'
+#' # Check IDs of samples to be assigned member IDs if necessary.
+#' getSamID(gds)
+#'
+#' # The assignScheme() assign member IDs `id` to the samples in order.
+#' # Please confirm the order of the member IDs in `id` and the order of the
+#' # sample IDs shown by getSamID(gds).
+#' gds <- assignScheme(gds, rep(4, nsam(gds)))
+#'
+#' # If your population has samples all of which belong to only one pedigree,
+#' # you can omit assignScheme() and let estGeno() automatically assign the
+#' # last member ID to all samples.
+#'
+#' ############################################################################
+#' # Now you can execute `estGeno()` which requires a [GbsrScheme] object.
+#'
+#' # Close the connection to the GDS file
+#' closeGDS(gds)
+setGeneric("assignScheme", function(object, id, ...)
+    standardGeneric("assignScheme"))
 
 #' Show the information stored in a [GbsrScheme] object
 #'
