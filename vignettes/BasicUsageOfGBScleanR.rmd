@@ -582,7 +582,11 @@ The `coord` argument controls the number of rows and columns of the facets in th
 ### Prepare scheme information
 Before executing the function for true genotype estimation, we need to build a scheme object. Our sample data is of a biparental F2 population derived from inbred founders. Therefore, we should run `initScheme()` and `addScheme()` as following.
 ```{r}
-gds <- initScheme(gds, crosstype = "pairing", mating = matrix(1:2, 2))
+# As always the first step of breeding scheme would be "pairing" cross(es) of 
+# founders, never be "selfing" and a "sibling" cross,
+# the argument `crosstype` in initScheme() was deprecated on the update on April 6, 2023.
+# gds <- initScheme(gds, crosstype = "pairing", mating = matrix(1:2, 2))
+gds <- initScheme(gds, mating = matrix(1:2, 2))
 gds <- addScheme(gds, crosstype = "selfing")
 ```
 \ 

@@ -65,7 +65,7 @@ gds <- setParents(gds, parents = parents)
 # one column with integers 1 and 2 indicating a sample (founder)
 # with the memberID 1 and a sample (founder) with the memberID 2
 # were mated.
-gds <- initScheme(gds, crosstype = "pair", mating = cbind(c(1:2)))
+gds <- initScheme(gds, mating = cbind(c(1:2)))
 
 # Add information of the next cross conducted in our scheme.
 # We chose 'crosstype = "selfing"', which do not require a
