@@ -484,7 +484,7 @@ setGeneric("getGenotype", function(object,
 #' # one column with integers 1 and 2 indicating a sample (founder)
 #' # with the memberID 1 and a sample (founder) with the memberID 2
 #' # were mated.
-#' gds <- initScheme(gds, crosstype = "pair", mating = cbind(c(1:2)))
+#' gds <- initScheme(gds, mating = cbind(c(1:2)))
 #'
 #' # Add information of the next cross conducted in our scheme.
 #' # We chose 'crosstype = "selfing"', which do not require a
@@ -1408,7 +1408,7 @@ setGeneric("closeGDS", function(object, save_filter = FALSE, verbose = TRUE, ...
 #' # one column with integers 1 and 2 indicating a sample (founder)
 #' # with the memberID 1 and a sample (founder) with the memberID 2
 #' # were mated.
-#' gds <- initScheme(gds, crosstype = "pair", mating = cbind(c(1:2)))
+#' gds <- initScheme(gds, mating = cbind(c(1:2)))
 #'
 #' # Add information of the next cross conducted in our scheme.
 #' # We chose 'crosstype = "selfing"', which do not require a
@@ -2260,7 +2260,7 @@ setGeneric("gbsrGDS2CSV", function(object,
 #' # one column with integers 1 and 2 indicating a sample (founder)
 #' # with the memberID 1 and a sample (founder) with the memberID 2
 #' # were mated.
-#' gds <- initScheme(gds, crosstype = "pair", mating = cbind(c(1:2)))
+#' gds <- initScheme(gds, mating = cbind(c(1:2)))
 #'
 #' # Add information of the next cross conducted in our scheme.
 #' # We chose 'crosstype = "selfing"', which do not require a
@@ -2348,7 +2348,7 @@ setGeneric("estGeno", function(object,
 #' gds <- setParents(gds, parents = c("Founder1", "Founder2"))
 #'
 #' # setParents gave member ID 1 and 2 to Founder1 and Founder2, respectively.
-#' gds <- initScheme(gds, crosstype = "pair", mating = cbind(c(1:2)))
+#' gds <- initScheme(gds, mating = cbind(c(1:2)))
 #'
 #' # Now the progenies of the cross above have member ID 3.
 #' # If `crosstype = "selfing"` or `"sibling"`, you can omit a `mating` matrix.
@@ -2418,7 +2418,7 @@ setGeneric("initScheme", function(object, mating, ...)
 #' gds <- setParents(gds, parents = c("Founder1", "Founder2"))
 #'
 #' # setParents gave member ID 1 and 2 to Founder1 and Founder2, respectively.
-#' gds <- initScheme(gds, crosstype = "pair", mating = cbind(c(1:2)))
+#' gds <- initScheme(gds, mating = cbind(c(1:2)))
 #'
 #' # Now the progenies of the cross above have member ID 3.
 #' # If `crosstype = "selfing"` or `"sibling"`, you can omit a `mating` matrix.
@@ -2470,7 +2470,7 @@ setGeneric("addScheme", function(object, crosstype, mating, ...)
 #' gds <- setParents(gds, parents = c("Founder1", "Founder2"))
 #'
 #' # setParents gave member ID 1 and 2 to Founder1 and Founder2, respectively.
-#' gds <- initScheme(gds, crosstype = "pair", mating = cbind(c(1:2)))
+#' gds <- initScheme(gds, mating = cbind(c(1:2)))
 #'
 #' # Now the progeny of the cross above have member ID 3.
 #' # If `crosstype = "selfing"` or `"sibling"`, you can omit a `mating` matrix.
@@ -2529,7 +2529,7 @@ setGeneric("assignScheme", function(object, id, ...)
 #' gds <- setParents(gds, parents = c("Founder1", "Founder2"))
 #'
 #' # setParents gave member ID 1 and 2 to Founder1 and Founder2, respectively.
-#' gds <- initScheme(gds, crosstype = "pair", mating = cbind(c(1:2)))
+#' gds <- initScheme(gds, mating = cbind(c(1:2)))
 #'
 #' # Now the progenies of the cross above have member ID 3.
 #' # If `crosstype = "selfing"` or `"sibling"`, you can omit a `mating` matrix.

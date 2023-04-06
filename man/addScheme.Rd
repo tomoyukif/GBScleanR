@@ -68,7 +68,7 @@ gds <- loadGDS(gds_fn)
 gds <- setParents(gds, parents = c("Founder1", "Founder2"))
 
 # setParents gave member ID 1 and 2 to Founder1 and Founder2, respectively.
-gds <- initScheme(gds, crosstype = "pair", mating = cbind(c(1:2)))
+gds <- initScheme(gds, mating = cbind(c(1:2)))
 
 # Now the progenies of the cross above have member ID 3.
 # If `crosstype = "selfing"` or `"sibling"`, you can omit a `mating` matrix.
