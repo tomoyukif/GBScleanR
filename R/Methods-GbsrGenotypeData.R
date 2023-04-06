@@ -18,8 +18,11 @@
         out[out == 3*dim1] <- NA
 
     } else {
-        seqSetFilter(object, filters$mar, filters$sam,
-                     action = "push+intersect", verbose = FALSE)
+        seqSetFilter(object = object,
+                     variant.sel = filters$mar,
+                     sample.sel = filters$sam,
+                     action = "push+set",
+                     verbose = FALSE)
         out <- seqGetData(object, node)
         seqSetFilter(object, action = "pop", verbose = FALSE)
         if(length(out) == 0){
@@ -274,7 +277,7 @@ setMethod("getGenotype",
           "GbsrGenotypeData",
           function(object, node, parents, valid, chr){
               node <- match.arg(arg = node,
-                                choices =  c("raw", "filt", "cor",
+                                choices =  c("raw", "filt", "cor", "phased",
                                              "parents", "ratio", "dosage"))
               reduce <- FALSE
               if(node == "raw"){node <- "genotype/data"}
@@ -347,13 +350,31 @@ setMethod("getGenotype",
                       out <- abs(out - 2)
 
                   } else {
-                      out <- .filtData(object, node, filters, reduce = reduce)
+                      if(reduce){
+                          out <- .filtData(object, node, filters, reduce = reduce)
+
+                      } else{
+                          # Get phased genotype
+                          ploidy <- attributes(slot(object, "sample"))$ploidy
+                          out <- readex.gdsn(index.gdsn(object, node),
+                                             sel = list(rep(TRUE, ploidy),
+                                                        filters$sam, filters$mar))
+                          out[out == 3] <- NA
+                      }
                   }
 
-                  rownames(out) <- .filtData(object, "sample.id", filters)
-                  colnames(out) <- .filtData(object, "variant.id", filters)
-                  dimnames(out) <- list(dimnames(out)$allele,
-                                        dimnames(out)$variant)
+                  if(length(dim(out)) == 2){
+                      rownames(out) <- .filtData(object, "sample.id", filters)
+                      colnames(out) <- .filtData(object, "variant.id", filters)
+                      dimnames(out) <- list(dimnames(out)$allele,
+                                            dimnames(out)$variant)
+                  } else {
+                      sample_id <- .filtData(object, "sample.id", filters)
+                      variant_id <- .filtData(object, "variant.id", filters)
+                      dimnames(out) <- list(phase = 1:2,
+                                            sample = sample_id,
+                                            marker = variant_id)
+                  }
               }
               return(out)
           })
