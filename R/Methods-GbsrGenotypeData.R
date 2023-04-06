@@ -276,9 +276,17 @@ setMethod("getGenotype",
               node <- match.arg(arg = node,
                                 choices =  c("raw", "filt", "cor",
                                              "parents", "ratio", "dosage"))
+              reduce <- FALSE
               if(node == "raw"){node <- "genotype/data"}
-              if(node == "filt"){node <- "annotation/format/FGT/data"}
-              if(node == "cor"){node <- "annotation/format/CGT/data"}
+              if(node == "filt"){
+                  node <- "annotation/format/FGT/data"
+                  reduce <- TRUE
+              }
+              if(node == "cor"){
+                  node <- "annotation/format/CGT/data"
+                  reduce <- TRUE
+              }
+              if(node == "phased"){node <- "annotation/format/CGT/data"}
               if(node == "ratio"){node <- "annotation/format/ARR"}
               if(node == "dosage"){node <- "annotation/format/EDS"}
 
@@ -323,7 +331,7 @@ setMethod("getGenotype",
                                " Run setCallFilter() if needed.")
                       } else {
                           stop("Nothing to return. Run estGeno() to obtain the",
-                               " corrected genotype data.")
+                               " phased corrected genotype data.")
                       }
                   }
 
@@ -331,7 +339,7 @@ setMethod("getGenotype",
                                          valid = valid, chr = chr)
 
                   if(grepl("ARR|EDS", node)){
-                      out <- .filtData(object, node, filters, reduce = FALSE)
+                      out <- .filtData(object, node, filters, reduce = reduce)
 
                   } else if(node == "genotype/data"){
                       out <- seqGetData(object, "$dosage")
@@ -339,7 +347,7 @@ setMethod("getGenotype",
                       out <- abs(out - 2)
 
                   } else {
-                      out <- .filtData(object, node, filters, reduce = TRUE)
+                      out <- .filtData(object, node, filters, reduce = reduce)
                   }
 
                   rownames(out) <- .filtData(object, "sample.id", filters)
@@ -1428,61 +1436,61 @@ setMethod("setMarFilter",
     ## Heterozygosity
     if(check_list$het){
         v <- v & .calcSubFilter(getCountGenoHet(object, target, TRUE, TRUE),
-                            filt_list$het, c(0, 1), TRUE, TRUE)
+                                filt_list$het, c(0, 1), TRUE, TRUE)
     }
 
     ## Minor allele count
     if(check_list$mac){
-    v <- v & .calcSubFilter(getMAC(object, target, TRUE),
-                            filt_list$mac, 0, TRUE, TRUE)
+        v <- v & .calcSubFilter(getMAC(object, target, TRUE),
+                                filt_list$mac, 0, TRUE, TRUE)
     }
 
     ## Minor allele frequency
     if(check_list$maf){
-    v <- v & .calcSubFilter(getMAF(object, target, TRUE),
-                            filt_list$maf, 0, TRUE, TRUE)
+        v <- v & .calcSubFilter(getMAF(object, target, TRUE),
+                                filt_list$maf, 0, TRUE, TRUE)
     }
 
     ## Reference allele read count
     if(check_list$ad_ref){
-    v <- v & .calcSubFilter(getCountReadRef(object, target, TRUE, FALSE),
-                            filt_list$ad_ref, c(0, Inf), TRUE, TRUE)
+        v <- v & .calcSubFilter(getCountReadRef(object, target, TRUE, FALSE),
+                                filt_list$ad_ref, c(0, Inf), TRUE, TRUE)
     }
 
     ## Alternative allele read count
     if(check_list$ad_alt){
-    v <- v & .calcSubFilter(getCountReadAlt(object, target, TRUE, FALSE),
-                            filt_list$ad_alt, c(0, Inf), TRUE, TRUE)
+        v <- v & .calcSubFilter(getCountReadAlt(object, target, TRUE, FALSE),
+                                filt_list$ad_alt, c(0, Inf), TRUE, TRUE)
     }
 
     ## Total read count
     if(check_list$dp){
-    v <- v & .calcSubFilter(getCountRead(object, target, TRUE),
-                            filt_list$dp, c(0, Inf), TRUE, TRUE)
+        v <- v & .calcSubFilter(getCountRead(object, target, TRUE),
+                                filt_list$dp, c(0, Inf), TRUE, TRUE)
     }
 
     ## Mean reference allele read count
     if(check_list$mean_ref){
-    v <- v & .calcSubFilter(getMeanReadRef(object, target,  TRUE),
-                            filt_list$mean_ref, c(0, Inf), TRUE, TRUE)
+        v <- v & .calcSubFilter(getMeanReadRef(object, target,  TRUE),
+                                filt_list$mean_ref, c(0, Inf), TRUE, TRUE)
     }
 
     ## Mean alternative allele read count
     if(check_list$mean_alt){
-    v <- v & .calcSubFilter(getMeanReadAlt(object, target, TRUE),
-                            filt_list$mean_alt, c(0, Inf), TRUE, TRUE)
+        v <- v & .calcSubFilter(getMeanReadAlt(object, target, TRUE),
+                                filt_list$mean_alt, c(0, Inf), TRUE, TRUE)
     }
 
     ## SD of reference allele read count
     if(check_list$sd_ref){
-    v <- v & .calcSubFilter(getSDReadRef(object, target,  TRUE),
-                            filt_list$sd_ref,  Inf,  FALSE, TRUE)
+        v <- v & .calcSubFilter(getSDReadRef(object, target,  TRUE),
+                                filt_list$sd_ref,  Inf,  FALSE, TRUE)
     }
 
     ## SD of alternative allele read count
     if(check_list$sd_alt){
-    v <- v & .calcSubFilter(getSDReadAlt(object, target, TRUE),
-                            filt_list$sd_alt,  Inf,  FALSE,  TRUE)
+        v <- v & .calcSubFilter(getSDReadAlt(object, target, TRUE),
+                                filt_list$sd_alt,  Inf,  FALSE,  TRUE)
     }
 
     return(v)
@@ -1865,7 +1873,7 @@ setMethod("gbsrGDS2CSV",
 
                       } else {
                           stop("Haplotype data for non-diploid population can",
-                          " not be exported in the R/QTL format")
+                               " not be exported in the R/QTL format")
                       }
                   } else {
                       geno <- apply(geno, c(2, 3), paste, collapse = "|")
