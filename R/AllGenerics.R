@@ -2301,8 +2301,6 @@ setGeneric("estGeno", function(object,
 #' type crosses performed at each generation of breeding and population sizes.
 #'
 #' @param object A [GbsrGenotypeData] object.
-#' @param crosstype A string to indicate the type of
-#' cross conducted with a given generation.
 #' @param mating An integer matrix to indicate mating combinations.
 #' The each element should match with IDs of
 #' parental samples which are 1 to N. see Details.
@@ -2454,7 +2452,7 @@ setGeneric("addScheme", function(object, crosstype, mating, ...)
 #' progenies (not parents) are available to assign to samples. If the last
 #' generation recorded in the [GbsrScheme] object has only one member ID that
 #' should be assigned to all samples in your population, you can omit assigning
-#' IDs by [asignScheme()]. In that case, [estGeno()] automatically assign the
+#' IDs by [assignScheme()]. In that case, [estGeno()] automatically assign the
 #' only one member ID to all samples.
 #'
 #' @export
