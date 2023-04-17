@@ -1,3 +1,6 @@
+Changes in version 1.2.15 (2023-4-18)
++ Fix error found in build reports of Bioconductor
+
 Changes in version 1.2.14 (2023-4-6)
 + Upon the request for multiple pedigree in the scheme, estGeno() supports a 
 population consisting of samples that belongs to different pedigrees. 
