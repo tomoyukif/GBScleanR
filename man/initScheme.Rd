@@ -23,9 +23,6 @@ parental samples which are 1 to N. see Details.}
 \item{...}{Unused.}
 
 \item{parents}{Indices of parental lines.}
-
-\item{crosstype}{A string to indicate the type of
-cross conducted with a given generation.}
 }
 \value{
 A \link{GbsrGenotypeData} object storing

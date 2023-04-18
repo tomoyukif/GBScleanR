@@ -126,7 +126,11 @@ setMethod("assignScheme",
 
 #'
 #' @param parents_name A vector of strings to indicate names
-#' of parental samples.
+#' of parental samples. This argument is used internally by showScheme()
+#' for the gbsrGenotypeData object.
+#' @param pedigree A integer vector indicating the member
+#' ID assignment to samples. This argument is used internally by 
+#' showScheme() for the gbsrGenotypeData object.
 #' @rdname showScheme
 #'
 setMethod("showScheme",

@@ -8,7 +8,7 @@ citEntry(
                         as.person("Motoyuki Ashikari")),
   journal  = "Genetics",
   year     = 2023,
-  doi = "10.1093/genetics/iyad055"
+  doi = "10.1093/genetics/iyad055",
   volume   = ,
   number   = ,
   pages    = ,
