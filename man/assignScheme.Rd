@@ -37,7 +37,7 @@ Member IDs can be shown by \code{\link[=showScheme]{showScheme()}}. Only the mem
 progenies (not parents) are available to assign to samples. If the last
 generation recorded in the \link{GbsrScheme} object has only one member ID that
 should be assigned to all samples in your population, you can omit assigning
-IDs by \code{\link[=asignScheme]{asignScheme()}}. In that case, \code{\link[=estGeno]{estGeno()}} automatically assign the
+IDs by \code{\link[=assignScheme]{assignScheme()}}. In that case, \code{\link[=estGeno]{estGeno()}} automatically assign the
 only one member ID to all samples.
 }
 \examples{
