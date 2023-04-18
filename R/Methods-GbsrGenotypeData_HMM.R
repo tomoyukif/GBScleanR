@@ -11,26 +11,47 @@ setMethod("estGeno",
                    optim,
                    iter,
                    n_threads,
+                   dummy_reads,
                    fix_bias,
                    fix_mismap) {
-              
+
               object <- .checkScheme(object)
+              parentless <- .checkParent(object)
+              if(parentless){
+                  message("Run in the parentless mode...")
+              }
               .setThreads(n_threads)
-              
+
               message("Start cleaning...")
-              
+
               .initGDS(object, het_parent)
               chr <- getChromosome(object)
               chr_levels <- unique(chr)
               for(chr_i in chr_levels) {
                   message("\nNow cleaning chr ", chr_i, "...")
-                  best_seq <- .cleanEachChr(object, chr_i, error_rate,
-                                            recomb_rate, call_threshold,
-                                            het_parent, optim, iter,
-                                            fix_bias, fix_mismap)
-                  
-                  sel <- list(mar = validMar(object, chr_i),
-                              sam = validSam(object, parents = TRUE))
+                  best_seq <- .cleanEachChr(object = object,
+                                            chr_i = chr_i,
+                                            error_rate = error_rate,
+                                            recomb_rate = recomb_rate,
+                                            call_threshold = call_threshold,
+                                            het_parent = het_parent,
+                                            optim = optim,
+                                            iter = iter,
+                                            fix_bias = fix_bias,
+                                            fix_mismap = fix_mismap,
+                                            parentless = parentless,
+                                            dummy_reads = dummy_reads)
+                  if(parentless){
+                      sel <- list(mar = validMar(object, chr_i),
+                                  sam = validSam(object))
+                      best_seq$best_hap <- best_seq$best_hap[, -(1:2), ]
+                      best_seq$best_geno <- best_seq$best_geno[, -(1:2), ]
+
+                  } else {
+                      sel <- list(mar = validMar(object, chr_i),
+                                  sam = validSam(object, parents = TRUE))
+                  }
+
                   .saveHap(object, best_seq$best_hap, sel)
                   .saveGeno(object, best_seq$best_geno, sel)
                   .savePGeno(object, best_seq$p_geno, sel)
@@ -55,7 +76,7 @@ setMethod("estGeno",
              "initScheme() and addScheme().",
              call. = FALSE)
     }
-    
+
     if(length(slot(scheme, "samples")) == 0){
         id <- unlist(tail(slot(scheme, "progenies"), 1))
         if(length(id) == 1){
@@ -63,7 +84,7 @@ setMethod("estGeno",
                     "\n",
                     "Assign ", id, " to all samples as member ID.")
             object <- assignScheme(object, rep(id, nsam(object)))
-            
+
         } else {
             stop("Member IDs were not assigned to samples.",
                  "\n",
@@ -74,13 +95,18 @@ setMethod("estGeno",
     return(object)
 }
 
+.checkParent <- function(object){
+    parents <- slot(slot(object, "scheme"), "parents")
+    return(all(is.na(parents)))
+}
+
 ################################################################################
 ################################################################################
 # Set the number of threads
 .setThreads <- function(n_threads){
     max_threads <- defaultNumThreads()
     if (is.null(n_threads)) { n_threads <- max_threads / 2 }
-    
+
     if (max_threads <= n_threads) {
         warning("You are going to use all threads",
                 "of your computer for the calculation.")
@@ -91,7 +117,7 @@ setMethod("estGeno",
         }
         n_threads <- max_threads
     }
-    
+
     message("Set the number of threads: ", n_threads)
     setThreadOptions(numThreads = n_threads)
 }
@@ -103,17 +129,17 @@ setMethod("estGeno",
     hap <- addfolder.gdsn(index.gdsn(object, "annotation/format"), "HAP",
                           replace = TRUE)
     add.gdsn(hap, "data", storage = "bit6", compress = "", replace = TRUE)
-    
+
     cgt <- addfolder.gdsn(index.gdsn(object, "annotation/format"), "CGT",
                           replace = TRUE)
     add.gdsn(cgt, "data", storage = "bit2", compress = "", replace = TRUE)
-    
+
     pgt <- add.gdsn(index.gdsn(object, "annotation/info"), "PGT",
                     storage = "bit2", compress = "", replace = TRUE)
-    
+
     adb <- add.gdsn(index.gdsn(object, "annotation/info"), "ADB",
                     storage = "single", compress = "", replace = TRUE)
-    
+
     mr <- add.gdsn(index.gdsn(object, "annotation/info"), "MR",
                    storage = "single", compress = "", replace = TRUE)
 }
@@ -126,7 +152,7 @@ setMethod("estGeno",
     output <- array(0, c(2, length(sel$sam), length(sel$mar)))
     i_sample <- c(which(slot(object, "sample")$parents != 0), which(validSam(object)))
     output[, sel$sam, sel$mar][, i_sample,] <- best_hap
-    
+
     hap_gdsn <- index.gdsn(object, "annotation/format/HAP/data")
     gdsn_dim <- objdesp.gdsn(hap_gdsn)$dim
     if (gdsn_dim[1] == 0) {
@@ -142,7 +168,7 @@ setMethod("estGeno",
     output <- array(3, c(2, length(sel$sam), length(sel$mar)))
     i_sample <- c(which(slot(object, "sample")$parents != 0), which(validSam(object)))
     output[, sel$sam, sel$mar][, i_sample,] <- best_geno
-    
+
     out_gdsn <-index.gdsn(object, "annotation/format/CGT/data")
     gdsn_dim <- objdesp.gdsn(out_gdsn)$dim
     if (gdsn_dim[1] == 0) {
@@ -198,15 +224,23 @@ setMethod("estGeno",
 ################################################################################
 ################################################################################
 # Prepare read count data
-.loadReadCounts <- function(object, chr_i) {
+.loadReadCounts <- function(object, chr_i, parentless, dummy_reads) {
     if (exist.gdsn(object, "annotation/format/FAD")) {
         ad_node <- "filt"
     } else {
         ad_node <- "raw"
     }
     reads <- getRead(object, ad_node, FALSE, TRUE, chr_i)
-    p_reads <- getRead(object, ad_node, "only", TRUE, chr_i)
-    
+
+    if(parentless){
+        ref_read <- matrix(c(dummy_reads, 0), nrow = 2, ncol = ncol(reads$ref))
+        alt_read <- matrix(c(0, dummy_reads), nrow = 2, ncol = ncol(reads$ref))
+        p_reads <- list(ref = ref_read, alt = alt_read)
+
+    } else {
+        p_reads <- getRead(object, ad_node, "only", TRUE, chr_i)
+    }
+
     return(list(p_ref = p_reads$ref,
                 p_alt = p_reads$alt,
                 ref = reads$ref,
@@ -251,7 +285,7 @@ setMethod("estGeno",
             gamet <- out[match(mt[[1]][, i], seq_len(0.5 * n_origin))]
             return(paste(gamet, collapse = "|"))
         })
-        
+
     } else {
         gamet <- mt[[1]]
         gamet[gamet != 1] <- gamet[gamet != 1] * 2 - 1
@@ -268,7 +302,7 @@ setMethod("estGeno",
             i_gamet <- gamet[match(mt[, i], pg)]
             return(paste(i_gamet, collapse = "|"))
         })
-        
+
     } else if(all(xtype != "pairing")){
         out <- sapply(gamet, function(x){
             return(paste(gamet, gamet, sep = "|"))
@@ -280,20 +314,20 @@ setMethod("estGeno",
 .getValidPat <- function(scheme, het_parent, n_origin) {
     Var1 <- Var2 <- NULL
     homo <- FALSE
-    
+
     target_pedigree <- sort(unique(slot(scheme, "samples")))
     mt <- slot(scheme, "mating")
     xtype <- slot(scheme, "crosstype")
     pg <- slot(scheme, "progenies")
-    
+
     pat <- NULL
-    
+
     # Pairing of founders
     pat <- c(pat, list(.initialPattern(mt = mt,
                                        xtype = xtype,
                                        het_parent = het_parent,
                                        n_origin = n_origin)))
-    
+
     # Progeny
     if(length(xtype) >= 2){
         for(i in 2:length(xtype)) {
@@ -319,14 +353,14 @@ setMethod("estGeno",
         tmp <- tmp[order(tmp[, 1], tmp[, 2]),]
         return(tmp)
     })
-    
+
     names(out) <- target_pedigree
     return(out)
 }
 
 .getPossibleHap <- function(hap_progeny, geno_parents, geno_pat){
     hap_vec <- as.vector(t(hap_progeny))
-    
+
     derived_geno <- apply(geno_parents, 1, function(x) {
         x <- x[hap_vec]
         x <- x[c(TRUE, FALSE)] + x[c(FALSE, TRUE)]
@@ -346,7 +380,7 @@ setMethod("estGeno",
     out <- as.vector(out)
     out <- rbind(out, out, out) == geno_pat
     out <- apply(out, 2, which)
-    
+
     return(out)
 }
 
@@ -357,19 +391,19 @@ setMethod("estGeno",
                          het_parent,
                          scheme) {
     alleles <- seq(0, length.out = n_alleles)
-    
+
     geno_pat <- .makeGenoPat(n_ploidy, alleles)
     geno_parents <- .makeGenoParents(n_parents, alleles, het_parent)
     n_origin <- n_parents * 2^het_parent
     hap_progeny <- .getValidPat(scheme, het_parent, n_origin)
-    
+
     possiblehap <- lapply(hap_progeny,
                           .getPossibleHap,
                           geno_parents = geno_parents,
                           geno_pat = geno_pat)
-    
+
     possiblegeno <- .getPossibleGeno(geno_parents, geno_pat)
-    
+
     n_p_pat <- nrow(geno_parents)
     n_hap_pat <- sapply(hap_progeny, nrow)
     return(list(alleles = alleles,
@@ -393,7 +427,7 @@ setMethod("estGeno",
                         return(head(x = x, n = 1))
                     })
     n_x <- length(xtype)
-    
+
     if(n_x > 1){
         for(j in seq(n_x, 2)){
             if(xtype[j] == "pairing"){
@@ -402,21 +436,21 @@ setMethod("estGeno",
                 prev_mating <- slot(scheme, "mating")[[j - 1]]
                 prev_max <- max(prev_mating)
                 j_matings <- prev_mating[, i_mating - prev_max]
-                
+
                 if(any(j_matings[, 1] %in% j_matings[, 2])){
                     xtype[j] <- "sibling"
                 }
             }
         }
     }
-    
+
     i_pairing <- grep("pairing", xtype)
     if (length(i_pairing) == 0) {
         n_pairing  <- 0
     } else {
         n_pairing <- max(i_pairing)
     }
-    
+
     if (n_pairing == 0) {
         jnum <- .initJnum(n_origin)
     } else {
@@ -426,7 +460,7 @@ setMethod("estGeno",
         }
         jnum <- .initJnum(n_origin, n_pairing + het_parent, next_crosstype)
     }
-    
+
     s_gen <- n_pairing + 1
     n_gen <- length(xtype)
     if(s_gen <= n_gen){
@@ -455,11 +489,11 @@ setMethod("estGeno",
         jnum$a12 <- 1
         if (next_crosstype == "selfing") {
             jnum$j1232 <- jnum$r <- n_pairing - 1
-            
+
         } else {
             r <- switch(n_pairing, "1" = 0, n_pairing - 2)
             jnum$j1232 <- jnum$k1232 <- jnum$r <- r
-            
+
             if (n_origin > 2) {
                 jnum$a123 <- 1
             } else {
@@ -494,7 +528,7 @@ setMethod("estGeno",
         next_j1122 <- 0.5 * prob_df$j1122 + 0.5 * prob_df$r
         next_k1122 <- 0
         next_j1222 <- 0.5 * (next_r - next_j1122 - next_j1232)
-        
+
     } else {
         next_a12 <- prob_df$b12
         next_b12 <- 0.5 * s * prob_df$a12 + (1 - s) * prob_df$b12
@@ -545,7 +579,7 @@ setMethod("estGeno",
                 return(!check1 & !check2)
             })
         })
-        
+
         ibd <- apply(hap_progeny_i,
                      1,
                      function(x) abs(length(unique(x)) - 2))
@@ -556,7 +590,7 @@ setMethod("estGeno",
         ibd[ibd == "11"] <- jrate$r11
         ibd[invalid_joint] <- 0
         q_mat <- as.numeric(ibd)
-        
+
         mar_dist <- diff(pos)
         rf <- mar_dist * 1e-6 * recomb_rate
         q_mat <- matrix(q_mat,
@@ -588,16 +622,21 @@ setMethod("estGeno",
 }
 
 .getParams <- function(object, chr_i, error_rate, recomb_rate,
-                       call_threshold, het_parent, fix_bias, fix_mismap) {
-    reads <- .loadReadCounts(object, chr_i)
-    parents <- getParents(object)
-    n_parents <- nrow(parents)
+                       call_threshold, het_parent, fix_bias, fix_mismap,
+                       parentless, dummy_reads) {
+    reads <- .loadReadCounts(object, chr_i, parentless, dummy_reads)
+    if(parentless){
+        n_parents <- 2
+    } else {
+        parents <- getParents(object)
+        n_parents <- nrow(parents)
+    }
     n_samples <- nsam(object)
     n_alleles <- 2
     n_ploidy <- attributes(slot(object, "sample"))$ploidy
     pat <- .makePattern(n_parents, n_ploidy, n_alleles, n_samples,
                         het_parent, slot(object, "scheme"))
-    
+
     pos <- getPosition(object, TRUE, chr_i)
     n_mar <- nmar(object, TRUE, chr_i)
     trans_prob <- .transitionProb(pat, pos, recomb_rate,
@@ -618,7 +657,7 @@ setMethod("estGeno",
         bias <- rep(fix_bias, n_mar)
         fix_bias <- TRUE
     }
-    
+
     return(list(n_parents = n_parents,
                 n_samples = n_samples,
                 n_alleles = n_alleles,
@@ -651,7 +690,7 @@ setMethod("estGeno",
     init_prob <- unlist(param_list$init_prob)
     possiblehap <- unlist(param_list$pat$possiblehap)
     pedigree <- match(param_list$pedigree, names(param_list$pat$hap_progeny))
-    
+
     out_list <- run_viterbi(p_ref = param_list$reads$p_ref,
                             p_alt = param_list$reads$p_alt,
                             ref = param_list$reads$ref,
@@ -672,7 +711,7 @@ setMethod("estGeno",
                             possiblegeno = param_list$pat$possiblegeno - 1,
                             p_geno_fix = param_list$p_geno_fix - 1,
                             ploidy = param_list$n_ploidy)
-    
+
     if (outprob) {
         prob <- run_fb(ref = param_list$reads$ref,
                        alt = param_list$reads$alt,
@@ -748,7 +787,7 @@ setMethod("estGeno",
     out_geno <- array(out_geno, c(param_list$n_ploidy,
                                   param_list$n_samples + param_list$n_parents,
                                   param_list$n_mar))
-    
+
     return(out_geno)
 }
 
@@ -758,11 +797,11 @@ setMethod("estGeno",
     half <- round(n_mar / 2)
     first <- (n_mar:1)[seq_len(half)]
     latter <- (half + 1):n_mar
-    
+
     best_seq <- rbind(best_pat_r$best_seq[first,],
                       best_pat_f$best_seq[latter,])
     p_geno <- c(best_pat_r$p_geno[first], best_pat_f$p_geno[latter])
-    
+
     prob <- c(best_pat_r$prob[, , first],
               best_pat_f$prob[, , latter])
     prob <- array(prob, dim(best_pat_f$prob))
@@ -840,14 +879,14 @@ setMethod("estGeno",
         n_alt <- colSums(est_het, na.rm = TRUE)
         alt_prop <- alt / n_alt
         bias <- ref_prop / (ref_prop + alt_prop)
-        
+
     } else {
         est_ref <- best_seq == 0
         ref[!est_ref] <- NA
         ref <- colSums(ref, na.rm = TRUE)
         n_ref <- colSums(est_ref, na.rm = TRUE)
         ref_prop <- ref / n_ref
-        
+
         est_alt <- best_seq == 2
         alt[!est_alt] <- NA
         alt <- colSums(alt, na.rm = TRUE)
@@ -872,7 +911,7 @@ setMethod("estGeno",
 .calcReadBias <- function(best_seq, param_list) {
     ref <- rbind(param_list$reads$p_ref, param_list$reads$ref)
     alt <- rbind(param_list$reads$p_alt, param_list$reads$alt)
-    
+
     bias1 <- .getBias(best_seq, 1, ref, alt)
     bias2 <- .getBias(best_seq, 2, ref, alt)
     bias_cor <- cor(bias1$bias, bias2$bias, "pair")
@@ -895,7 +934,7 @@ setMethod("estGeno",
                               n_m = param_list$n_mar)
     missing <- param_list$reads$ref == 0 & param_list$reads$alt == 0
     geno_call[missing] <- FALSE
-    
+
     i_samples <- -seq_len(param_list$n_parents)
     est <- best_seq[i_samples, ] == 0
     n_ref <- colSums(est, na.rm = TRUE)
@@ -903,14 +942,14 @@ setMethod("estGeno",
     alt[!est] <- FALSE
     alt[!geno_call] <- FALSE
     alt_mis <- colSums(alt, na.rm = TRUE) / n_ref
-    
+
     est <- best_seq[i_samples, ] == 2
     n_alt <- colSums(est, na.rm = TRUE)
     ref <- param_list$reads$ref > 0
     ref[!est] <- FALSE
     ref[!geno_call] <- FALSE
     ref_mis <- colSums(ref, na.rm = TRUE) / n_alt
-    
+
     return(cbind(alt_mis, ref_mis))
 }
 
@@ -925,7 +964,7 @@ setMethod("estGeno",
     nmar <- length(error_f$bias)
     bias <- colMeans(rbind(error_f$bias, error_r$bias), na.rm = TRUE)
     bias[is.na(bias)] <- 0.5
-    
+
     mismap <- cbind(colMeans(rbind(error_f$mismap[, 1],
                                    error_r$mismap[, 1]), na.rm = TRUE),
                     colMeans(rbind(error_f$mismap[, 2],
@@ -961,14 +1000,14 @@ setMethod("estGeno",
     cycle <- paste0("Cycle ", param_list$count, ": ")
     message("\r", cycle)
     message("\r", "Forward round of genotype estimation ...")
-    
+
     if (param_list$flip) {
         best_pat_r <- .getBestSeq(.flipParam(param_list), outprob)
         best_hap_r <- .pat2hap(best_pat_r, param_list)
         p_geno_r <- .parentPat2Geno(best_pat_r, param_list)
         best_geno_r <- .hap2geno(best_hap_r, p_geno_r, param_list)
         param_list$p_geno_fix <- best_pat_r$p_geno[param_list$n_mar]
-        
+
     } else {
         best_pat_f <- .getBestSeq(param_list, outprob)
         best_hap_f <- .pat2hap(best_pat_f, param_list)
@@ -976,7 +1015,7 @@ setMethod("estGeno",
         best_geno_f <- .hap2geno(best_hap_f, p_geno_f, param_list)
         param_list$p_geno_fix <- best_pat_f$p_geno[param_list$n_mar]
     }
-    
+
     message("\r", "Backward round of genotype estimation  ...")
     if (param_list$flip) {
         best_pat_f <- .getBestSeq(param_list, outprob)
@@ -984,7 +1023,7 @@ setMethod("estGeno",
         p_geno_f <- .parentPat2Geno(best_pat_f, param_list)
         best_geno_f <- .hap2geno(best_hap_f, p_geno_f, param_list)
         param_list$p_geno_fix <- -1
-        
+
     } else {
         best_pat_r <- .getBestSeq(.flipParam(param_list), outprob)
         best_hap_r <- .pat2hap(best_pat_r, param_list)
@@ -992,7 +1031,7 @@ setMethod("estGeno",
         best_geno_r <- .hap2geno(best_hap_r, p_geno_r, param_list)
         param_list$p_geno_fix <- -1
     }
-    
+
     if (!outprob) {
         message("\r",
                 "Paramter optimization ...")
@@ -1003,7 +1042,7 @@ setMethod("estGeno",
         error$bias[check] <- param_list$error_rate[1]
         check <- error$bias < param_list$error_rate[2]
         error$bias[check] <- param_list$error_rate[2]
-        
+
         if(!param_list$fix_bias){
             param_list$bias <- error$bias
         }
@@ -1011,7 +1050,7 @@ setMethod("estGeno",
             param_list$mismap <- error$mismap
         }
     }
-    
+
     if (outgeno) {
         message("\r", "Summarizing output ...")
         best_pat <- .halfJoint(best_pat_f, best_pat_r, param_list)
@@ -1025,7 +1064,7 @@ setMethod("estGeno",
         out_list$p_geno <- p_geno
         out_list$bias <- param_list$bias
         out_list$mismap <-param_list$mismap
-        
+
         message("\r", "Done!")
         return(out_list)
     } else {
@@ -1068,20 +1107,23 @@ setMethod("estGeno",
                           optim,
                           iter,
                           fix_bias,
-                          fix_mismap) {
+                          fix_mismap,
+                          parentless,
+                          dummy_reads) {
     param_list <- .getParams(object, chr_i, error_rate, recomb_rate,
-                             call_threshold, het_parent, fix_bias, fix_mismap)
+                             call_threshold, het_parent, fix_bias, fix_mismap,
+                             parentless, dummy_reads)
     param_list <- .checkPread(param_list)
-    
+
     if (iter == 1) { optim <- FALSE }
-    
+
     if (optim) {
         param_list <- .runCycle(param_list, FALSE, FALSE)
-        
+
         for (i in 2:iter) {
             if (i == iter) {
                 out_list <- .runCycle(param_list, TRUE, TRUE)
-                
+
             } else {
                 param_list <- .runCycle(param_list, FALSE, FALSE)
             }

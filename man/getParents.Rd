@@ -5,15 +5,20 @@
 \alias{getParents,GbsrGenotypeData-method}
 \title{Get parental sample information}
 \usage{
-getParents(object, bool = FALSE, ...)
+getParents(object, bool = FALSE, verbose = TRUE, ...)
 
-\S4method{getParents}{GbsrGenotypeData}(object, bool)
+\S4method{getParents}{GbsrGenotypeData}(object, bool, verbose = TRUE)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{bool}{If TRUE, the function returns a logical vector indicating
 which samples have been set as parents.}
+
+\item{verbose}{If FALSE, the function does not print a warning message even
+when parents were not specified in the given \link{GbsrGenotypeData} object. The
+setting \code{verbose = FALSE} is used in the other functions to call
+\code{getParents()} without evoking unnecessary warnings to users.}
 
 \item{...}{Unused.}
 }
