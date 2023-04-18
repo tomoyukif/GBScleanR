@@ -1,3 +1,7 @@
+Changes in version 1.3.16 (2023-4-18)
++ Add the parentless mode in which estGeno() assign the number of dummy reads 
+`dummy_reads` to dummy parents and estimate genotypes.
+
 Changes in version 1.2.15 (2023-4-18)
 + Fix error found in build reports of Bioconductor
 

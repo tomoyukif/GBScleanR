@@ -1102,9 +1102,9 @@ setGeneric("getSDReadAlt", function(object,
 #' @export
 #'
 setGeneric("getMedianReadRef", function(object,
-                                       target = "marker",
-                                       valid = TRUE,
-                                       ...)
+                                        target = "marker",
+                                        valid = TRUE,
+                                        ...)
     standardGeneric("getMedianReadRef"))
 
 
@@ -1144,9 +1144,9 @@ setGeneric("getMedianReadRef", function(object,
 #' @export
 #'
 setGeneric("getMedianReadAlt", function(object,
-                                       target = "marker",
-                                       valid = TRUE,
-                                       ...)
+                                        target = "marker",
+                                        valid = TRUE,
+                                        ...)
     standardGeneric("getMedianReadAlt"))
 
 
@@ -1235,6 +1235,10 @@ setGeneric("getMAC", function(object,
 #' @param object A [GbsrGenotypeData] object.
 #' @param bool If TRUE, the function returns a logical vector indicating
 #' which samples have been set as parents.
+#' @param verbose If FALSE, the function does not print a warning message even
+#' when parents were not specified in the given [GbsrGenotypeData] object. The
+#' setting `verbose = FALSE` is used in the other functions to call
+#' `getParents()` without evoking unnecessary warnings to users.
 #' @param ... Unused.
 #'
 #' @export
@@ -1261,7 +1265,8 @@ setGeneric("getMAC", function(object,
 #'
 #'
 setGeneric("getParents", function(object,
-                                  bool=FALSE,
+                                  bool = FALSE,
+                                  verbose = TRUE,
                                   ...)
     standardGeneric("getParents"))
 
@@ -1431,6 +1436,57 @@ setGeneric("setParents", function(object,
                                   bi = FALSE,
                                   ...)
     standardGeneric("setParents"))
+
+
+#' Set identifiers to indicates which samples are replicates.
+#'
+#' Not implemented yet.
+#' This function assign identifiers that indicates which samples are replicates
+#' those which should have the same genotypes at all markers.
+#'
+#' @param object A [GbsrGenotypeData] object.
+#' @param replicates A vector of integers, numbers, or characters to indicate
+#' grouping of samples as replicates.
+#' @param ... Unused.
+#'
+#' @details
+#' The replicates of samples specified in [setReplicates()] will have the same
+#' genotypes at all markers in the estimated genotypes obtained via [estGeno()].
+#' In the genotype estimation by [estGeno()], the Viterbi scores for each
+#' possible genotype (haplotype) at each marker for the replicates will be
+#' replaced with the average score for the replicates.
+#'
+#' @return A [GbsrGenotypeData] object with genotype count information.
+#'
+#' @examples
+#' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+#' gds <- loadGDS(gds_fn)
+#'
+#' gds <- setParents(gds, parents = c("Founder1", "Founder2"))
+#'
+#' # When your data has 100 samples, two replicates for each offspring,
+#' # and the samples are ordered as the 1st replicate followed by the 2nd
+#' # replicate, you can specify replicates as below.
+#' gds <-setReplicates(gds, replicates = rep(1:50, each = 2))
+#'
+#' # If you need to confirm the order of samples, run the following code.
+#' id <- getSamID(gds, valid = FALSE)
+#' valid_samples_including_parents <- validSam(gds, parents = TRUE)
+#' id[valid_samples_including_parents]
+#'
+#' # Replicate IDs should be set also to parents. Therefore, please include
+#'
+#' # Close the connection to the GDS file.
+#' closeGDS(gds)
+#'
+#' @export
+#'
+setGeneric("setReplicates", function(object,
+                                     replicates,
+                                     ...)
+    standardGeneric("setReplicates"))
+
 
 
 #' Count genotype calls and alleles per sample and per marker.
@@ -1670,7 +1726,7 @@ setGeneric("setCallFilter", function(object,
                                      ref_qtile = c(0, 1),
                                      alt_qtile = c(0, 1),
                                      ...)
-           standardGeneric("setCallFilter"))
+    standardGeneric("setCallFilter"))
 
 
 #' Filter out samples
@@ -1738,19 +1794,19 @@ setGeneric("setCallFilter", function(object,
 #' @export
 #'
 setGeneric("setSamFilter", function(object,
-                                     id = NA_character_,
-                                     missing = 1,
-                                     het = c(0, 1),
-                                     mac = 0,
-                                     maf = 0,
-                                     ad_ref = c(0, Inf),
-                                     ad_alt = c(0, Inf),
-                                     dp = c(0, Inf),
-                                     mean_ref = c(0, Inf),
-                                     mean_alt = c(0, Inf),
-                                     sd_ref = Inf,
-                                     sd_alt = Inf,
-                                     ...)
+                                    id = NA_character_,
+                                    missing = 1,
+                                    het = c(0, 1),
+                                    mac = 0,
+                                    maf = 0,
+                                    ad_ref = c(0, Inf),
+                                    ad_alt = c(0, Inf),
+                                    dp = c(0, Inf),
+                                    mean_ref = c(0, Inf),
+                                    mean_alt = c(0, Inf),
+                                    sd_ref = Inf,
+                                    sd_alt = Inf,
+                                    ...)
            standardGeneric("setSamFilter"))
 
 
@@ -2225,6 +2281,8 @@ setGeneric("gbsrGDS2CSV", function(object,
 #' @param n_threads An integer value to specify the number of
 #' threads used for the calculation. The default is 1 and if `n_threads = NULL`,
 #' automatically set half the number of available threads on the computer.
+#' @param dummy_reads An integer to specify the number of dummy reads to assign
+#' to dummy parental samples for genotype estimation. See details.
 #' @param fix_bias If not NULL, use a fixed bias value for genotype estimation.
 #' @param fix_mismap If not NULL, use a fixed mismapping rate for genotype estimation.
 #' @param ... Unused.
@@ -2236,6 +2294,24 @@ setGeneric("gbsrGDS2CSV", function(object,
 #' @importFrom RcppParallel setThreadOptions defaultNumThreads
 #' @importFrom expm expm.Higham08
 #' @importFrom stats cor
+#'
+#' @details If you have not set parental samples by [setParents()] and
+#' initialized the scheme object using [initScheme()], you have the scheme
+#' object without explicit parental information that is assumed to be a
+#' bi-parental population. In this case, [estGene()] will run in the parentless
+#' mode. In the parentless mode, the algorithm assumes that the given population
+#' is a bi-parental population. The number of reference allele reads and
+#' the number of alternative allele reads of the dummy parents are set based on
+#' `dummy_reads`, respectively. Dummy parent 1 has `dummy_reads` of the
+#' reference allele reads and 0 alternative allele reads at all markers, while
+#' dummy parent 2 has 0 and `dummy_reads` of reference and alternative allele
+#' reads at all markers. If the parents of your population were outbred lines or
+#' you cannot assume one of the parents has completely reference homozygotes and
+#' another has laternative homozygotes at all markers, Set `dummy_reads = 0` to
+#' leave uncertainty to estimate parental genotypes based on the offspring
+#' genotypes. Nevertheless, the parentless mode is less accurate and has more
+#' chance to get a genotype estimate randomly selected from the equally likely
+#' genotype estimates.
 #'
 #' @examples
 
@@ -2285,10 +2361,11 @@ setGeneric("estGeno", function(object,
                                optim = TRUE,
                                iter = 2,
                                n_threads = 1,
+                               dummy_reads = 5,
                                fix_bias = NULL,
                                fix_mismap = NULL,
                                ...)
-    standardGeneric("estGeno"))
+           standardGeneric("estGeno"))
 
 
 #' Build a [GbsrScheme] object

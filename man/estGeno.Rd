@@ -15,6 +15,7 @@ estGeno(
   optim = TRUE,
   iter = 2,
   n_threads = 1,
+  dummy_reads = 5,
   fix_bias = NULL,
   fix_mismap = NULL,
   ...
@@ -29,6 +30,7 @@ estGeno(
   optim,
   iter,
   n_threads,
+  dummy_reads,
   fix_bias,
   fix_mismap
 )
@@ -62,6 +64,9 @@ iterative parameter updates.}
 threads used for the calculation. The default is 1 and if \code{n_threads = NULL},
 automatically set half the number of available threads on the computer.}
 
+\item{dummy_reads}{An integer to specify the number of dummy reads to assign
+to dummy parental samples for genotype estimation. See details.}
+
 \item{fix_bias}{If not NULL, use a fixed bias value for genotype estimation.}
 
 \item{fix_mismap}{If not NULL, use a fixed mismapping rate for genotype estimation.}
@@ -76,6 +81,25 @@ A \link{GbsrGenotypeData} object in which the "estimated.haplotype",
 \description{
 Clean up genotype data by error correction based on
 genotype estimation using a hidden Markov model.
+}
+\details{
+If you have not set parental samples by \code{\link[=setParents]{setParents()}} and
+initialized the scheme object using \code{\link[=initScheme]{initScheme()}}, you have the scheme
+object without explicit parental information that is assumed to be a
+bi-parental population. In this case, \code{\link[=estGene]{estGene()}} will run in the parentless
+mode. In the parentless mode, the algorithm assumes that the given population
+is a bi-parental population. The number of reference allele reads and
+the number of alternative allele reads of the dummy parents are set based on
+\code{dummy_reads}, respectively. Dummy parent 1 has \code{dummy_reads} of the
+reference allele reads and 0 alternative allele reads at all markers, while
+dummy parent 2 has 0 and \code{dummy_reads} of reference and alternative allele
+reads at all markers. If the parents of your population were outbred lines or
+you cannot assume one of the parents has completely reference homozygotes and
+another has laternative homozygotes at all markers, Set \code{dummy_reads = 0} to
+leave uncertainty to estimate parental genotypes based on the offspring
+genotypes. Nevertheless, the parentless mode is less accurate and has more
+chance to get a genotype estimate randomly selected from the equally likely
+genotype estimates.
 }
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.

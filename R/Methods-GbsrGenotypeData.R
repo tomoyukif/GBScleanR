@@ -135,11 +135,7 @@ setMethod("validSam",
               } else {
                   out <- slot(object, "sample")[["valid"]]
                   if(parents){
-                      if(is.null(slot(object, "sample")[["parents"]])){
-                          stop("No parents info.", call. = FALSE)
-                      } else {
-                          out[slot(object, "sample")[["parents"]] != 0] <- TRUE
-                      }
+                      out[slot(object, "sample")[["parents"]] != 0] <- TRUE
                   }
               }
               return(out)
@@ -300,7 +296,12 @@ setMethod("getGenotype",
                            "corrected genotype data.")
                   }
 
-                  p_id <- getParents(object)
+                  p_id <- getParents(object, verbose = FALSE)
+                  if(is.null(p_id)){
+                      member_id <- c("dummy1", "dummy2")
+                  } else {
+                      member_id <- p_id$memberID
+                  }
                   ploidy <- attributes(slot(object, "sample"))$ploidy
 
                   filt_mar <- rep(TRUE, nmar(object, FALSE))
@@ -318,10 +319,10 @@ setMethod("getGenotype",
                   }
 
                   out <- readex.gdsn(index.gdsn(object, node),
-                                     list(rep(TRUE, nrow(p_id) * ploidy),
+                                     list(rep(TRUE, length(member_id) * ploidy),
                                           filt_mar))
 
-                  rownames(out) <- paste(rep(p_id$memberID, each=ploidy),
+                  rownames(out) <- paste(rep(member_id, each=ploidy),
                                          seq_len(ploidy), sep="_")
                   filters <- .makeFilter(object, parents = parents,
                                          valid = valid, chr = chr)
@@ -725,9 +726,11 @@ setMethod("getMAC",
 #' @rdname getParents
 setMethod("getParents",
           "GbsrGenotypeData",
-          function(object, bool){
+          function(object, bool, verbose = TRUE){
               if(is.null(slot(object, "sample")[["parents"]])){
-                  warning("No parents specified.", call. = FALSE)
+                  if(verbose){
+                      warning("No parents specified.", call. = FALSE)
+                  }
                   return(NULL)
               }
 
@@ -766,6 +769,9 @@ setMethod("isOpenGDS",
               }
               return(out)
           })
+
+###############################################################################
+# Setter for sample annotation information
 
 ## Set parental samples.
 #' @rdname setParents
@@ -807,6 +813,14 @@ setMethod("setParents",
               if(mono | bi){
                   object <- .pGenoFilt(object, nonmiss, mono, bi)
               }
+
+              scheme <- slot(object, "scheme")
+              if(length(slot(scheme, "parents")) != 0){
+                  parents <- getParents(object)
+                  slot(scheme, "parents") <- seq_len(n_parents)
+                  slot(object, "scheme") <- scheme
+              }
+
               return(object)
           })
 
@@ -833,6 +847,25 @@ setMethod("setParents",
     validMar(object) <- nonmiss & mono & bi & validMar(object)
     return(object)
 }
+
+## Set replicates
+#'
+setMethod("setReplicates",
+          "GbsrGenotypeData",
+          function(object, replicates){
+              target_samples <- validSam(object, parents = TRUE)
+              if(sum(target_samples) != length(replicates)){
+                  stop("\nsum(validSam(object, parents = TRUE)) is not equal to",
+                       " lenght(replicates). \n",
+                       "Replicate IDs should be set to all samples ",
+                       "including parents.", call. = FALSE)
+              }
+              replicates <- as.numeric(factor(replicates))
+              sample <- slot(object, "sample")
+              sample$replicates[target_samples] <- replicates
+              slot(object, "sample") <- sample
+              return(object)
+          })
 
 ###############################################################################
 ## Show the GbsrGenotypeData object.
@@ -1961,9 +1994,9 @@ setMethod("gbsrGDS2CSV",
 setMethod("initScheme",
           "GbsrGenotypeData",
           function(object, mating){
-              parents <- getParents(object)
+              parents <- getParents(object, verbose = FALSE)
               if(is.null(parents)){
-                  message("set no parents in the given data.")
+                  message("Set no parents in the given data.")
                   message("estGeno() will work in the parentless mode unless you specify parents by setParents().")
                   message("See the help of estGeno() for the details of the parentless mode.")
                   p_id <- c(1, 2)
@@ -2020,13 +2053,16 @@ setMethod("assignScheme",
 setMethod("showScheme",
           "GbsrGenotypeData",
           function(object){
-              parents <- getParents(object)
-              if(!is.null(parents)){
-                  sample <- slot(object, "sample")
-                  pedigree <- cbind(getSamID(object),
-                                    sample$pedigree[validSam(object)])
-                  showScheme(slot(object, "scheme"),
-                             parents$sampleID,
-                             pedigree)
+              parents <- getParents(object, verbose = FALSE)
+              if(is.null(parents)){
+                  parents_name <- c(NA, NA)
+              } else {
+                  parents_name <- parents$sampleID
               }
+              sample <- slot(object, "sample")
+              pedigree <- cbind(getSamID(object),
+                                sample$pedigree[validSam(object)])
+              showScheme(slot(object, "scheme"),
+                         parents_name,
+                         pedigree)
           })
