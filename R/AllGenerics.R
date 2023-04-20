@@ -1468,7 +1468,7 @@ setGeneric("setParents", function(object,
 #' # When your data has 100 samples, two replicates for each offspring,
 #' # and the samples are ordered as the 1st replicate followed by the 2nd
 #' # replicate, you can specify replicates as below.
-#' gds <-setReplicates(gds, replicates = rep(1:50, each = 2))
+#' gds <- setReplicates(gds, replicates = )
 #'
 #' # If you need to confirm the order of samples, run the following code.
 #' id <- getSamID(gds, valid = FALSE)
@@ -2298,7 +2298,7 @@ setGeneric("gbsrGDS2CSV", function(object,
 #' @details If you have not set parental samples by [setParents()] and
 #' initialized the scheme object using [initScheme()], you have the scheme
 #' object without explicit parental information that is assumed to be a
-#' bi-parental population. In this case, [estGene()] will run in the parentless
+#' bi-parental population. In this case, [estGeno()] will run in the parentless
 #' mode. In the parentless mode, the algorithm assumes that the given population
 #' is a bi-parental population. The number of reference allele reads and
 #' the number of alternative allele reads of the dummy parents are set based on

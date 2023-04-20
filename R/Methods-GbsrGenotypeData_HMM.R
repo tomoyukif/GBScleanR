@@ -44,8 +44,8 @@ setMethod("estGeno",
                   if(parentless){
                       sel <- list(mar = validMar(object, chr_i),
                                   sam = validSam(object))
-                      best_seq$best_hap <- best_seq$best_hap[, -(1:2), ]
-                      best_seq$best_geno <- best_seq$best_geno[, -(1:2), ]
+                      best_seq$best_hap <- best_seq$best_hap[, -seq_len(2), ]
+                      best_seq$best_geno <- best_seq$best_geno[, -seq_len(2), ]
 
                   } else {
                       sel <- list(mar = validMar(object, chr_i),
@@ -298,14 +298,17 @@ setMethod("estGeno",
 
 .progenyPattern <- function(gamet, mt, xtype, pg, het_parent){
     if(all(xtype == "pairing")){
-        out <- lapply(seq_along(xtype), function(i){
+        out <- vapply(X = seq_along(xtype),
+                      FUN.VALUE = list(1),
+                      FUN = function(i){
             i_gamet <- gamet[match(mt[, i], pg)]
-            return(paste(i_gamet, collapse = "|"))
+            return(list(paste(i_gamet, collapse = "|")))
         })
-
     } else if(all(xtype != "pairing")){
-        out <- sapply(gamet, function(x){
-            return(paste(gamet, gamet, sep = "|"))
+        out <- vapply(X = gamet,
+                      FUN.VALUE = list(1),
+                      FUN = function(x){
+            return(list(paste(x, x, sep = "|")))
         })
     }
     return(out)
@@ -330,7 +333,7 @@ setMethod("estGeno",
 
     # Progeny
     if(length(xtype) >= 2){
-        for(i in 2:length(xtype)) {
+        for(i in seq_along(xtype)[-1]) {
             gamet <- lapply(pat[[i - 1]], sub, pattern = "\\|", replacement = "/")
             pat <- c(pat,
                      list(.progenyPattern(gamet = gamet,
@@ -405,7 +408,7 @@ setMethod("estGeno",
     possiblegeno <- .getPossibleGeno(geno_parents, geno_pat)
 
     n_p_pat <- nrow(geno_parents)
-    n_hap_pat <- sapply(hap_progeny, nrow)
+    n_hap_pat <- vapply(X = hap_progeny, FUN = nrow, FUN.VALUE = numeric(1))
     return(list(alleles = alleles,
                 geno_pat = geno_pat,
                 geno_parents = geno_parents,
@@ -424,7 +427,7 @@ setMethod("estGeno",
     xtype <- vapply(X = slot(scheme, "crosstype"),
                     FUN.VALUE = character(length = 1),
                     FUN = function(x){
-                        return(head(x = x, n = 1))
+                        return(x[1])
                     })
     n_x <- length(xtype)
 

@@ -86,7 +86,7 @@ genotype estimation using a hidden Markov model.
 If you have not set parental samples by \code{\link[=setParents]{setParents()}} and
 initialized the scheme object using \code{\link[=initScheme]{initScheme()}}, you have the scheme
 object without explicit parental information that is assumed to be a
-bi-parental population. In this case, \code{\link[=estGene]{estGene()}} will run in the parentless
+bi-parental population. In this case, \code{\link[=estGeno]{estGeno()}} will run in the parentless
 mode. In the parentless mode, the algorithm assumes that the given population
 is a bi-parental population. The number of reference allele reads and
 the number of alternative allele reads of the dummy parents are set based on

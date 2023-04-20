@@ -372,7 +372,7 @@ setMethod("getGenotype",
                   } else {
                       sample_id <- .filtData(object, "sample.id", filters)
                       variant_id <- .filtData(object, "variant.id", filters)
-                      dimnames(out) <- list(phase = 1:2,
+                      dimnames(out) <- list(phase = seq_len(2),
                                             sample = sample_id,
                                             marker = variant_id)
                   }
@@ -849,16 +849,16 @@ setMethod("setParents",
 }
 
 ## Set replicates
-#'
+#' @rdname setReplicates
 setMethod("setReplicates",
           "GbsrGenotypeData",
           function(object, replicates){
-              target_samples <- validSam(object, parents = TRUE)
+              target_samples <- validSam(object)
               if(sum(target_samples) != length(replicates)){
-                  stop("\nsum(validSam(object, parents = TRUE)) is not equal to",
+                  stop("\nsum(validSam(object)) is not equal to",
                        " lenght(replicates). \n",
-                       "Replicate IDs should be set to all samples ",
-                       "including parents.", call. = FALSE)
+                       "Replicate IDs should be set to all valid samples.",
+                       call. = FALSE)
               }
               replicates <- as.numeric(factor(replicates))
               sample <- slot(object, "sample")
