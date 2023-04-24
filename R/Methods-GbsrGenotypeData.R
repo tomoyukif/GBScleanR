@@ -778,7 +778,7 @@ setMethod("isOpenGDS",
 #' @importFrom methods slot<-
 setMethod("setParents",
           "GbsrGenotypeData",
-          function(object, parents, nonmiss, mono, bi){
+          function(object, parents, nonmiss, mono, bi, replicates){
               if(length(parents) == 0 | any(is.na(parents))){
                   stop('Specify valid sample names as parents.', call. = FALSE)
               }
@@ -797,8 +797,18 @@ setMethod("setParents",
 
               n_parents <- length(p_index)
               p_vec <- integer(nsam(object, FALSE))
+              p_id <- as.numeric(factor(x = replicates))
+
+              ################################################
+              if(any(duplicated(replicates))){
+                  stop("Setting parental samples with replicates",
+                       "has not yet been implemented.",
+                       "Wait for the next update.")
+              }
+              ################################################
+
               for (i in seq_len(n_parents)){
-                  p_vec[p_index[i]] <- i
+                  p_vec[p_index[i]] <- p_id[i]
               }
 
               valid_sam <- validSam(object, FALSE)
@@ -853,6 +863,7 @@ setMethod("setParents",
 setMethod("setReplicates",
           "GbsrGenotypeData",
           function(object, replicates){
+
               target_samples <- validSam(object)
               if(sum(target_samples) != length(replicates)){
                   stop("\nsum(validSam(object)) is not equal to",

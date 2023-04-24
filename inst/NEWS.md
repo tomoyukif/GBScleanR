@@ -1,3 +1,6 @@
+Changes in version 1.3.18 (2023-4-20)
++ Fix a bug in an example code in a manual page.
+
 Changes in version 1.3.17 (2023-4-20)
 + Edit some codes to fit Bioconductor's requirements.
 

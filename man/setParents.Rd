@@ -6,9 +6,17 @@
 \title{Set labels to samples which should be recognized as
 parents of the population to be subjected to error correction.}
 \usage{
-setParents(object, parents, nonmiss = FALSE, mono = FALSE, bi = FALSE, ...)
+setParents(
+  object,
+  parents,
+  nonmiss = FALSE,
+  mono = FALSE,
+  bi = FALSE,
+  replicates = NULL,
+  ...
+)
 
-\S4method{setParents}{GbsrGenotypeData}(object, parents, nonmiss, mono, bi)
+\S4method{setParents}{GbsrGenotypeData}(object, parents, nonmiss, mono, bi, replicates)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
@@ -27,6 +35,9 @@ are not monomorphic in parents.}
 are not biallelic between parents.}
 
 \item{...}{Unused.}
+
+\item{replivates}{A vector of integers, numbers, or characters to indicate
+grouping of parental samples as replicates.}
 }
 \value{
 A \link{GbsrGenotypeData} object with parents information.
@@ -41,7 +52,12 @@ samples and their parents separately to estimate most probable
 genotype calls of them. Therefore, you must specify proper samples
 as parents via this function. If you would like to remove SNP markers
 which are not biallelic and/or not monomorphic in each parent,
-set \code{mono = TRUE} and \code{bi = TRUE}.
+set \code{mono = TRUE} and \code{bi = TRUE}. The replicates of parental samples
+specified to the \code{repliate} argument of \code{\link[=setParents]{setParents()}} will have the same
+genotypes at all markers in the estimated genotypes obtained via \code{\link[=estGeno]{estGeno()}}.
+In the genotype estimation by \code{\link[=estGeno]{estGeno()}}, the Viterbi scores for each
+possible genotype at each marker for the replicates will be replaced with
+the average score for the replicates.
 }
 \examples{
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.

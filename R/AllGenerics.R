@@ -1379,6 +1379,8 @@ setGeneric("closeGDS", function(object, save_filter = FALSE, verbose = TRUE, ...
 #' are not monomorphic in parents.
 #' @param bi A logical value whether to filter out marekrs which
 #' are not biallelic between parents.
+#' @param replivates A vector of integers, numbers, or characters to indicate
+#' grouping of parental samples as replicates.
 #' @param ... Unused.
 #'
 #' @details
@@ -1387,7 +1389,12 @@ setGeneric("closeGDS", function(object, save_filter = FALSE, verbose = TRUE, ...
 #' genotype calls of them. Therefore, you must specify proper samples
 #' as parents via this function. If you would like to remove SNP markers
 #' which are not biallelic and/or not monomorphic in each parent,
-#' set `mono = TRUE` and `bi = TRUE`.
+#' set `mono = TRUE` and `bi = TRUE`. The replicates of parental samples
+#' specified to the `repliate` argument of [setParents()] will have the same
+#' genotypes at all markers in the estimated genotypes obtained via [estGeno()].
+#' In the genotype estimation by [estGeno()], the Viterbi scores for each
+#' possible genotype at each marker for the replicates will be replaced with
+#' the average score for the replicates.
 #'
 #' @return A [GbsrGenotypeData] object with parents information.
 #'
@@ -1434,6 +1441,7 @@ setGeneric("setParents", function(object,
                                   nonmiss = FALSE,
                                   mono = FALSE,
                                   bi = FALSE,
+                                  replicates = NULL,
                                   ...)
     standardGeneric("setParents"))
 
@@ -1468,12 +1476,10 @@ setGeneric("setParents", function(object,
 #' # When your data has 100 samples, two replicates for each offspring,
 #' # and the samples are ordered as the 1st replicate followed by the 2nd
 #' # replicate, you can specify replicates as below.
-#' gds <- setReplicates(gds, replicates = )
+#' # gds <- setReplicates(gds, replicates = rep(1:50, each = 2))
 #'
 #' # If you need to confirm the order of samples, run the following code.
-#' id <- getSamID(gds, valid = FALSE)
-#' valid_samples_including_parents <- validSam(gds, parents = TRUE)
-#' id[valid_samples_including_parents]
+#' # id <- getSamID(gds)
 #'
 #' # Replicate IDs should be set also to parents. Therefore, please include
 #'

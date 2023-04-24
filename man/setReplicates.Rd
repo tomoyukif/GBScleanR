@@ -42,12 +42,10 @@ gds <- setParents(gds, parents = c("Founder1", "Founder2"))
 # When your data has 100 samples, two replicates for each offspring,
 # and the samples are ordered as the 1st replicate followed by the 2nd
 # replicate, you can specify replicates as below.
-gds <- setReplicates(gds, replicates = )
+# gds <- setReplicates(gds, replicates = rep(1:50, each = 2))
 
 # If you need to confirm the order of samples, run the following code.
-id <- getSamID(gds, valid = FALSE)
-valid_samples_including_parents <- validSam(gds, parents = TRUE)
-id[valid_samples_including_parents]
+# id <- getSamID(gds)
 
 # Replicate IDs should be set also to parents. Therefore, please include
 
