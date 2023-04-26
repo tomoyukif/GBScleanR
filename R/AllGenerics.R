@@ -1379,7 +1379,7 @@ setGeneric("closeGDS", function(object, save_filter = FALSE, verbose = TRUE, ...
 #' are not monomorphic in parents.
 #' @param bi A logical value whether to filter out marekrs which
 #' are not biallelic between parents.
-#' @param replivates A vector of integers, numbers, or characters to indicate
+#' @param replicates A vector of integers, numbers, or characters to indicate
 #' grouping of parental samples as replicates.
 #' @param ... Unused.
 #'

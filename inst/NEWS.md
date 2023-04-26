@@ -1,3 +1,6 @@
+Changes in version 1.3.19 (2023-4-26)
++ Fix a bug in the vignette.
+
 Changes in version 1.3.18 (2023-4-20)
 + Fix a bug in an example code in a manual page.
 
