@@ -797,13 +797,15 @@ setMethod("setParents",
 
               n_parents <- length(p_index)
               p_vec <- integer(nsam(object, FALSE))
-              p_id <- as.numeric(factor(x = replicates))
 
               ################################################
-              if(any(duplicated(replicates))){
+              if(!is.null(replicates)){
                   stop("Setting parental samples with replicates",
                        "has not yet been implemented.",
                        "Wait for the next update.")
+                  p_id <- as.numeric(factor(x = replicates))
+              } else {
+                  p_id <- seq_len(n_parents)
               }
               ################################################
 
