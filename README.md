@@ -55,4 +55,6 @@ browseVignettes(package = "GBScleanR")
 ```
 
 ## Citations
-In preparation for publication...
+"Furuta, T., Yamamoto, T., Ashikari, M., GBScleanR: robust genotyping error 
+correction using a hidden Markov model with error pattern recognition. 
+Genetics 2023; doi: [10.1093/genetics/iyad055](https://doi.org/10.1093/genetics/iyad055)
