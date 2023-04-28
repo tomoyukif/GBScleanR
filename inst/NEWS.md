@@ -1,3 +1,6 @@
+Changes in version 1.4.2 (2023-4-26)
++ Fix a typo in a man page.
+
 Changes in version 1.4.1 (2023-4-26)
 + Fix a bug in the vignette.
 

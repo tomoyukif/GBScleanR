@@ -34,10 +34,10 @@ are not monomorphic in parents.}
 \item{bi}{A logical value whether to filter out marekrs which
 are not biallelic between parents.}
 
-\item{...}{Unused.}
-
-\item{replivates}{A vector of integers, numbers, or characters to indicate
+\item{replicates}{A vector of integers, numbers, or characters to indicate
 grouping of parental samples as replicates.}
+
+\item{...}{Unused.}
 }
 \value{
 A \link{GbsrGenotypeData} object with parents information.
