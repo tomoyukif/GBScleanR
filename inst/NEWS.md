@@ -1,4 +1,4 @@
-Changes in version 1.5.2 (2023-5-11)
+Changes in version 1.5.3 (2023-5-11)
 + Fix a bug in setInfoFilter() in which markers having no value for specified INFO
 + had been coded to be filtered out but now those can be retained.
 
