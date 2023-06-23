@@ -10,7 +10,7 @@ using namespace std;
 IntegerVector count_geno(IntegerMatrix geno){
     IntegerVector out(7);
     int g;
-    for(R_xlen_t i = 0; i < geno.ncol(); i ++){
+    for(R_xlen_t i = 0; i < geno.ncol(); i++){
         if(geno(0, i) == 3){
             g = 3;
         } else {

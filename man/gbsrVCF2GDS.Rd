@@ -4,7 +4,15 @@
 \alias{gbsrVCF2GDS}
 \title{Convert a VCF file to a GDS file}
 \usage{
-gbsrVCF2GDS(vcf_fn, out_fn, gt = "GT", force = FALSE, verbose = TRUE)
+gbsrVCF2GDS(
+  vcf_fn,
+  out_fn,
+  gt = "GT",
+  info.import = NULL,
+  fmt.import = NULL,
+  force = FALSE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{vcf_fn}{A string to indicate path to an input VCF file.}
@@ -13,6 +21,14 @@ gbsrVCF2GDS(vcf_fn, out_fn, gt = "GT", force = FALSE, verbose = TRUE)
 
 \item{gt}{the ID for genotypic data in the FORMAT column; "GT" by default,
 VCFv4.0.}
+
+\item{info.import}{characters, the variable name(s) in the INFO field for
+import; or NULL for all variables. If you specify \code{character(0)}, nothing
+will be retrieved from the INFO filed.}
+
+\item{fmt.import}{characters, the variable name(s) in the FORMAT field for
+import; or NULL for all variables. If you specify \code{character(0)}, nothing
+will be retrieved from the FORMAT filed, except for GT.}
 
 \item{force}{A logical value to overwrite a GDS file even if
 the file specified in "out_fn" exists.}

@@ -15,6 +15,12 @@ print.GbsrGenotypeData <- function(x) {
 #' @param out_fn A string to indicate path to an output GDS file.
 #' @param gt the ID for genotypic data in the FORMAT column; "GT" by default,
 #'  VCFv4.0.
+#' @param info.import characters, the variable name(s) in the INFO field for
+#' import; or NULL for all variables. If you specify `character(0)`, nothing
+#' will be retrieved from the INFO filed.
+#' @param fmt.import characters, the variable name(s) in the FORMAT field for
+#' import; or NULL for all variables. If you specify `character(0)`, nothing
+#' will be retrieved from the FORMAT filed, except for GT.
 #' @param force A logical value to overwrite a GDS file even if
 #' the file specified in "out_fn" exists.
 #' @param verbose if TRUE, show information.
@@ -45,6 +51,8 @@ print.GbsrGenotypeData <- function(x) {
 gbsrVCF2GDS <- function(vcf_fn,
                         out_fn,
                         gt = "GT",
+                        info.import = NULL,
+                        fmt.import = NULL,
                         force = FALSE,
                         verbose = TRUE) {
     if (file.exists(out_fn)) {
@@ -69,7 +77,10 @@ gbsrVCF2GDS <- function(vcf_fn,
     stropt <- seqStorageOption(mode = c ('annotation/format/AD' = "int64"))
     out_fn <- seqVCF2GDS(vcf_fn, out_fn, ignore.chr.prefix = "",
                          storage.option = stropt,
-                         genotype.var.name = gt, verbose = verbose)
+                         info.import = info.import,
+                         fmt.import = fmt.import,
+                         genotype.var.name = gt,
+                         verbose = verbose)
     gds <- seqOpen(out_fn)
     n_allele <- seqNumAllele(gds)
     if(any(n_allele != 2)){

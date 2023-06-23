@@ -1641,7 +1641,7 @@ setMethod("setInfoFilter",
     if(filt_list$mq != 0){
         if("MQ" %in% info_gdsn){
             v <- v & .calcSubFilter(getInfo(object, "MQ"),
-                                   filt_list$mq, 0, TRUE, TRUE)
+                                    filt_list$mq, 0, TRUE, TRUE)
         } else {
             warning("Filtering on MQ was specified but no MQ in the GDS.")
         }
@@ -1651,7 +1651,7 @@ setMethod("setInfoFilter",
     if(filt_list$fs != Inf){
         if("FS" %in% info_gdsn){
             v <- v & .calcSubFilter(getInfo(object, "FS"),
-                                   filt_list$fs, Inf, FALSE, TRUE)
+                                    filt_list$fs, Inf, FALSE, TRUE)
         } else {
             warning("Filtering on FS was specified but no FS in the GDS.")
         }
@@ -1661,7 +1661,7 @@ setMethod("setInfoFilter",
     if(filt_list$qd != 0){
         if("QD" %in% info_gdsn){
             v <- v & .calcSubFilter(getInfo(object, "QD"),
-                                   filt_list$qd, 0, TRUE, TRUE)
+                                    filt_list$qd, 0, TRUE, TRUE)
         } else {
             warning("Filtering on QD was specified but no QD in the GDS.")
         }
@@ -1671,7 +1671,7 @@ setMethod("setInfoFilter",
     if(filt_list$sor != Inf){
         if("SOR" %in% info_gdsn){
             v <- v & .calcSubFilter(getInfo(object, "SOR"),
-                                   filt_list$sor, Inf, FALSE, TRUE)
+                                    filt_list$sor, Inf, FALSE, TRUE)
         } else {
             warning("Filtering on SOR was specified but no SOR in the GDS.")
         }
@@ -1681,7 +1681,7 @@ setMethod("setInfoFilter",
     if(any(filt_list$mqranksum != c(-Inf, Inf))){
         if("MQRankSum" %in% info_gdsn){
             v <- v & .calcSubFilter(getInfo(object, "MQRankSum"),
-                                   filt_list$mqranksum, c(-Inf, Inf), TRUE, TRUE)
+                                    filt_list$mqranksum, c(-Inf, Inf), TRUE, TRUE)
         } else {
             warning("Filtering on MQRankSum was specified but no MQRankSum in the GDS.")
         }
@@ -1691,8 +1691,8 @@ setMethod("setInfoFilter",
     if(any(filt_list$readposranksum != c(-Inf, Inf))){
         if("ReadPosRankSum" %in% info_gdsn){
             v <- v & .calcSubFilter(getInfo(object,
-                                           "ReadPosRankSum"),
-                                   filt_list$readposranksum, c(-Inf, Inf), TRUE, TRUE)
+                                            "ReadPosRankSum"),
+                                    filt_list$readposranksum, c(-Inf, Inf), TRUE, TRUE)
         } else {
             warning("Filtering on ReadPosRankSum was specified but no ReadPosRankSum in the GDS.")
         }
@@ -1702,7 +1702,7 @@ setMethod("setInfoFilter",
     if(any(filt_list$baseqranksum != c(-Inf, Inf))){
         if("BaseQRankSum" %in% info_gdsn){
             v <- v & .calcSubFilter(getInfo(object, "BaseQRankSum"),
-                                   filt_list$baseqranksum, c(-Inf, Inf), TRUE, TRUE)
+                                    filt_list$baseqranksum, c(-Inf, Inf), TRUE, TRUE)
         } else {
             warning("Filtering on BaseQRankSum was specified but no BaseQRankSum in the GDS.")
         }
@@ -1768,7 +1768,19 @@ setMethod("gbsrGDS2VCF",
           "GbsrGenotypeData",
           function(object,
                    out_fn,
+                   node,
+                   info.export,
+                   fmt.export,
                    parents){
+              node <- match.arg(node, c("raw", "cor"))
+              if(node == "cor"){
+                  if(!exist.gdsn(object, "annotation/format/CGT")){
+                      stop('`node = "cor"` was specified, but no corrected',
+                           ' genotype data.',
+                           'Run estGeno() to get corrected genotype data.')
+                  }
+              }
+
               if(is.null(slot(object, "sample")[["parents"]])){
                   parents <- FALSE
                   message("No parents info.")
@@ -1777,16 +1789,24 @@ setMethod("gbsrGDS2VCF",
               mar_sel <- validMar(object)
 
               check <- .checkNodes(object)
-              if(any(check)){
-                  out_gds <- .modGDS(object, check)
-              } else {
-                  out_gds <- object
+              tmp_gds <- tempfile("tmp",tempdir(), ".gds")
+              file.copy(object$filename, tmp_gds, overwrite = TRUE)
+              tmpgds <- seqOpen(tmp_gds, FALSE)
+              if(node == "cor"){
+                  .replaceGT(tmpgds)
+                  check[3] <- FALSE
+                  fmt.export <- fmt.export[fmt.export != "CGT"]
               }
+              .modGDS(tmpgds, check)
 
-              seqSetFilter(out_gds, mar_sel, sam_sel, action = "push+intersect",
+              seqSetFilter(tmpgds, mar_sel, sam_sel, action = "push+intersect",
                            verbose = FALSE)
-              seqGDS2VCF(out_gds, out_fn, verbose = FALSE)
-              seqSetFilter(out_gds, action = "pop", verbose = FALSE)
+              seqGDS2VCF(gdsfile = tmpgds,
+                         vcf.fn = out_fn,
+                         info.var = info.export,
+                         fmt.var = fmt.export,
+                         verbose = FALSE)
+              seqClose(tmpgds)
               return(out_fn)
           })
 
@@ -1795,23 +1815,18 @@ setMethod("gbsrGDS2VCF",
                exist.gdsn(object, "annotation/format/HAP"),
                exist.gdsn(object, "annotation/format/CGT"),
                exist.gdsn(object, "annotation/format/FGT"),
-               exist.gdsn(object, "annotation/format/ADB"),
-               exist.gdsn(object, "annotation/format/MR"))
+               exist.gdsn(object, "annotation/info/ADB"),
+               exist.gdsn(object, "annotation/info/MR"))
     return(check)
 }
 
 #' @importFrom gdsfmt moveto.gdsn setdim.gdsn append.gdsn
 .modGDS <- function(object, check){
-    if(any(check)){
-        tmp_gds <- tempfile("tmp",tempdir(), ".gds")
-        file.copy(object$filename, tmp_gds, overwrite = TRUE)
-        tmpgds <- seqOpen(tmp_gds, FALSE)
-    }
     if(check[1]){
-        data_gdsn <- index.gdsn(tmpgds, "annotation/info/PGT")
+        data_gdsn <- index.gdsn(object, "annotation/info/PGT")
         obj <- objdesp.gdsn(data_gdsn)
         if(length(obj$dim) == 2){
-            tmp_gdsn <- add.gdsn(index.gdsn(tmpgds, "annotation/info"), "tmp",
+            tmp_gdsn <- add.gdsn(index.gdsn(object, "annotation/info"), "tmp",
                                  storage = "string", replace = TRUE)
             apply.gdsn(data_gdsn, 2, as.is = "gdsnode", target.node = tmp_gdsn,
                        FUN = function(x){
@@ -1819,7 +1834,7 @@ setMethod("gbsrGDS2VCF",
                            return(paste(x, collapse = "|"))
                        })
             moveto.gdsn(tmp_gdsn, data_gdsn, "replace+rename")
-            fld_gdsn <- index.gdsn(tmpgds, "annotation/info/PGT")
+            fld_gdsn <- index.gdsn(object, "annotation/info/PGT")
             put.attr.gdsn(fld_gdsn, "Number", "1")
             put.attr.gdsn(fld_gdsn, "Type", "String")
             put.attr.gdsn(fld_gdsn, "Description",
@@ -1827,10 +1842,10 @@ setMethod("gbsrGDS2VCF",
         }
     }
     if(check[2]){
-        data_gdsn <- index.gdsn(tmpgds, "annotation/format/HAP/data")
+        data_gdsn <- index.gdsn(object, "annotation/format/HAP/data")
         obj <- objdesp.gdsn(data_gdsn)
         if(length(obj$dim) == 3){
-            tmp_gdsn <- add.gdsn(index.gdsn(tmpgds, "annotation/format/HAP"), "tmp",
+            tmp_gdsn <- add.gdsn(index.gdsn(object, "annotation/format/HAP"), "tmp",
                                  storage = "string", replace = TRUE)
             apply.gdsn(data_gdsn, 3, as.is = "gdsnode", target.node = tmp_gdsn,
                        FUN = function(x){
@@ -1839,7 +1854,7 @@ setMethod("gbsrGDS2VCF",
                        })
             setdim.gdsn(tmp_gdsn, obj$dim[-1])
             moveto.gdsn(tmp_gdsn, data_gdsn, "replace+rename")
-            fld_gdsn <- index.gdsn(tmpgds, "annotation/format/HAP")
+            fld_gdsn <- index.gdsn(object, "annotation/format/HAP")
             put.attr.gdsn(fld_gdsn, "Number", "1")
             put.attr.gdsn(fld_gdsn, "Type", "String")
             put.attr.gdsn(fld_gdsn, "Description",
@@ -1847,10 +1862,10 @@ setMethod("gbsrGDS2VCF",
         }
     }
     if(check[3]){
-        data_gdsn <- index.gdsn(tmpgds, "annotation/format/CGT/data")
+        data_gdsn <- index.gdsn(object, "annotation/format/CGT/data")
         obj <- objdesp.gdsn(data_gdsn)
         if(length(obj$dim) == 3){
-            tmp_gdsn <- add.gdsn(index.gdsn(tmpgds, "annotation/format/CGT"), "tmp",
+            tmp_gdsn <- add.gdsn(index.gdsn(object, "annotation/format/CGT"), "tmp",
                                  storage = "string", replace = TRUE)
             apply.gdsn(data_gdsn, 3, as.is = "gdsnode", target.node = tmp_gdsn,
                        FUN = function(x){
@@ -1859,7 +1874,7 @@ setMethod("gbsrGDS2VCF",
                        })
             setdim.gdsn(tmp_gdsn, obj$dim[-1])
             moveto.gdsn(tmp_gdsn, data_gdsn, "replace+rename")
-            fld_gdsn <- index.gdsn(tmpgds, "annotation/format/CGT")
+            fld_gdsn <- index.gdsn(object, "annotation/format/CGT")
             put.attr.gdsn(fld_gdsn, "Number", "1")
             put.attr.gdsn(fld_gdsn, "Type", "String")
             put.attr.gdsn(fld_gdsn, "Description",
@@ -1867,10 +1882,10 @@ setMethod("gbsrGDS2VCF",
         }
     }
     if(check[4]){
-        data_gdsn <- index.gdsn(tmpgds, "annotation/format/FGT/data")
+        data_gdsn <- index.gdsn(object, "annotation/format/FGT/data")
         obj <- objdesp.gdsn(data_gdsn)
         if(length(obj$dim) == 3){
-            tmp_gdsn <- add.gdsn(index.gdsn(tmpgds, "annotation/format/FGT"), "tmp",
+            tmp_gdsn <- add.gdsn(index.gdsn(object, "annotation/format/FGT"), "tmp",
                                  storage = "string", replace = TRUE)
             apply.gdsn(data_gdsn, 3, as.is = "gdsnode", target.node = tmp_gdsn,
                        FUN = function(x){
@@ -1879,7 +1894,7 @@ setMethod("gbsrGDS2VCF",
                        })
             setdim.gdsn(tmp_gdsn, obj$dim[-1])
             moveto.gdsn(tmp_gdsn, data_gdsn, "replace+rename")
-            fld_gdsn <- index.gdsn(tmpgds, "annotation/format/FGT")
+            fld_gdsn <- index.gdsn(object, "annotation/format/FGT")
             put.attr.gdsn(fld_gdsn, "Number", "1")
             put.attr.gdsn(fld_gdsn, "Type", "String")
             put.attr.gdsn(fld_gdsn, "Description",
@@ -1888,21 +1903,32 @@ setMethod("gbsrGDS2VCF",
     }
 
     if(check[5]){
-        data_gdsn <- index.gdsn(tmpgds, "annotation/info/ADB")
+        data_gdsn <- index.gdsn(object, "annotation/info/ADB")
         put.attr.gdsn(data_gdsn, "Number", "1")
-        put.attr.gdsn(data_gdsn, "Type", "String")
+        put.attr.gdsn(data_gdsn, "Type", "Float")
         put.attr.gdsn(data_gdsn, "Description",
                       "Estimated allele read bias by GBScleanR")
     }
 
     if(check[6]){
-        data_gdsn <- index.gdsn(tmpgds, "annotation/info/MR")
-        put.attr.gdsn(data_gdsn, "Number", "1")
-        put.attr.gdsn(data_gdsn, "Type", "String")
+        data_gdsn <- index.gdsn(object, "annotation/info/MR")
+        put.attr.gdsn(data_gdsn, "Number", "2")
+        put.attr.gdsn(data_gdsn, "Type", "Float")
         put.attr.gdsn(data_gdsn, "Description",
                       "Estimated mismapping rate by GBScleanR")
     }
-    return(tmpgds)
+}
+
+.replaceGT <- function(object){
+    delete.gdsn(index.gdsn(object, "genotype/data"))
+    copyto.gdsn(index.gdsn(object, "genotype"),
+                index.gdsn(object, "annotation/format/CGT/data"), "data")
+    delete.gdsn(index.gdsn(object, "genotype/~data"))
+    copyto.gdsn(index.gdsn(object, "genotype"),
+                index.gdsn(object, "annotation/format/CGT/~data"), "~data")
+    delete.gdsn(index.gdsn(object, "annotation/format/CGT/data"))
+    delete.gdsn(index.gdsn(object, "annotation/format/CGT/~data"))
+    delete.gdsn(index.gdsn(object, "annotation/format/CGT"))
 }
 ###############################################################################
 ## Function to output a VCF file data stored in the GDS file.

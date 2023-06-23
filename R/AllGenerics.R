@@ -2159,6 +2159,14 @@ setGeneric("resetCallFilter", function(object, ...)
 #'
 #' @param object A [GbsrGenotypeData] object.
 #' @param out_fn A string to specify the path to an output VCF file.
+#' @param node Either one of "raw" or "cor" to output raw genotype data or
+#' corrected genotype data, respectively.
+#' @param info.export characters, the variable name(s) in the INFO node for
+#' export; or NULL for all variables. If you specify `character(0)`, nothing
+#' will be exported from the INFO node.
+#' @param fmt.export characters, the variable name(s) in the FORMAT node for
+#' import; or NULL for all variables. If you specify `character(0)`, nothing
+#' will be exported from the FORMAT node, except for GT.
 #' @param parents A logical value to specify whether parental
 #' samples should be included in an output VCF file or not.
 #' @param ... Unused.
@@ -2187,7 +2195,12 @@ setGeneric("resetCallFilter", function(object, ...)
 #' # Close the connection to the GDS file.
 #' closeGDS(gds)
 #'
-setGeneric("gbsrGDS2VCF", function(object, out_fn, parents = TRUE, ...)
+setGeneric("gbsrGDS2VCF", function(object,
+                                   out_fn,
+                                   node = "raw",
+                                   info.export = NULL,
+                                   fmt.export = NULL,
+                                   parents = TRUE, ...)
     standardGeneric("gbsrGDS2VCF"))
 
 

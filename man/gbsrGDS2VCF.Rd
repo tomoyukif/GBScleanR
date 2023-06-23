@@ -5,14 +5,33 @@
 \alias{gbsrGDS2VCF,GbsrGenotypeData-method}
 \title{Write a VCF file based on data in a GDS file}
 \usage{
-gbsrGDS2VCF(object, out_fn, parents = TRUE, ...)
+gbsrGDS2VCF(
+  object,
+  out_fn,
+  node = "raw",
+  info.export = NULL,
+  fmt.export = NULL,
+  parents = TRUE,
+  ...
+)
 
-\S4method{gbsrGDS2VCF}{GbsrGenotypeData}(object, out_fn, parents)
+\S4method{gbsrGDS2VCF}{GbsrGenotypeData}(object, out_fn, node, info.export, fmt.export, parents)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{out_fn}{A string to specify the path to an output VCF file.}
+
+\item{node}{Either one of "raw" or "cor" to output raw genotype data or
+corrected genotype data, respectively.}
+
+\item{info.export}{characters, the variable name(s) in the INFO node for
+export; or NULL for all variables. If you specify \code{character(0)}, nothing
+will be exported from the INFO node.}
+
+\item{fmt.export}{characters, the variable name(s) in the FORMAT node for
+import; or NULL for all variables. If you specify \code{character(0)}, nothing
+will be exported from the FORMAT node, except for GT.}
 
 \item{parents}{A logical value to specify whether parental
 samples should be included in an output VCF file or not.}

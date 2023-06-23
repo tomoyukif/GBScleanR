@@ -1,3 +1,12 @@
+Changes in version 1.5.4 (2023-6-24)
++ Add an argument `node` in `gbsrGDS2VCF()` to switch genotype data to be output
++ into a VCF file. The setting `node == cor` replace data in the `genotype` node
++ of the given GDS file with the corrected genotype data stored in the
++ `annotation/format/CGT` node.
++ Add arguments `info.import` and `fmt.import` in `gbsrVCF2GDS`, and 
++ `info.export`, `fmt.export` in `gbsrGDS2VCF` to specify the data to be 
++ imported from a given VCF file or exported to a VCF file.
+
 Changes in version 1.5.3 (2023-5-11)
 + Fix a bug in setInfoFilter() in which markers having no value for specified INFO
 + had been coded to be filtered out but now those can be retained.
