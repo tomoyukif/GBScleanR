@@ -130,6 +130,10 @@ setMethod("estGeno",
                           replace = TRUE)
     add.gdsn(hap, "data", storage = "bit6", compress = "", replace = TRUE)
 
+    eds <- addfolder.gdsn(index.gdsn(object, "annotation/format"), "EDS",
+                          replace = TRUE)
+    add.gdsn(eds, "data", storage = "bit6", compress = "", replace = TRUE)
+
     cgt <- addfolder.gdsn(index.gdsn(object, "annotation/format"), "CGT",
                           replace = TRUE)
     add.gdsn(cgt, "data", storage = "bit2", compress = "", replace = TRUE)
@@ -160,6 +164,24 @@ setMethod("estGeno",
                  "bit6", compress = "", replace = TRUE)
     } else {
         append.gdsn(hap_gdsn, output)
+    }
+}
+
+.saveEDS <- function(object, best_hap, sel) {
+    output <- array(0, c(2, length(sel$sam), length(sel$mar)))
+    i_sample <- c(which(slot(object, "sample")$parents != 0), which(validSam(object)))
+    output[, sel$sam, sel$mar][, i_sample,] <- best_hap
+    output[output == 0] <- NA
+    output <- apply(output - 1, c(2, 3), sum)
+    output[output == 0] <- NA
+
+    eds_gdsn <- index.gdsn(object, "annotation/format/EDS/data")
+    gdsn_dim <- objdesp.gdsn(eds_gdsn)$dim
+    if (gdsn_dim[1] == 0) {
+        add.gdsn(index.gdsn(object, "annotation/format/EDS"), "data", output,
+                 "bit6", compress = "", replace = TRUE)
+    } else {
+        append.gdsn(eds_gdsn, output)
     }
 }
 

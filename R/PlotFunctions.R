@@ -894,7 +894,12 @@ plotDosage <- function(x,
         ad <- alt / dp * ploidy
     }
 
-    geno <- getGenotype(x, node=node, parents=parents)[ind, chr]
+    if(node == "haplo"){
+        geno <- getHaplotype(x, parents=parents, reduce=TRUE)[ind, chr]
+
+    } else {
+        geno <- getGenotype(x, node=node, parents=parents)[ind, chr]
+    }
     id <- getSamID(x, valid = FALSE)[ind]
     df <- data.frame(chr = getChromosome(x)[chr],
                      pos = getPosition(x)[chr],
