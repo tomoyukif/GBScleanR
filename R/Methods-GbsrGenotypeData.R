@@ -344,7 +344,9 @@ setMethod("getGenotype",
 
                   if(grepl("ARR|EDS", node)){
                       out <- .filtData(object, node, filters, reduce = reduce)
-
+                      if(grepl("EDS", node)){
+                          out[out == 8] <- NA
+                      }
                   } else if(node == "genotype/data"){
                       out <- seqGetData(object, "$dosage")
                       out <- out[filters$sam, filters$mar]

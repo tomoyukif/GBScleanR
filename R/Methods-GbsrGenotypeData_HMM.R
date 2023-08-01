@@ -13,7 +13,8 @@ setMethod("estGeno",
                    n_threads,
                    dummy_reads,
                    fix_bias,
-                   fix_mismap) {
+                   fix_mismap,
+                   dosage) {
 
               object <- .checkScheme(object)
               parentless <- .checkParent(object)
@@ -27,6 +28,7 @@ setMethod("estGeno",
               .initGDS(object, het_parent)
               chr <- getChromosome(object)
               chr_levels <- unique(chr)
+              no_eds <- FALSE
               for(chr_i in chr_levels) {
                   message("\nNow cleaning chr ", chr_i, "...")
                   best_seq <- .cleanEachChr(object = object,
@@ -57,11 +59,23 @@ setMethod("estGeno",
                   .savePGeno(object, best_seq$p_geno, sel)
                   .saveADB(object, t(best_seq$bias), sel)
                   .saveMR(object, t(best_seq$mismap), sel)
+                  if(dosage){
+                      if(nrow(best_seq$p_geno) == 4 & !het_parent){
+                          .saveEDS(object, best_seq$best_hap, sel)
+                      } else {
+                          no_eds <- TRUE
+                      }
+                  }
               }
               closeGDS(object, verbose = FALSE)
               seqOptimize(object$filename, "by.sample",
                           c("HAP", "CGT"), verbose = FALSE)
               object <- reopenGDS(object)
+              if(no_eds){
+                  warning("`dosage = TRUE` was specified, but the dosage can ",
+                          "be obtained if you have an inbread biparental ",
+                          "population. ")
+              }
               return(object)
           })
 
@@ -168,12 +182,12 @@ setMethod("estGeno",
 }
 
 .saveEDS <- function(object, best_hap, sel) {
-    output <- array(0, c(2, length(sel$sam), length(sel$mar)))
+    output <- array(NA, c(2, length(sel$sam), length(sel$mar)))
     i_sample <- c(which(slot(object, "sample")$parents != 0), which(validSam(object)))
     output[, sel$sam, sel$mar][, i_sample,] <- best_hap
     output[output == 0] <- NA
     output <- apply(output - 1, c(2, 3), sum)
-    output[output == 0] <- NA
+    output[is.na(output)] <- 8
 
     eds_gdsn <- index.gdsn(object, "annotation/format/EDS/data")
     gdsn_dim <- objdesp.gdsn(eds_gdsn)$dim
