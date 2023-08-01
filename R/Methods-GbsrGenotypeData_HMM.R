@@ -17,7 +17,10 @@ setMethod("estGeno",
                    dosage) {
 
               object <- .checkScheme(object)
-              parentless <- .checkParent(object)
+
+              parents <- slot(slot(object, "scheme"), "parents")
+              n_parents <- length(parents)
+              parentless <- all(is.na(parents))
               if(parentless){
                   message("Run in the parentless mode...")
               }
@@ -25,7 +28,7 @@ setMethod("estGeno",
 
               message("Start cleaning...")
 
-              .initGDS(object, het_parent)
+              .initGDS(object, het_parent, n_parents)
               chr <- getChromosome(object)
               chr_levels <- unique(chr)
               no_eds <- FALSE
@@ -59,23 +62,14 @@ setMethod("estGeno",
                   .savePGeno(object, best_seq$p_geno, sel)
                   .saveADB(object, t(best_seq$bias), sel)
                   .saveMR(object, t(best_seq$mismap), sel)
-                  if(dosage){
-                      if(nrow(best_seq$p_geno) == 4 & !het_parent){
-                          .saveEDS(object, best_seq$best_hap, sel)
-                      } else {
-                          no_eds <- TRUE
-                      }
+                  if(n_parents == 2 & !het_parent){
+                      .saveEDS(object, best_seq$best_hap, sel)
                   }
               }
               closeGDS(object, verbose = FALSE)
               seqOptimize(object$filename, "by.sample",
                           c("HAP", "CGT"), verbose = FALSE)
               object <- reopenGDS(object)
-              if(no_eds){
-                  warning("`dosage = TRUE` was specified, but the dosage can ",
-                          "be obtained if you have an inbread biparental ",
-                          "population. ")
-              }
               return(object)
           })
 
@@ -109,11 +103,6 @@ setMethod("estGeno",
     return(object)
 }
 
-.checkParent <- function(object){
-    parents <- slot(slot(object, "scheme"), "parents")
-    return(all(is.na(parents)))
-}
-
 ################################################################################
 ################################################################################
 # Set the number of threads
@@ -139,14 +128,16 @@ setMethod("estGeno",
 ################################################################################
 ################################################################################
 # Initialize output nodes in the GDS file
-.initGDS <- function(object, het_parent) {
+.initGDS <- function(object, het_parent, n_parents) {
     hap <- addfolder.gdsn(index.gdsn(object, "annotation/format"), "HAP",
                           replace = TRUE)
     add.gdsn(hap, "data", storage = "bit6", compress = "", replace = TRUE)
 
-    eds <- addfolder.gdsn(index.gdsn(object, "annotation/format"), "EDS",
-                          replace = TRUE)
-    add.gdsn(eds, "data", storage = "bit6", compress = "", replace = TRUE)
+    if(n_parents == 2 & !het_parent){
+        eds <- addfolder.gdsn(index.gdsn(object, "annotation/format"), "EDS",
+                              replace = TRUE)
+        add.gdsn(eds, "data", storage = "bit6", compress = "", replace = TRUE)
+    }
 
     cgt <- addfolder.gdsn(index.gdsn(object, "annotation/format"), "CGT",
                           replace = TRUE)
@@ -337,15 +328,15 @@ setMethod("estGeno",
         out <- vapply(X = seq_along(xtype),
                       FUN.VALUE = list(1),
                       FUN = function(i){
-            i_gamet <- gamet[match(mt[, i], pg)]
-            return(list(paste(i_gamet, collapse = "|")))
-        })
+                          i_gamet <- gamet[match(mt[, i], pg)]
+                          return(list(paste(i_gamet, collapse = "|")))
+                      })
     } else if(all(xtype != "pairing")){
         out <- vapply(X = gamet,
                       FUN.VALUE = list(1),
                       FUN = function(x){
-            return(list(paste(x, x, sep = "|")))
-        })
+                          return(list(paste(x, x, sep = "|")))
+                      })
     }
     return(out)
 }

@@ -32,7 +32,8 @@ estGeno(
   n_threads,
   dummy_reads,
   fix_bias,
-  fix_mismap
+  fix_mismap,
+  dosage
 )
 }
 \arguments{
