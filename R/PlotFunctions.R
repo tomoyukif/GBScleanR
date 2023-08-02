@@ -972,7 +972,6 @@ plotReadRatio <- function(x,
         chr <- getChromosome(x) %in% chr
     }
 
-    id <- getSamID(x, FALSE)[validSam(x, parents = parents)][ind]
     if(is.null(slot(x, "sample")[["parents"]])){
         parents <- FALSE
     } else {
@@ -982,6 +981,8 @@ plotReadRatio <- function(x,
     ref <- read$ref[ind, chr]
     alt <- read$alt[ind, chr]
     dp <- ref + alt
+
+    id <- getSamID(x, FALSE)[validSam(x, parents = parents)][ind]
 
     df <- data.frame(chr = getChromosome(x)[chr],
                      pos = getPosition(x)[chr],

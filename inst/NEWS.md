@@ -1,4 +1,4 @@
-Changes in version 1.5.6 (2023-8-2)
+Changes in version 1.5.7 (2023-8-2)
 + Fix a bug in plotDosage() and plotReadRatio() where the selection of sample
 + ID had been wrongly conducted when sample filter have been set.
 
