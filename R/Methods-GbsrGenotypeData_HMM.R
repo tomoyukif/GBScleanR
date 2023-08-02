@@ -160,7 +160,7 @@ setMethod("estGeno",
 .saveHap <- function(object, best_hap, sel) {
     output <- array(0, c(2, length(sel$sam), length(sel$mar)))
     i_sample <- c(which(slot(object, "sample")$parents != 0), which(validSam(object)))
-    output[, sel$sam, sel$mar][, i_sample,] <- best_hap
+    output[, i_sample, sel$mar] <- best_hap
 
     hap_gdsn <- index.gdsn(object, "annotation/format/HAP/data")
     gdsn_dim <- objdesp.gdsn(hap_gdsn)$dim
@@ -175,7 +175,7 @@ setMethod("estGeno",
 .saveEDS <- function(object, best_hap, sel) {
     output <- array(NA, c(2, length(sel$sam), length(sel$mar)))
     i_sample <- c(which(slot(object, "sample")$parents != 0), which(validSam(object)))
-    output[, sel$sam, sel$mar][, i_sample,] <- best_hap
+    output[, i_sample, sel$mar] <- best_hap
     output[output == 0] <- NA
     output <- apply(output - 1, c(2, 3), sum)
     output[is.na(output)] <- 8
@@ -194,7 +194,7 @@ setMethod("estGeno",
 .saveGeno <- function(object, best_geno, sel) {
     output <- array(3, c(2, length(sel$sam), length(sel$mar)))
     i_sample <- c(which(slot(object, "sample")$parents != 0), which(validSam(object)))
-    output[, sel$sam, sel$mar][, i_sample,] <- best_geno
+    output[, i_sample, sel$mar] <- best_geno
 
     out_gdsn <-index.gdsn(object, "annotation/format/CGT/data")
     gdsn_dim <- objdesp.gdsn(out_gdsn)$dim

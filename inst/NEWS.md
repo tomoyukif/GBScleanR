@@ -1,7 +1,10 @@
+Changes in version 1.5.6 (2023-8-2)
++ Fix a bug in plotDosage() and plotReadRatio() where the selection of sample
++ ID had been wrongly conducted when sample filter have been set.
+
 Changes in version 1.5.5 (2023-8-1)
 + Add a code to make EDS node in the given GDS after esetGeno() to store dosage information
 + when the given population is inbred biparental. 
-
 
 Changes in version 1.5.4 (2023-6-24)
 + Add an argument `node` in `gbsrGDS2VCF()` to switch genotype data to be output
