@@ -88,8 +88,8 @@ struct ParInitVit : public Worker {
                                              mismap1,
                                              mismap2,
                                              m[0],
-                                             sample_i,
-                                             het);
+                                              sample_i,
+                                              het);
             double hap_prob = 0.0;
             int n_hap_i = n_hap[pedigree_i];
             int target_i;
@@ -283,8 +283,8 @@ struct ParCalcPathFounder : public Worker {
                                                      mismap1,
                                                      mismap2,
                                                      m[0],
-                                                     sample_i,
-                                                     het);
+                                                      sample_i,
+                                                      het);
 
                     for(int j1 = 0; j1 < n_pgeno[0]; ++j1){
                         if(isinf(p_emit1[j1])){
@@ -351,8 +351,8 @@ struct ParCalcPathFounder : public Worker {
                                                      mismap1,
                                                      mismap2,
                                                      m[0],
-                                                     sample_i,
-                                                     het);
+                                                      sample_i,
+                                                      het);
 
                     for(int k = 0; k < n_hap_i; ++k){
                         target_i = hap_offset[pedigree_i] + j2 * n_hap_i + k;
@@ -421,13 +421,13 @@ void backtrack(IntegerMatrix f_path,
                IntegerVector f_seq,
                IntegerVector n_marker){
     size_t f_prev;
-
     for(int m = n_marker[0] - 1; m > 0; --m){
         if(m % 10 == 9){
             Rcpp::Rcout << "\r" <<
                 "Backtracking best genotype sequences at marker#: " <<
                     m+1 << string(70, ' ');
         }
+
         f_prev = f_seq[m];
         f_seq[m-1] = f_path(m , f_prev);
     }
@@ -620,109 +620,25 @@ List run_viterbi(NumericMatrix p_ref,
     w2 = clone(bias);
     w2 = 1 - w2;
 
-
-    // Calculate offsets to access pedigree dependent parameters
-    IntegerVector hap_offset(n_hap.size());
-    IntegerVector init_offset(n_hap.size());
-    IntegerVector trans_offset(n_hap.size());
-    for(int i = 1; i < n_hap.size(); ++i){
-        hap_offset[i] = hap_offset[i - 1] + n_pgeno[0] * n_hap[i - 1];
-        init_offset[i] = init_offset[i - 1] + n_hap[i - 1];
-        trans_offset[i] = trans_offset[i - 1] +
-            n_hap[i - 1] * n_hap[i - 1] * (n_marker[0] - 1);
-    }
-
-    LogicalVector iter_sample(n_offspring[0]);
-    LogicalVector iter_p_pat(n_pgeno[0]);
-    NumericVector p_emit1;
-    NumericVector p_emit2;
-
-    // Initialize Viterbi trellis.
-    int m = 0;
-    p_emit1 = calcPemit(p_ref,
-                        p_alt,
-                        eseq,
-                        w1,
-                        w2,
-                        mismap1,
-                        mismap2,
-                        possiblegeno,
-                        m,
-                        n_founder,
-                        n_pgeno,
-                        het,
-                        ploidy);
-
-    Rcpp::Rcout << "\r" <<
-        "Founder genotype probability calculation ..." <<
-            string(70, ' ');
-    int int_fix_p = p_geno_fix[0];
-    if(int_fix_p >= 0){
-        R_xlen_t fix_p = p_geno_fix[0];
-        for(R_xlen_t p = 0; p < p_emit1.size(); ++p){
-            if(p == fix_p){
-                p_emit1[p] = 0;
-            } else {
-                p_emit1[p] = neg_inf;
-            }
+        // Calculate offsets to access pedigree dependent parameters
+        IntegerVector hap_offset(n_hap.size());
+        IntegerVector init_offset(n_hap.size());
+        IntegerVector trans_offset(n_hap.size());
+        for(int i = 1; i < n_hap.size(); ++i){
+            hap_offset[i] = hap_offset[i - 1] + n_pgeno[0] * n_hap[i - 1];
+            init_offset[i] = init_offset[i - 1] + n_hap[i - 1];
+            trans_offset[i] = trans_offset[i - 1] +
+                n_hap[i - 1] * n_hap[i - 1] * (n_marker[0] - 1);
         }
-    }
 
-    IntegerVector valid_p_indices1;
-    for(R_xlen_t j = 0; j < p_emit1.size(); ++j){
-        if(!isinf(p_emit1[j])){
-            valid_p_indices1.push_back(j);
-        }
-    }
-    int valid_size = valid_p_indices1.size();
-    int max_hap = n_hap[0];
-    for(int i = 1; i < (int)n_hap.size(); ++i){
-        if(max_hap < n_hap[i]){
-            max_hap = n_hap[i];
-        }
-    }
-    NumericMatrix vit_score(n_offspring[0], valid_size * max_hap);
-    IntegerVector in_m = {m};
-    ParInitVit init_vit(vit_score,
-                        iter_sample,
-                        ref,
-                        alt,
-                        eseq,
-                        w1,
-                        w2,
-                        mismap1,
-                        mismap2,
-                        possiblehap,
-                        init_prob,
-                        n_hap,
-                        pedigree,
-                        hap_offset,
-                        init_offset,
-                        valid_p_indices1,
-                        in_m,
-                        ploidy);
-    parallelFor(0, iter_sample.length(), init_vit);
-    NumericMatrix in_score;
-    in_score = clone(vit_score);
+        LogicalVector iter_sample(n_offspring[0]);
+        LogicalVector iter_p_pat(n_pgeno[0]);
+        NumericVector p_emit1;
+        NumericVector p_emit2;
 
-    for(int m = 1; m < n_marker[0]; ++m){
-        if(m % 10 == 9){
-            Rcpp::Rcout << "\r" <<
-                "Founder genotype probability calculation at marker#: " <<
-                    m + 1 << string(70, ' ');
-        }
-        IntegerVector in_m = {m};
-        ParCalcVitFounder calc_vit(in_score,
-                                   iter_sample,
-                                   trans_prob,
-                                   in_m,
-                                   n_hap,
-                                   pedigree,
-                                   trans_offset,
-                                   valid_p_indices1);
-        parallelFor(0, iter_sample.length(), calc_vit);
-
-        p_emit2 = calcPemit(p_ref,
+        // Initialize Viterbi trellis.
+        int m = 0;
+        p_emit1 = calcPemit(p_ref,
                             p_alt,
                             eseq,
                             w1,
@@ -736,101 +652,185 @@ List run_viterbi(NumericMatrix p_ref,
                             het,
                             ploidy);
 
-        R_xlen_t fix_p_len = p_geno_fix.size();
-        if(fix_p_len > m){
-            R_xlen_t fix_p = p_geno_fix[m];
-            for(R_xlen_t p = 0; p < p_emit2.size(); ++p){
+        Rcpp::Rcout << "\r" <<
+            "Founder genotype probability calculation ..." <<
+                string(70, ' ');
+        int int_fix_p = p_geno_fix[0];
+        if(int_fix_p >= 0){
+            R_xlen_t fix_p = p_geno_fix[0];
+            for(R_xlen_t p = 0; p < p_emit1.size(); ++p){
                 if(p == fix_p){
-                    p_emit2[p] = 0;
+                    p_emit1[p] = 0;
                 } else {
-                    p_emit2[p] = neg_inf;
+                    p_emit1[p] = neg_inf;
                 }
             }
-        };
+        }
 
-        IntegerVector valid_p_indices2;
-        for(R_xlen_t j = 0; j < p_emit2.size(); ++j){
-            if(!isinf(p_emit2[j])){
-                valid_p_indices2.push_back(j);
+        IntegerVector valid_p_indices1;
+        for(R_xlen_t j = 0; j < p_emit1.size(); ++j){
+            if(!isinf(p_emit1[j])){
+                valid_p_indices1.push_back(j);
+            }
+        }
+        int valid_size = valid_p_indices1.size();
+        int max_hap = n_hap[0];
+        for(int i = 1; i < (int)n_hap.size(); ++i){
+            if(max_hap < n_hap[i]){
+                max_hap = n_hap[i];
+            }
+        }
+        NumericMatrix vit_score(n_offspring[0], valid_size * max_hap);
+        IntegerVector in_m = {m};
+        ParInitVit init_vit(vit_score,
+                            iter_sample,
+                            ref,
+                            alt,
+                            eseq,
+                            w1,
+                            w2,
+                            mismap1,
+                            mismap2,
+                            possiblehap,
+                            init_prob,
+                            n_hap,
+                            pedigree,
+                            hap_offset,
+                            init_offset,
+                            valid_p_indices1,
+                            in_m,
+                            ploidy);
+        parallelFor(0, iter_sample.length(), init_vit);
+        NumericMatrix in_score;
+        in_score = clone(vit_score);
+
+        for(int m = 1; m < n_marker[0]; ++m){
+            if(m % 10 == 9){
+                Rcpp::Rcout << "\r" <<
+                    "Founder genotype probability calculation at marker#: " <<
+                        m + 1 << string(70, ' ');
+            }
+
+            IntegerVector in_m = {m};
+            ParCalcVitFounder calc_vit(in_score,
+                                       iter_sample,
+                                       trans_prob,
+                                       in_m,
+                                       n_hap,
+                                       pedigree,
+                                       trans_offset,
+                                       valid_p_indices1);
+            parallelFor(0, iter_sample.length(), calc_vit);
+
+            p_emit2 = calcPemit(p_ref,
+                                p_alt,
+                                eseq,
+                                w1,
+                                w2,
+                                mismap1,
+                                mismap2,
+                                possiblegeno,
+                                m,
+                                n_founder,
+                                n_pgeno,
+                                het,
+                                ploidy);
+
+            R_xlen_t fix_p_len = p_geno_fix.size();
+            if(fix_p_len > m){
+                R_xlen_t fix_p = p_geno_fix[m];
+                for(R_xlen_t p = 0; p < p_emit2.size(); ++p){
+                    if(p == fix_p){
+                        p_emit2[p] = 0;
+                    } else {
+                        p_emit2[p] = neg_inf;
+                    }
+                }
+            };
+
+            IntegerVector valid_p_indices2;
+            for(R_xlen_t j = 0; j < p_emit2.size(); ++j){
+                if(!isinf(p_emit2[j])){
+                    valid_p_indices2.push_back(j);
+                }
+            }
+
+            size_t valid_size = valid_p_indices2.size();
+            NumericMatrix vit_score(n_offspring[0], valid_size * max_hap);
+            ParCalcPathFounder calc_path(f_path,
+                                         vit_score,
+                                         in_score,
+                                         iter_p_pat,
+                                         ref,
+                                         alt,
+                                         eseq,
+                                         w1,
+                                         w2,
+                                         mismap1,
+                                         mismap2,
+                                         possiblehap,
+                                         n_offspring,
+                                         n_pgeno,
+                                         n_hap,
+                                         pedigree,
+                                         hap_offset,
+                                         p_emit1,
+                                         p_emit2,
+                                         valid_p_indices1,
+                                         valid_p_indices2,
+                                         in_m,
+                                         ploidy);
+
+            parallelFor(0, iter_p_pat.length(), calc_path);
+            p_emit1 = clone(p_emit2);
+            valid_p_indices1 = clone(valid_p_indices2);
+            in_score = clone(vit_score);
+
+            if(m == n_marker[0] - 1){
+
+                last_vit_founder(f_seq,
+                                 in_score,
+                                 p_emit1,
+                                 n_offspring,
+                                 n_pgeno,
+                                 n_hap,
+                                 pedigree,
+                                 n_marker,
+                                 valid_p_indices1);
             }
         }
 
-        size_t valid_size = valid_p_indices2.size();
-        NumericMatrix vit_score(n_offspring[0], valid_size * max_hap);
-        ParCalcPathFounder calc_path(f_path,
-                                     vit_score,
-                                     in_score,
-                                     iter_p_pat,
-                                     ref,
-                                     alt,
-                                     eseq,
-                                     w1,
-                                     w2,
-                                     mismap1,
-                                     mismap2,
-                                     possiblehap,
-                                     n_offspring,
-                                     n_pgeno,
-                                     n_hap,
-                                     pedigree,
-                                     hap_offset,
-                                     p_emit1,
-                                     p_emit2,
-                                     valid_p_indices1,
-                                     valid_p_indices2,
-                                     in_m,
-                                     ploidy);
+        backtrack(f_path,
+                  f_seq,
+                  n_marker);
 
-        parallelFor(0, iter_p_pat.length(), calc_path);
-        p_emit1 = clone(p_emit2);
-        valid_p_indices1 = clone(valid_p_indices2);
-        in_score = clone(vit_score);
+        Rcpp::Rcout << "\r" <<
+            "Offspring genotype probability calculation ..." <<
+                string(70, ' ');
 
-        if(m == n_marker[0] - 1){
+        ParVitOffspring vit_offspring(o_seq,
+                                      iter_sample,
+                                      ref,
+                                      alt,
+                                      eseq,
+                                      w1,
+                                      w2,
+                                      mismap1,
+                                      mismap2,
+                                      possiblehap,
+                                      init_prob,
+                                      trans_prob,
+                                      n_marker,
+                                      n_hap,
+                                      pedigree,
+                                      hap_offset,
+                                      init_offset,
+                                      trans_offset,
+                                      f_seq,
+                                      ploidy);
+        parallelFor(0, iter_sample.length(), vit_offspring);
 
-            last_vit_founder(f_seq,
-                             in_score,
-                             p_emit1,
-                             n_offspring,
-                             n_pgeno,
-                             n_hap,
-                             pedigree,
-                             n_marker,
-                             valid_p_indices1);
-        }
-    }
-
-    backtrack(f_path,
-              f_seq,
-              n_marker);
-
-    Rcpp::Rcout << "\r" <<
-        "Offspring genotype probability calculation ..." <<
-            string(70, ' ');
-
-    ParVitOffspring vit_offspring(o_seq,
-                                  iter_sample,
-                                  ref,
-                                  alt,
-                                  eseq,
-                                  w1,
-                                  w2,
-                                  mismap1,
-                                  mismap2,
-                                  possiblehap,
-                                  init_prob,
-                                  trans_prob,
-                                  n_marker,
-                                  n_hap,
-                                  pedigree,
-                                  hap_offset,
-                                  init_offset,
-                                  trans_offset,
-                                  f_seq,
-                                  ploidy);
-    parallelFor(0, iter_sample.length(), vit_offspring);
-
-    Rcpp::Rcout << "\r" << string(70, ' ');
+        Rcpp::Rcout << "\r" << string(70, ' ');
     List out_list = List::create(_["p_geno"] = f_seq, _["best_seq"] = o_seq);
     return out_list;
 }

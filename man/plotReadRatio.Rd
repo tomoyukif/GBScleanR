@@ -11,7 +11,9 @@ plotReadRatio(
   chr = NULL,
   ind = 1,
   node = "raw",
-  dot_fill = "blue"
+  dot_fill = c("green", "darkblue"),
+  size = 0.8,
+  alpha = 0.8
 )
 }
 \arguments{

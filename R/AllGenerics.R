@@ -2282,8 +2282,6 @@ setGeneric("gbsrGDS2CSV", function(object,
 #' genotype estimation using a hidden Markov model.
 #'
 #' @param object A [GbsrGenotypeData] object.
-#' @param chr An integer vector of chromosome indices to
-#' be analyzed. All chromosomes will be analyzed if you left it default.
 #' @param recomb_rate A numeric value to indicate the expected
 #' recombination frequency per chromosome per megabase pairs.
 #' @param error_rate A numeric value of the expected sequence error rate.
@@ -2372,7 +2370,6 @@ setGeneric("gbsrGDS2CSV", function(object,
 #' @export
 #'
 setGeneric("estGeno", function(object,
-                               chr,
                                recomb_rate = 0.04,
                                error_rate = 0.0025,
                                call_threshold = 0.9,

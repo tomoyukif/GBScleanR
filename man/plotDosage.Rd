@@ -11,6 +11,9 @@ plotDosage(
   ind = 1,
   node = "raw",
   showratio = TRUE,
+  dot_fill = c("green", "darkblue"),
+  size = 0.8,
+  alpha = 0.8,
   line_color = "magenta"
 )
 }

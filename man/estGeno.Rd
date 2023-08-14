@@ -7,7 +7,6 @@
 \usage{
 estGeno(
   object,
-  chr,
   recomb_rate = 0.04,
   error_rate = 0.0025,
   call_threshold = 0.9,
@@ -38,9 +37,6 @@ estGeno(
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
-
-\item{chr}{An integer vector of chromosome indices to
-be analyzed. All chromosomes will be analyzed if you left it default.}
 
 \item{recomb_rate}{A numeric value to indicate the expected
 recombination frequency per chromosome per megabase pairs.}

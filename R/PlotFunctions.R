@@ -870,6 +870,9 @@ plotDosage <- function(x,
                        ind = 1,
                        node = "raw",
                        showratio = TRUE,
+                       dot_fill = c("green", "darkblue"),
+                       size = 0.8,
+                       alpha = 0.8,
                        line_color = "magenta") {
     pos <- na <- NULL
 
@@ -908,8 +911,8 @@ plotDosage <- function(x,
 
     if(showratio){
         p <- p + geom_point(mapping = aes(x = pos * 10^-6, y=ad, colour=dp),
-                            size=0.8, alpha=0.2, stroke=0) +
-            scale_colour_gradient(low = "green", high = "darkblue")
+                            size=size, alpha=alpha, stroke=0) +
+            scale_colour_gradient(low = dot_fill[1], high = dot_fill[2])
     }
     p <- p + geom_line(mapping = aes(x = pos * 10^-6, y=geno, group=chr),
                        color=line_color) +
@@ -963,7 +966,9 @@ plotReadRatio <- function(x,
                           chr = NULL,
                           ind = 1,
                           node = "raw",
-                          dot_fill = "blue") {
+                          dot_fill = c("green", "darkblue"),
+                          size = 0.8,
+                          alpha = 0.8) {
     pos <- ad <- NULL
 
     if (is.null(chr)) {
@@ -990,8 +995,8 @@ plotReadRatio <- function(x,
                      dp = dp)
 
     p <- ggplot(df, aes(x = pos * 10^-6, y = ad, group = chr, colour = dp)) +
-        geom_point(size=0.8, alpha=0.2, stroke=0) +
-        scale_colour_gradient(low = "green", high = "darkblue") +
+        geom_point(size=size, alpha=alpha, stroke=0) +
+        scale_colour_gradient(low = dot_fill[1], high = dot_fill[2]) +
         labs(title=paste0("Alternative allele read ratio: ", id)) +
         ylim(0, 1) +
         xlab("Position (Mb)") +

@@ -1,3 +1,11 @@
+Changes in version 1.5.8 (2023-8-14)
++ A user of GBScleanR reported the case in which there are NA values in read
++ count data in the AD node after conversion from a VCF file and results in a 
++ fatal error during the genotype estimation process.
++ Since the VCF file that causes NA values in the AD node has not provided and 
++ we have no clue to fix the bug in the data conversion, we tentatively added 
++ the codes to set 0 to NA values in the read count data.
+
 Changes in version 1.5.7 (2023-8-2)
 + Fix a bug in plotDosage() and plotReadRatio() where the selection of sample
 + ID had been wrongly conducted when sample filter have been set.

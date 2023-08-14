@@ -261,6 +261,9 @@ setMethod("getRead",
                                                           filters)
               colnames(ref) <- colnames(alt) <- .filtData(object, "variant.id",
                                                           filters)
+
+              ref[is.na(ref)] <- 0
+              alt[is.na(alt)] <- 0
               return(list(ref = ref, alt = alt))
           })
 
