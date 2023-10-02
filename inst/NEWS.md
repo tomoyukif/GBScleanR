@@ -1,4 +1,4 @@
-Changes in version 1.5.10 (2023-10-2)
+Changes in version 1.5.11 (2023-10-2)
 + Fix a bug in setParents() that produces NA if a user set mono = TRUE and/or bi = TRUE.
 
 Changes in version 1.5.8 (2023-8-14)

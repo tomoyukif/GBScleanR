@@ -858,7 +858,7 @@ setMethod("setParents",
     }
 
     if(bi){
-        bi <- colSums(gt == 0) != 0 | colSums(gt == 2) != 0
+        bi <- colSums(gt == 0) != 0 & colSums(gt == 2) != 0
         bi[is.na(bi)] <- FALSE
     } else {
         bi <- rep(TRUE, nmar(object, FALSE))
