@@ -851,13 +851,15 @@ setMethod("setParents",
     }
 
     if(mono){
-        mono <- colSums(gt %in% 1) == 0
+        mono <- colSums(gt == 1) == 0
+        mono[is.na(mono)] <- FALSE
     } else {
         mono <- rep(TRUE, nmar(object, FALSE))
     }
 
     if(bi){
-        bi <- colSums(gt %in% 0) != 0 | colSums(gt %in% 2) != 0
+        bi <- colSums(gt == 0) != 0 | colSums(gt == 2) != 0
+        bi[is.na(bi)] <- FALSE
     } else {
         bi <- rep(TRUE, nmar(object, FALSE))
     }
