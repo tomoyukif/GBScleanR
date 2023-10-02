@@ -851,13 +851,13 @@ setMethod("setParents",
     }
 
     if(mono){
-        mono <- colSums(gt == 1) == 0
+        mono <- colSums(gt %in% 1) == 0
     } else {
         mono <- rep(TRUE, nmar(object, FALSE))
     }
 
     if(bi){
-        bi <- colSums(gt == 0) != 0 | colSums(gt == 2) != 0
+        bi <- colSums(gt %in% 0) != 0 | colSums(gt %in% 2) != 0
     } else {
         bi <- rep(TRUE, nmar(object, FALSE))
     }

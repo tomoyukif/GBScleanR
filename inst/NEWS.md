@@ -1,3 +1,6 @@
+Changes in version 1.5.9 (2023-10-2)
++ Fix a bug in setParents() that produces NA if a user set mono = TRUE and/or bi = TRUE.
+
 Changes in version 1.5.8 (2023-8-14)
 + A user of GBScleanR reported the case in which there are NA values in read
 + count data in the AD node after conversion from a VCF file and results in a 
