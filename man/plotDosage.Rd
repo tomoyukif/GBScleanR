@@ -33,6 +33,12 @@ respectively.}
 
 \item{showratio}{If \code{TRUE}, draw dots indicating read ratio.}
 
+\item{dot_fill}{A string to indicate the dot color in a plot.}
+
+\item{size}{A positive number to indicate the dot size in a plot.}
+
+\item{alpha}{A positive number in 0-1 to indicate the dot opacity in a plot.}
+
 \item{line_color}{A string to indicate the line color in the plot.}
 }
 \value{

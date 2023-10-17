@@ -847,6 +847,9 @@ pairsGBSR  <- function(x,
 #' respectively.
 #' @param showratio If `TRUE`, draw dots indicating read ratio.
 #' @param line_color A string to indicate the line color in the plot.
+#' @param dot_fill A string to indicate the dot color in a plot.
+#' @param size A positive number to indicate the dot size in a plot.
+#' @param alpha A positive number in 0-1 to indicate the dot opacity in a plot.
 #'
 #' @examples
 #' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
@@ -943,6 +946,8 @@ plotDosage <- function(x,
 #' genotype data, filtered genotype data, or corrected genotype data,
 #' respectively.
 #' @param dot_fill A string to indicate the dot color in a plot.
+#' @param size A positive number to indicate the dot size in a plot.
+#' @param alpha A positive number in 0-1 to indicate the dot opacity in a plot.
 #'
 #'
 #' @examples

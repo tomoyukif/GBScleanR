@@ -13,8 +13,7 @@ setMethod("estGeno",
                    n_threads,
                    dummy_reads,
                    fix_bias,
-                   fix_mismap,
-                   dosage) {
+                   fix_mismap) {
 
               object <- .checkScheme(object)
 

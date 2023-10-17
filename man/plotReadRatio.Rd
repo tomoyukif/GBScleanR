@@ -31,6 +31,10 @@ genotype data, filtered genotype data, or corrected genotype data,
 respectively.}
 
 \item{dot_fill}{A string to indicate the dot color in a plot.}
+
+\item{size}{A positive number to indicate the dot size in a plot.}
+
+\item{alpha}{A positive number in 0-1 to indicate the dot opacity in a plot.}
 }
 \value{
 A ggplot object.

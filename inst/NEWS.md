@@ -1,3 +1,6 @@
+Changes in version 1.5.12 (2023-10-17)
++ Update manual pages for plotDosage() and plotReadRatio().
+
 Changes in version 1.5.11 (2023-10-2)
 + Fix a bug in setParents() that produces NA if a user set mono = TRUE and/or bi = TRUE.
 
