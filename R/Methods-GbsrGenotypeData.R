@@ -372,8 +372,7 @@ setMethod("getGenotype",
                   if(length(dim(out)) == 2){
                       rownames(out) <- .filtData(object, "sample.id", filters)
                       colnames(out) <- .filtData(object, "variant.id", filters)
-                      dimnames(out) <- list(dimnames(out)$allele,
-                                            dimnames(out)$variant)
+                      
                   } else {
                       sample_id <- .filtData(object, "sample.id", filters)
                       variant_id <- .filtData(object, "variant.id", filters)
@@ -783,7 +782,7 @@ setMethod("isOpenGDS",
 #' @importFrom methods slot<-
 setMethod("setParents",
           "GbsrGenotypeData",
-          function(object, parents, nonmiss, mono, bi, replicates){
+          function(object, parents, nonmiss, mono, bi){
               if(length(parents) == 0 | any(is.na(parents))){
                   stop('Specify valid sample names as parents.', call. = FALSE)
               }
@@ -793,36 +792,31 @@ setMethod("setParents",
               if(!inherits(parents, "character")){
                   stop('Specify valid sample names as parents.', call. = FALSE)
               }
-
+              if(!is.null(slot(object, "sample")[["parents"]])){
+                  message("Overwrite the previous parents information.")
+                  slot(object, "sample")[["parents"]] <- NULL
+              }
+              
               id <- getSamID(object, FALSE)
               p_index <- match(parents, id)
               if(any(is.na(p_index))){
-                  stop("No sample named: ", parents[is.na(p_index)], call. = FALSE)
+                  missing_id <- parents[is.na(p_index)]
+                  stop("No sample named: ", missing_id, call. = FALSE)
               }
 
               n_parents <- length(p_index)
               p_vec <- integer(nsam(object, FALSE))
-
-              ################################################
-              if(!is.null(replicates)){
-                  stop("Setting parental samples with replicates",
-                       "has not yet been implemented.",
-                       "Wait for the next update.")
-                  p_id <- as.numeric(factor(x = replicates))
+              if(is.null(slot(object, "sample")[["replicates"]])){
+                  p_vec[p_index] <- seq_len(n_parents)
+                  
               } else {
-                  p_id <- seq_len(n_parents)
+                  replicates <- slot(object, "sample")[["replicates"]]
+                  p_rep_id <- replicates[p_index]
+                  rep_hit <- match(replicates, p_rep_id)
+                  p_vec[!is.na(rep_hit)] <- na.omit(rep_hit)
               }
-              ################################################
-
-              for (i in seq_len(n_parents)){
-                  p_vec[p_index[i]] <- p_id[i]
-              }
-
+              
               valid_sam <- validSam(object, FALSE)
-              if(!is.null(slot(object, "sample")[["parents"]])){
-                  old_parents <- getParents(object, TRUE)
-                  valid_sam[old_parents] <- TRUE
-              }
               valid_sam[p_vec != 0] <- FALSE
               validSam(object) <- valid_sam
               slot(object, "sample")[["parents"]] <- p_vec
@@ -834,7 +828,7 @@ setMethod("setParents",
               scheme <- slot(object, "scheme")
               if(length(slot(scheme, "parents")) != 0){
                   parents <- getParents(object)
-                  slot(scheme, "parents") <- seq_len(n_parents)
+                  slot(scheme, "parents") <- parents$memberID
                   slot(object, "scheme") <- scheme
               }
 
@@ -842,7 +836,17 @@ setMethod("setParents",
           })
 
 .pGenoFilt <- function(object, nonmiss, mono, bi){
-    gt <- getGenotype(object, "raw", "only", FALSE, NULL)
+    p_id <- getParents(object = object)
+    if(length(unique(p_id$memberID)) != length(p_id$memberID)){
+        ad <- getRead(object, "raw", "only", FALSE, NULL)
+        rep_id <- getReplicates(object, parents = "only")
+        ad <- .pileupAD(ad = ad, rep_id = rep_id)
+        gt <- .recalcGT(ad =  ad)
+
+    } else {
+        gt <- getGenotype(object, "raw", "only", FALSE, NULL)
+        
+    }
 
     if(nonmiss){
         nonmiss <- colSums(is.na(gt)) == 0
@@ -867,6 +871,38 @@ setMethod("setParents",
     return(object)
 }
 
+.pileupAD <- function(ad, rep_id){
+    ad_ref <- tapply(seq_along(rep_id), rep_id, function(i){
+        if(length(i) == 1){
+            return(ad$ref[i, ])
+        } else {
+          return(colSums(ad$ref[i, ]))  
+        }
+    })
+    ad_ref <- do.call("rbind", ad_ref)
+    ad_alt <- tapply(seq_along(rep_id), rep_id, function(i){
+        if(length(i) == 1){
+            return(ad$alt[i, ])
+        } else {
+            return(colSums(ad$alt[i, ]))  
+        }
+    })
+    ad_alt <- do.call("rbind", ad_alt)
+    return(list(ref = ad_ref, alt = ad_alt))
+}
+
+.recalcGT <- function(ad = ad, seq_error = 0.0025){
+    gt <- matrix(data = NA, nrow = nrow(ad$ref), ncol = ncol(ad$ref))
+    pl_ref <- log10(1 - seq_error) * ad$ref + log10(seq_error) * ad$alt
+    pl_het <- log10(0.5) * (ad$ref + ad$alt)
+    pl_alt <- log10(seq_error) * ad$ref + log10(1 - seq_error) * ad$alt
+    
+    gt[pl_ref > pl_het & pl_ref > pl_alt] <- 0
+    gt[pl_het > pl_ref & pl_het > pl_alt] <- 1
+    gt[pl_alt > pl_het & pl_alt > pl_ref] <- 2
+    return(gt)
+}
+
 ## Set replicates
 #' @rdname setReplicates
 setMethod("setReplicates",
@@ -885,6 +921,21 @@ setMethod("setReplicates",
               sample$replicates[target_samples] <- replicates
               slot(object, "sample") <- sample
               return(object)
+          })
+
+## Get replicates
+#' @rdname getReplicates
+setMethod("getReplicates",
+          "GbsrGenotypeData",
+          function(object, parents){
+              if(is.null(slot(object, "sample")[["replicates"]])){
+                  out <- getSamID(object, valid = FALSE)
+                  
+              } else {
+                  out <- slot(object, "sample")[["replicates"]]
+              }
+              out <- out[validSam(object, parents = parents)]
+              return(out)
           })
 
 ###############################################################################

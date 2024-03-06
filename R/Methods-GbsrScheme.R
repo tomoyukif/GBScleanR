@@ -146,7 +146,7 @@ setMethod("showScheme",
                       cat("Parents")
                       parents <- object@parents
                       message('\nThe number of parents: ', appendLF = FALSE)
-                      cat(length(parents))
+                      cat(length(unique(parents)))
                       message('\nSample IDs: ', appendLF = FALSE)
                       cat(parents_name)
                       message('\nMember IDs: ', appendLF = FALSE)
