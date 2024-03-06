@@ -681,7 +681,7 @@ setMethod("estGeno",
         n_parents <- 2
     } else {
         parents <- getParents(object)
-        n_parents <- nrow(unique(parents$memberID))
+        n_parents <- length(unique(parents$memberID))
     }
     n_samples <- nsam(object)
     n_alleles <- 2
