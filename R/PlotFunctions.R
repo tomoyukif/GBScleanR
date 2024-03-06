@@ -884,25 +884,34 @@ plotDosage <- function(x,
     } else {
         chr <- getChromosome(x) %in% chr
     }
-
-    if(is.null(slot(x, "sample")[["parents"]])){
-        parents <- FALSE
-    } else {
+    
+    if(is.character(ind)){
+        valid <- FALSE
         parents <- TRUE
+        ind <- which(getSamID(x, valid = FALSE) %in% ind)
+        id <- getSamID(x, valid = FALSE)[ind]
+        
+    } else {
+        valid <- TRUE
+        if(is.null(slot(x, "sample")[["parents"]])){
+            parents <- FALSE
+        } else {
+            parents <- TRUE
+        }
+        id <- getSamID(x, valid = FALSE)[validSam(x, parents = parents)][ind]
     }
 
     if(showratio){
         ploidy <- attributes(slot(x, "sample"))[["ploidy"]]
-        read <- getRead(x, node="raw", parents=parents)
+        read <- getRead(x, node = "raw", valid = valid, parents = parents)
         ref <- read$ref[ind, chr]
         alt <- read$alt[ind, chr]
         dp <- ref + alt
         ad <- alt / dp * ploidy
     }
 
-    geno <- getGenotype(x, node=node, parents=parents)[ind, chr]
+    geno <- getGenotype(x, node=node, valid = valid, parents = parents)[ind, chr]
 
-    id <- getSamID(x, valid = FALSE)[validSam(x, parents = parents)][ind]
     df <- data.frame(chr = getChromosome(x)[chr],
                      pos = getPosition(x)[chr],
                      geno = geno,
@@ -941,7 +950,7 @@ plotDosage <- function(x,
 #' @param coord A vector with two integer specifying the number of rows and
 #' columns to draw faceted line plots for chromosomes.
 #' @param chr A vector of indexes to specify chromosomes to be drawn.
-#' @param ind An index to specify samples to be drawn.
+#' @param ind A string of sample id or an index to specify the sample to be drawn.
 #' @param node Either one of "raw", "filt", and "cor" to output raw
 #' genotype data, filtered genotype data, or corrected genotype data,
 #' respectively.
@@ -981,18 +990,28 @@ plotReadRatio <- function(x,
     } else {
         chr <- getChromosome(x) %in% chr
     }
-
-    if(is.null(slot(x, "sample")[["parents"]])){
-        parents <- FALSE
-    } else {
+    
+    
+    if(is.character(ind)){
+        valid <- FALSE
         parents <- TRUE
+        ind <- which(getSamID(x, valid = FALSE) %in% ind)
+        id <- getSamID(x, valid = FALSE)[ind]
+        
+    } else {
+        valid <- TRUE
+        if(is.null(slot(x, "sample")[["parents"]])){
+            parents <- FALSE
+        } else {
+            parents <- TRUE
+        }
+        id <- getSamID(x)[ind]
     }
-    read <- getRead(x, node=node, parents=parents)
+    
+    read <- getRead(x, node = node, valid = valid, parents = parents)
     ref <- read$ref[ind, chr]
     alt <- read$alt[ind, chr]
     dp <- ref + alt
-
-    id <- getSamID(x, FALSE)[validSam(x, parents = parents)][ind]
 
     df <- data.frame(chr = getChromosome(x)[chr],
                      pos = getPosition(x)[chr],

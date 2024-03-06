@@ -185,7 +185,7 @@ histGBSR(gds, stats = "ad_ref")
 \ 
 ```{r fig.alt="Alternative read depth per marker and per sample."}
 # Histgrams of allelic read depth
-histGBSR(gds, stats = "ad_ref") 
+histGBSR(gds, stats = "ad_alt") 
 ```
 \ 
 ```{r fig.alt="Reference read per marker and per sample."}
@@ -193,7 +193,7 @@ histGBSR(gds, stats = "ad_ref")
 histGBSR(gds, stats = "rrf") 
 ```
 \ 
-```{r fig.alt="Mean of alternative read depth per marker and per sample."}
+```{r fig.alt="Mean of reference read depth per marker and per sample."}
 # Histgrams of mean allelic read depth
 histGBSR(gds, stats = "mean_ref") 
 ```

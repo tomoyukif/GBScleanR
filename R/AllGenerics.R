@@ -1493,7 +1493,58 @@ setGeneric("setReplicates", function(object,
                                      ...)
     standardGeneric("setReplicates"))
 
-
+#' Get identifiers to indicates which samples are replicates.
+#'
+#' Not implemented yet.
+#' This function assign identifiers that indicates which samples are replicates
+#' those which should have the same genotypes at all markers.
+#'
+#' @param object A [GbsrGenotypeData] object.
+#' @param parents A logical value to indicate whether to include replicate IDs 
+#' for parental samples in the output. If you specify `parents = "only"`, this
+#' function returns replicate IDs only for parental samples.
+#' @param ... Unused.
+#'
+#' @details
+#' The replicates of samples specified in [setReplicates()] will have the same
+#' genotypes at all markers in the estimated genotypes obtained via [estGeno()].
+#' In the genotype estimation by [estGeno()], the Viterbi scores for each
+#' possible genotype (haplotype) at each marker for the replicates will be
+#' replaced with the average score for the replicates.
+#'
+#' @return A [GbsrGenotypeData] object with genotype count information.
+#' 
+#' @seealso [setReplicates()]
+#'
+#' @examples
+#' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+#' gds <- loadGDS(gds_fn)
+#'
+#' gds <- setParents(gds, parents = c("Founder1", "Founder2"))
+#'
+#' # When your data has 100 samples, two replicates for each offspring,
+#' # and the samples are ordered as the 1st replicate followed by the 2nd
+#' # replicate, you can specify replicates as below.
+#' # gds <- setReplicates(gds, replicates = rep(1:50, each = 2))
+#'
+#' # If you need to confirm the order of samples, run the following code.
+#' # id <- getSamID(gds)
+#'
+#' # Replicate IDs should be set also to parents. Therefore, please include
+#'
+#'
+#' # getReplicates(gds)
+#' 
+#' # Close the connection to the GDS file.
+#' closeGDS(gds)
+#'
+#' @export
+#'
+setGeneric("getReplicates", function(object,
+                                     parents = FALSE,
+                                     ...)
+    standardGeneric("getReplicates"))
 
 #' Count genotype calls and alleles per sample and per marker.
 #'
