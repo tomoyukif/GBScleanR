@@ -906,9 +906,18 @@ plotDosage <- function(x,
         alt <- read$alt[ind, chr]
         dp <- ref + alt
         ad <- alt / dp * ploidy
+
+        if(all(is.na(ad))){
+            stop("Missing values at all markers./n",
+                 "This sample might have no read at all markers.")
+        }
     }
 
     geno <- getGenotype(x, node=node, valid = TRUE, parents = parents)[ind, chr]
+    if(all(is.na(geno))){
+        stop("Missing values at all markers./n",
+             "This sample might have no read at all markers.")
+    }
 
     df <- data.frame(chr = getChromosome(x)[chr],
                      pos = getPosition(x)[chr],
@@ -1008,6 +1017,12 @@ plotReadRatio <- function(x,
     ref <- read$ref[ind, chr]
     alt <- read$alt[ind, chr]
     dp <- ref + alt
+    ad <- alt / dp
+
+    if(all(is.na(ad))){
+        stop("Missing values at all markers./n",
+             "This sample might have no read at all markers.")
+    }
 
     df <- data.frame(chr = getChromosome(x)[chr],
                      pos = getPosition(x)[chr],
