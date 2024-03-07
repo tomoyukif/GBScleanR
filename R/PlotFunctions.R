@@ -880,19 +880,17 @@ plotDosage <- function(x,
     pos <- na <- NULL
 
     if (is.null(chr)) {
-        chr <- rep(TRUE, nsam(x))
+        chr <- rep(TRUE, nmar(x))
     } else {
         chr <- getChromosome(x) %in% chr
     }
-    
+
     if(is.character(ind)){
-        valid <- FALSE
         parents <- TRUE
         ind <- which(getSamID(x, valid = FALSE) %in% ind)
         id <- getSamID(x, valid = FALSE)[ind]
-        
+
     } else {
-        valid <- TRUE
         if(is.null(slot(x, "sample")[["parents"]])){
             parents <- FALSE
         } else {
@@ -903,14 +901,14 @@ plotDosage <- function(x,
 
     if(showratio){
         ploidy <- attributes(slot(x, "sample"))[["ploidy"]]
-        read <- getRead(x, node = "raw", valid = valid, parents = parents)
+        read <- getRead(x, node = "raw", valid = TRUE, parents = parents)
         ref <- read$ref[ind, chr]
         alt <- read$alt[ind, chr]
         dp <- ref + alt
         ad <- alt / dp * ploidy
     }
 
-    geno <- getGenotype(x, node=node, valid = valid, parents = parents)[ind, chr]
+    geno <- getGenotype(x, node=node, valid = TRUE, parents = parents)[ind, chr]
 
     df <- data.frame(chr = getChromosome(x)[chr],
                      pos = getPosition(x)[chr],
@@ -986,20 +984,18 @@ plotReadRatio <- function(x,
     pos <- ad <- NULL
 
     if (is.null(chr)) {
-        chr <- rep(TRUE, nsam(x))
+        chr <- rep(TRUE, nmar(x))
     } else {
         chr <- getChromosome(x) %in% chr
     }
-    
-    
+
+
     if(is.character(ind)){
-        valid <- FALSE
         parents <- TRUE
         ind <- which(getSamID(x, valid = FALSE) %in% ind)
         id <- getSamID(x, valid = FALSE)[ind]
-        
+
     } else {
-        valid <- TRUE
         if(is.null(slot(x, "sample")[["parents"]])){
             parents <- FALSE
         } else {
@@ -1007,8 +1003,8 @@ plotReadRatio <- function(x,
         }
         id <- getSamID(x)[ind]
     }
-    
-    read <- getRead(x, node = node, valid = valid, parents = parents)
+
+    read <- getRead(x, node = node, valid = TRUE, parents = parents)
     ref <- read$ref[ind, chr]
     alt <- read$alt[ind, chr]
     dp <- ref + alt
