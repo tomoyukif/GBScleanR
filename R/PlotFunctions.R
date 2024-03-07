@@ -865,7 +865,8 @@ pairsGBSR  <- function(x,
 #' @export
 #' @importFrom ggplot2 ggplot aes geom_point geom_line labs
 #' @importFrom ggplot2 ylim xlab ylab facet_wrap theme
-#' @importFrom ggplot2 scale_colour_gradient
+#' @importFrom ggplot2 scale_colour_gradient scale_size_manual
+#' @importFrom ggplot2 scale_linewidth_manual
 #'
 plotDosage <- function(x,
                        coord = NULL,
@@ -906,35 +907,35 @@ plotDosage <- function(x,
         alt <- read$alt[ind, chr]
         dp <- ref + alt
         ad <- alt / dp * ploidy
-
-        if(all(is.na(ad))){
-            stop("Missing values at all markers./n",
-                 "This sample might have no read at all markers.")
-        }
     }
 
     geno <- getGenotype(x, node=node, valid = TRUE, parents = parents)[ind, chr]
     if(all(is.na(geno))){
-        stop("Missing values at all markers./n",
-             "This sample might have no read at all markers.")
+        warning("Missing values at all markers./n",
+                "This sample might have no read at all markers.")
     }
 
-    df <- data.frame(chr = getChromosome(x)[chr],
-                     pos = getPosition(x)[chr],
-                     geno = geno,
-                     ad = ad,
-                     dp = dp)
+    pos <- getPosition(x)[chr]
+    chr <- getChromosome(x)[chr]
+    max_pos <- tapply(pos, chr, max)
+    min_pos <- tapply(pos, chr, min)
+    dummy <- rbind(data.frame(chr = unique(chr), pos = max_pos, ad = 0, dp = 0),
+                   data.frame(chr = unique(chr), pos = min_pos, ad = 0, dp = 0))
+
+    df <- data.frame(chr = chr, pos = pos, geno = geno, ad = ad, dp = dp)
     df <- df[!is.na(df$geno), ]
     ploidy <- attributes(slot(x, "sample"))[["ploidy"]]
-    p <- ggplot(df)
+    p <- ggplot(df) +
+        geom_point(data = dummy, mapping = aes(x = pos * 10^-6, y = ad),
+                   size = 0)
 
     if(showratio){
-        p <- p + geom_point(mapping = aes(x = pos * 10^-6, y=ad, colour=dp),
-                            size=size, alpha=alpha, stroke=0) +
+        p <- p + geom_point(mapping = aes(x = pos * 10^-6, y = ad, colour = dp),
+                            size = size, alpha = alpha, stroke = 0) +
             scale_colour_gradient(low = dot_fill[1], high = dot_fill[2])
     }
-    p <- p + geom_line(mapping = aes(x = pos * 10^-6, y=geno, group=chr),
-                       color=line_color) +
+    p <- p + geom_line(mapping = aes(x = pos * 10^-6, y = geno, group = chr),
+                       color = line_color) +
         labs(title=paste0("Alternative allele dosage: ", id)) +
         ylim(0, ploidy) +
         xlab("Physical position (Mb)") +
@@ -980,7 +981,7 @@ plotDosage <- function(x,
 #' @export
 #' @importFrom ggplot2 ggplot aes geom_point labs
 #' @importFrom ggplot2 ylim xlab ylab facet_wrap theme
-#' @importFrom ggplot2 scale_colour_gradient
+#' @importFrom ggplot2 scale_colour_gradient scale_size_manual
 #'
 plotReadRatio <- function(x,
                           coord = NULL,
@@ -1020,17 +1021,23 @@ plotReadRatio <- function(x,
     ad <- alt / dp
 
     if(all(is.na(ad))){
-        stop("Missing values at all markers./n",
-             "This sample might have no read at all markers.")
+        warning("Missing values at all markers./n",
+                "This sample might have no read at all markers.")
     }
 
-    df <- data.frame(chr = getChromosome(x)[chr],
-                     pos = getPosition(x)[chr],
-                     ad = alt / dp,
-                     dp = dp)
+    pos <- getPosition(x)[chr]
+    chr <- getChromosome(x)[chr]
+    max_pos <- tapply(pos, chr, max)
+    min_pos <- tapply(pos, chr, min)
+    dummy <- rbind(data.frame(chr = unique(chr), pos = max_pos, ad = 0, dp = 0),
+                   data.frame(chr = unique(chr), pos = min_pos, ad = 0, dp = 0))
 
-    p <- ggplot(df, aes(x = pos * 10^-6, y = ad, group = chr, colour = dp)) +
-        geom_point(size=size, alpha=alpha, stroke=0) +
+    df <- data.frame(chr = chr, pos = pos, ad = ad, dp = dp)
+
+    p <- ggplot(df, aes(x = pos * 10^-6, y = ad, colour = dp)) +
+        geom_point(data = dummy, mapping = aes(x = pos * 10^-6, y = ad),
+                   size = 0) +
+        geom_point(size = size, alpha = alpha, stroke = 0) +
         scale_colour_gradient(low = dot_fill[1], high = dot_fill[2]) +
         labs(title=paste0("Alternative allele read ratio: ", id)) +
         ylim(0, 1) +
