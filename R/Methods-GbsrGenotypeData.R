@@ -372,7 +372,7 @@ setMethod("getGenotype",
                   if(length(dim(out)) == 2){
                       rownames(out) <- .filtData(object, "sample.id", filters)
                       colnames(out) <- .filtData(object, "variant.id", filters)
-                      
+
                   } else {
                       sample_id <- .filtData(object, "sample.id", filters)
                       variant_id <- .filtData(object, "variant.id", filters)
@@ -796,7 +796,7 @@ setMethod("setParents",
                   message("Overwrite the previous parents information.")
                   slot(object, "sample")[["parents"]] <- NULL
               }
-              
+
               id <- getSamID(object, FALSE)
               p_index <- match(parents, id)
               if(any(is.na(p_index))){
@@ -808,14 +808,14 @@ setMethod("setParents",
               p_vec <- integer(nsam(object, FALSE))
               if(is.null(slot(object, "sample")[["replicates"]])){
                   p_vec[p_index] <- seq_len(n_parents)
-                  
+
               } else {
                   replicates <- slot(object, "sample")[["replicates"]]
                   p_rep_id <- replicates[p_index]
                   rep_hit <- match(replicates, p_rep_id)
                   p_vec[!is.na(rep_hit)] <- na.omit(rep_hit)
               }
-              
+
               valid_sam <- validSam(object, FALSE)
               valid_sam[p_vec != 0] <- FALSE
               validSam(object) <- valid_sam
@@ -845,7 +845,7 @@ setMethod("setParents",
 
     } else {
         gt <- getGenotype(object, "raw", "only", FALSE, NULL)
-        
+
     }
 
     if(nonmiss){
@@ -876,7 +876,7 @@ setMethod("setParents",
         if(length(i) == 1){
             return(ad$ref[i, ])
         } else {
-          return(colSums(ad$ref[i, ]))  
+          return(colSums(ad$ref[i, ]))
         }
     })
     ad_ref <- do.call("rbind", ad_ref)
@@ -884,7 +884,7 @@ setMethod("setParents",
         if(length(i) == 1){
             return(ad$alt[i, ])
         } else {
-            return(colSums(ad$alt[i, ]))  
+            return(colSums(ad$alt[i, ]))
         }
     })
     ad_alt <- do.call("rbind", ad_alt)
@@ -896,7 +896,7 @@ setMethod("setParents",
     pl_ref <- log10(1 - seq_error) * ad$ref + log10(seq_error) * ad$alt
     pl_het <- log10(0.5) * (ad$ref + ad$alt)
     pl_alt <- log10(seq_error) * ad$ref + log10(1 - seq_error) * ad$alt
-    
+
     gt[pl_ref > pl_het & pl_ref > pl_alt] <- 0
     gt[pl_het > pl_ref & pl_het > pl_alt] <- 1
     gt[pl_alt > pl_het & pl_alt > pl_ref] <- 2
@@ -930,7 +930,7 @@ setMethod("getReplicates",
           function(object, parents){
               if(is.null(slot(object, "sample")[["replicates"]])){
                   out <- getSamID(object, valid = FALSE)
-                  
+
               } else {
                   out <- slot(object, "sample")[["replicates"]]
               }

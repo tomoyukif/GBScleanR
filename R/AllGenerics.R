@@ -1379,8 +1379,6 @@ setGeneric("closeGDS", function(object, save_filter = FALSE, verbose = TRUE, ...
 #' are not monomorphic in parents.
 #' @param bi A logical value whether to filter out marekrs which
 #' are not biallelic between parents.
-#' @param replicates A vector of integers, numbers, or characters to indicate
-#' grouping of parental samples as replicates.
 #' @param ... Unused.
 #'
 #' @details
@@ -1441,7 +1439,6 @@ setGeneric("setParents", function(object,
                                   nonmiss = FALSE,
                                   mono = FALSE,
                                   bi = FALSE,
-                                  replicates = NULL,
                                   ...)
     standardGeneric("setParents"))
 
@@ -1500,7 +1497,7 @@ setGeneric("setReplicates", function(object,
 #' those which should have the same genotypes at all markers.
 #'
 #' @param object A [GbsrGenotypeData] object.
-#' @param parents A logical value to indicate whether to include replicate IDs 
+#' @param parents A logical value to indicate whether to include replicate IDs
 #' for parental samples in the output. If you specify `parents = "only"`, this
 #' function returns replicate IDs only for parental samples.
 #' @param ... Unused.
@@ -1513,7 +1510,7 @@ setGeneric("setReplicates", function(object,
 #' replaced with the average score for the replicates.
 #'
 #' @return A [GbsrGenotypeData] object with genotype count information.
-#' 
+#'
 #' @seealso [setReplicates()]
 #'
 #' @examples
@@ -1535,7 +1532,7 @@ setGeneric("setReplicates", function(object,
 #'
 #'
 #' # getReplicates(gds)
-#' 
+#'
 #' # Close the connection to the GDS file.
 #' closeGDS(gds)
 #'
