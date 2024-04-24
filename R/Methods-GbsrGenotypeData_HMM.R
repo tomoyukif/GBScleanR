@@ -264,7 +264,7 @@ setMethod("estGeno",
         ad_node <- "raw"
     }
     reads <- getRead(object, ad_node, FALSE, TRUE, chr_i)
-    rep_id <- getReplicates(gds, parents = FALSE)
+    rep_id <- getReplicates(object, parents = FALSE)
     reads <- .pileupAD(ad = reads, rep_id = rep_id)
 
     if(parentless){
@@ -274,7 +274,7 @@ setMethod("estGeno",
 
     } else {
         p_reads <- getRead(object, ad_node, "only", TRUE, chr_i)
-        rep_id <- getReplicates(gds, parents = "only")
+        rep_id <- getReplicates(object, parents = "only")
         p_reads <- .pileupAD(ad = p_reads, rep_id = rep_id)
     }
 
@@ -288,7 +288,7 @@ setMethod("estGeno",
 
 .orderParents <- function(object, p_reads){
     p_id <- getParents(object)
-    rep_id <- getReplicates(gds, parents = "only")
+    rep_id <- getReplicates(object, parents = "only")
     sam_id <- getSamID(object, FALSE)[validSam(object, parents = "only")]
     id_hit <- match(sam_id, p_id$sampleID)
     p_id$rep_id[na.omit(id_hit)] <- rep_id[!is.na(id_hit)]
@@ -686,7 +686,7 @@ setMethod("estGeno",
         parents <- getParents(object)
         n_parents <- length(unique(parents$memberID))
     }
-    n_samples <- length(unique(getReplicates(object = gds)))
+    n_samples <- length(unique(getReplicates(object = object)))
     n_alleles <- 2
     n_ploidy <- attributes(slot(object, "sample"))$ploidy
     pat <- .makePattern(n_parents, n_ploidy, n_alleles, n_samples,
