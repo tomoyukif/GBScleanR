@@ -6,17 +6,9 @@
 \title{Set labels to samples which should be recognized as
 parents of the population to be subjected to error correction.}
 \usage{
-setParents(
-  object,
-  parents,
-  nonmiss = FALSE,
-  mono = FALSE,
-  bi = FALSE,
-  replicates = NULL,
-  ...
-)
+setParents(object, parents, nonmiss = FALSE, mono = FALSE, bi = FALSE, ...)
 
-\S4method{setParents}{GbsrGenotypeData}(object, parents, nonmiss, mono, bi, replicates)
+\S4method{setParents}{GbsrGenotypeData}(object, parents, nonmiss, mono, bi)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
@@ -33,9 +25,6 @@ are not monomorphic in parents.}
 
 \item{bi}{A logical value whether to filter out marekrs which
 are not biallelic between parents.}
-
-\item{replicates}{A vector of integers, numbers, or characters to indicate
-grouping of parental samples as replicates.}
 
 \item{...}{Unused.}
 }

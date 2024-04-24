@@ -24,7 +24,7 @@ columns to draw faceted line plots for chromosomes.}
 
 \item{chr}{A vector of indexes to specify chromosomes to be drawn.}
 
-\item{ind}{An index to specify samples to be drawn.}
+\item{ind}{A string of sample id or an index to specify the sample to be drawn.}
 
 \item{node}{Either one of "raw", "filt", and "cor" to output raw
 genotype data, filtered genotype data, or corrected genotype data,
