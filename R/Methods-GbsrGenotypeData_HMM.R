@@ -72,6 +72,7 @@ setMethod("estGeno",
               seqOptimize(object$filename, "by.sample",
                           c("HAP", "CGT"), verbose = FALSE)
               object <- reopenGDS(object)
+              gc()
               return(object)
           })
 
@@ -130,6 +131,7 @@ setMethod("estGeno",
 ################################################################################
 ################################################################################
 # Initialize output nodes in the GDS file
+#' @importFrom gdsfmt addfolder.gdsn
 .initGDS <- function(object, het_parent, n_parents) {
     hap <- addfolder.gdsn(index.gdsn(object, "annotation/format"), "HAP",
                           replace = TRUE)
@@ -286,6 +288,7 @@ setMethod("estGeno",
                 alt = reads$alt))
 }
 
+#' @importFrom stats na.omit
 .orderParents <- function(object, p_reads){
     p_id <- getParents(object)
     rep_id <- getReplicates(object, parents = "only")

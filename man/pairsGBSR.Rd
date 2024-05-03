@@ -51,27 +51,27 @@ Draw a scatter plot of a pair of specified statistics
 You can draw a scatter plot of per-marker and/or per-sample summary
 statistics specified at \code{stats1} and \code{stats2}. The "stats1" and "stats2"
 arguments can take the following values:
-\itemize{
-\item{"missing"}{"Proportion of missing genotype calls."},
-\item{"het"}{"Proportion of heterozygote calls."},
-\item{"raf"}{"Reference allele frequency."},
-\item{"dp"}{"Total read counts."},
-\item{"ad_ref"}{"Reference allele read counts."},
-\item{"ad_alt"}{"Alternative allele read counts."},
-\item{"rrf"}{"Reference allele read frequency."},
-\item{"mean_ref"}{"Mean of reference allele read counts."},
-\item{"sd_ref"}{"Standard deviation of reference allele read counts."},
-\item{"median_ref"}{"Quantile of reference allele read counts."},
-\item{"mean_alt"}{"Mean of alternative allele read counts."},
-\item{"sd_alt"}{"Standard deviation of alternative allele read counts."},
-\item{"median_alt"}{"Quantile of alternative allele read counts."},
-\item{"mq"}{"Mapping quality."},
-\item{"fs"}{"Phred-scaled p-value (strand bias)"},
-\item{"qd"}{"Variant Quality by Depth"},
-\item{"sor"}{"Symmetric Odds Ratio (strand bias)"},
-\item{"mqranksum"}{"Alt vs. Ref read mapping qualities"},
-\item{"readposranksum"}{"Alt vs. Ref read position bias"},
-\item{"baseqranksum"}{"Alt Vs. Ref base qualities"},
+\describe{
+\item{missing}{Proportion of missing genotype calls.}
+\item{het}{Proportion of heterozygote calls.}
+\item{raf}{Reference allele frequency.}
+\item{dp}{Total read counts.}
+\item{ad_ref}{Reference allele read counts.}
+\item{ad_alt}{Alternative allele read counts.}
+\item{rrf}{Reference allele read frequency.}
+\item{mean_ref}{Mean of reference allele read counts.}
+\item{sd_ref}{Standard deviation of reference allele read counts.}
+\item{median_ref}{Quantile of reference allele read counts.}
+\item{mean_alt}{Mean of alternative allele read counts.}
+\item{sd_alt}{Standard deviation of alternative allele read counts.}
+\item{median_alt}{Quantile of alternative allele read counts.}
+\item{mq}{Mapping quality.}
+\item{fs}{Phred-scaled p-value (strand bias)}
+\item{qd}{Variant Quality by Depth}
+\item{sor}{Symmetric Odds Ratio (strand bias)}
+\item{mqranksum}{Alt vs. Ref read mapping qualities}
+\item{readposranksum}{Alt vs. Ref read position bias}
+\item{baseqranksum}{Alt Vs. Ref base qualities}
 }
 
 To draw scatter plots for "missing", "het", "raf", you need to run
