@@ -1,4 +1,5 @@
-print.GbsrGenotypeData <- function(x) {
+#' @exportS3Method base::print
+print.GbsrGenotypeData <- function(x, ...) {
     show(x)
 }
 
