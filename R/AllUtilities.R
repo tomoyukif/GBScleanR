@@ -56,6 +56,7 @@ gbsrVCF2GDS <- function(vcf_fn,
                         fmt.import = NULL,
                         force = FALSE,
                         verbose = TRUE) {
+    # Check if the out_fn already exists and whether it can be overwritten.
     if (file.exists(out_fn)) {
         message(out_fn, ' exists!')
         while (TRUE) {
@@ -76,6 +77,9 @@ gbsrVCF2GDS <- function(vcf_fn,
 
     # Create GDS file formatted in the SeqArray style.
     stropt <- seqStorageOption(mode = c ('annotation/format/AD' = "int64"))
+    if(!is.null(fmt.import)){
+      fmt.import <- unique(c("AD", fmt.import))
+    }
     out_fn <- seqVCF2GDS(vcf_fn, out_fn, ignore.chr.prefix = "",
                          storage.option = stropt,
                          info.import = info.import,
@@ -83,18 +87,21 @@ gbsrVCF2GDS <- function(vcf_fn,
                          genotype.var.name = gt,
                          verbose = verbose)
     gds <- seqOpen(out_fn)
+    
+    # Filter out non-biallelic markers
     n_allele <- seqNumAllele(gds)
     if(any(n_allele != 2)){
-        message("Some markers are not bi-allelic.",
-                "\nGBScleanR filters out those markers.")
-        message("Filtering non-biallelic markers.")
-        temp_fn <- tempfile("biallelic", tempdir(), ".gds")
-        seqSetFilter(gds, variant.sel = n_allele == 2)
-        seqExport(gds, temp_fn)
-        seqClose(gds)
-        file.copy(temp_fn, out_fn, overwrite = TRUE)
+      message("Some markers are not bi-allelic.",
+              "\nGBScleanR filters out those markers.")
+      message("Filtering non-biallelic markers.")
+      temp_fn <- tempfile("biallelic", tempdir(), ".gds")
+      seqSetFilter(gds, variant.sel = n_allele == 2)
+      seqExport(gds, temp_fn)
+      seqClose(gds)
+      file.copy(temp_fn, out_fn, overwrite = TRUE)
+      
     } else {
-        seqClose(gds)
+      seqClose(gds)
     }
     return(out_fn)
 }
@@ -144,85 +151,94 @@ gbsrVCF2GDS <- function(vcf_fn,
 #' closeGDS(gds)
 #'
 loadGDS <- function(x, load_filter = FALSE, ploidy = 2, verbose = TRUE) {
-    if(verbose){ message('Loading GDS file.') }
-    if(inherits(x = x, what = "GbsrGenotypeData")){
-        if(isOpenGDS(object = x)){
-            closeGDS(object = x, save_filter = FALSE)
-        }
-        # Leave the following connection open to build the GdsGenotypeReader object
-        # with `readonly=FALSE` mode.
-        gds <- seqOpen(gds.fn = x$filename, readonly = FALSE)
-
-    } else if(is.character(x)){
-        # Leave the following connection open to build the GdsGenotypeReader object
-        # with `readonly=FALSE` mode.
-        gds <- seqOpen(gds.fn = x, readonly = FALSE)
-
+  if(verbose){ message('Loading GDS file.') }
+  
+  # Check input data type
+  if(inherits(x = x, what = "GbsrGenotypeData")){
+    if(isOpenGDS(object = x)){
+      closeGDS(object = x, save_filter = FALSE)
+    }
+    # Leave the following connection open to build 
+    # the GdsGenotypeReader object with `readonly = FALSE` mode.
+    gds <- seqOpen(gds.fn = x$filename, readonly = FALSE)
+    
+  } else if(is.character(x)){
+    # Leave the following connection open to build 
+    # the GdsGenotypeReader object with `readonly = FALSE` mode.
+    gds <- seqOpen(gds.fn = x, readonly = FALSE)
+    
+  } else {
+    stop("x must be a file path or a GbsrGenotypeData object",
+         call. = FALSE)
+  }
+  
+  # Parse the GBSR output formats in VCF
+  .parseGBSRformat(gds = gds)
+  
+  # Optimize gds nodes
+  opt <- exist.gdsn(node = gds, path = "genotype/~data") &
+    exist.gdsn(node = gds, path = "annotation/format/AD/~data")
+  if(!opt){
+    seqClose(object = gds)
+    seqOptimize(gdsfn = gds$filename, target = "by.sample",
+                format.var = c("AD", "FAD", "HAP", "CGT", "FGT"),
+                verbose = verbose)
+    gds <- seqOpen(gds.fn = gds$filename, readonly = FALSE)
+  }
+  
+  # Create the GbsrGenotypeData class object
+  d <- seqSummary(gdsfile = gds, varname = "genotype", verbose = FALSE)
+  marker <- data.frame(valid = rep(TRUE, d$dim[3]))
+  sample <- data.frame(valid = rep(TRUE, d$dim[2]))
+  attributes(sample) <- c(attributes(sample), list(ploidy = ploidy))
+  gds <- new(Class = "GbsrGenotypeData", gds, sample = sample, marker = marker)
+  
+  # Load filtering information if specified
+  if(load_filter){
+    if(exist.gdsn(gds, "sample.annotation/GFL")){
+      validSam(gds) <- read.gdsn(index.gdsn(gds, "sample.annotation/GFL"))
+      validMar(gds) <- read.gdsn(index.gdsn(gds, "annotation/info/GFL"))
+      
     } else {
-        stop("x must be a file path or a GbsrGenotypeData object",
-             call. = FALSE)
+      warnings("No filtering information stored in the GDS.")
     }
-
-    for(node in c("FGT", "CGT", "HAP")){
-        gdsn <- paste0("annotation/format/", node)
-        if(exist.gdsn(gds, gdsn)){
-            message("Reformatting ", node)
-            i_gdsn <- index.gdsn(gds, paste0(gdsn, "/data"))
-            gdsn_dim <- objdesp.gdsn(i_gdsn)
-            if(length(gdsn_dim$dim) != 3){
-                if(node == "FGT"){storage <- "bit2"; na_val <- 3}
-                if(node == "CGT"){storage <- "bit2"; na_val <- 3}
-                if(node == "HAP"){storage <- "bit6"; na_val <- 0}
-
-                tmp_gdsn <- add.gdsn(index.gdsn(gds, gdsn),
-                                     "tmp", NULL, storage, NULL,
-                                     replace = TRUE)
-                apply.gdsn(i_gdsn, margin = 1,
-                           function(x){
-                               x <- unlist(strsplit(x, "\\||/"))
-                               x[x == "."] <- na_val
-                               x <- as.integer(x)
-                               return(x)
-                           },
-                           as.is = "gdsnode",
-                           target.node = tmp_gdsn)
-                setdim.gdsn(tmp_gdsn, c(2, gdsn_dim$dim[2], gdsn_dim$dim[1]))
-                i_gdsn <- add.gdsn(index.gdsn(gds, gdsn),
-                                   "data", NULL, storage, NULL,
-                                   replace = TRUE)
-                apply.gdsn(tmp_gdsn, margin = 2, c, as.is = "gdsnode",
-                           target.node = i_gdsn)
-                setdim.gdsn(i_gdsn, c(2, gdsn_dim$dim[1], gdsn_dim$dim[2]))
-                delete.gdsn(tmp_gdsn)
-            }
-        }
-    }
-
-    opt <- exist.gdsn(node = gds, path = "genotype/~data") &
-        exist.gdsn(node = gds, path = "annotation/format/AD/~data")
-    if(!opt){
-        seqClose(object = gds)
-        seqOptimize(gdsfn = gds$filename, target = "by.sample",
-                    format.var = c("AD", "FAD", "HAP", "CGT", "FGT"),
-                    verbose = verbose)
-        gds <- seqOpen(gds.fn = gds$filename, readonly = FALSE)
-    }
-
-    d <- seqSummary(gdsfile = gds, varname = "genotype", verbose = FALSE)
-    marker <- data.frame(valid = rep(TRUE, d$dim[3]))
-    sample <- data.frame(valid = rep(TRUE, d$dim[2]))
-    attributes(sample) <- c(attributes(sample), list(ploidy = ploidy))
-    gds <- new(Class = "GbsrGenotypeData", gds, sample = sample, marker = marker)
-
-    if(load_filter){
-        if(exist.gdsn(gds, "sample.annotation/GFL")){
-            validSam(gds) <- read.gdsn(index.gdsn(gds, "sample.annotation/GFL"))
-            validMar(gds) <- read.gdsn(index.gdsn(gds, "annotation/info/GFL"))
-
-        } else {
-            warnings("No filtering information stored in the GDS.")
-        }
-    }
-    return(gds)
+  }
+  return(gds)
 }
 
+.parseGBSRformat <- function(gds){
+  for(node in c("FGT", "CGT", "HAP")){
+    gdsn <- paste0("annotation/format/", node)
+    if(exist.gdsn(gds, gdsn)){
+      message("Reformatting ", node)
+      i_gdsn <- index.gdsn(gds, paste0(gdsn, "/data"))
+      gdsn_dim <- objdesp.gdsn(i_gdsn)
+      if(length(gdsn_dim$dim) != 3){
+        if(node == "FGT"){storage <- "bit2"; na_val <- 3}
+        if(node == "CGT"){storage <- "bit2"; na_val <- 3}
+        if(node == "HAP"){storage <- "bit6"; na_val <- 0}
+        
+        tmp_gdsn <- add.gdsn(index.gdsn(gds, gdsn),
+                             "tmp", NULL, storage, NULL,
+                             replace = TRUE)
+        apply.gdsn(i_gdsn, margin = 1,
+                   function(x){
+                     x <- unlist(strsplit(x, "\\||/"))
+                     x[x == "."] <- na_val
+                     x <- as.integer(x)
+                     return(x)
+                   },
+                   as.is = "gdsnode",
+                   target.node = tmp_gdsn)
+        setdim.gdsn(tmp_gdsn, c(2, gdsn_dim$dim[2], gdsn_dim$dim[1]))
+        i_gdsn <- add.gdsn(index.gdsn(gds, gdsn),
+                           "data", NULL, storage, NULL,
+                           replace = TRUE)
+        apply.gdsn(tmp_gdsn, margin = 2, c, as.is = "gdsnode",
+                   target.node = i_gdsn)
+        setdim.gdsn(i_gdsn, c(2, gdsn_dim$dim[1], gdsn_dim$dim[2]))
+        delete.gdsn(tmp_gdsn)
+      }
+    }
+  }
+}

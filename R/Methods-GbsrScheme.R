@@ -14,7 +14,7 @@ setMethod("initScheme",
                        call. = FALSE)
               }
               object@parents <- parents
-              object@crosstype <- list(rep("pairing", ncol(mating)))
+              object@crosstype <- list(rep(x = "pairing", times = ncol(mating)))
               object@mating <- list(mating)
               object@progenies <- list(seq(max(parents) + 1, by = 1,
                                            length.out = ncol(mating)))
@@ -53,7 +53,7 @@ setMethod("initScheme",
 setMethod("addScheme",
           "GbsrScheme",
           function(object, crosstype, mating) {
-              crosstype <- sapply(crosstype, match.arg,
+              crosstype <- sapply(X = crosstype, FUN = match.arg,
                                   choices = c("pairing", "selfing", "sibling"))
 
               last_gen <- unlist(tail(object@progenies, 1))
@@ -67,22 +67,24 @@ setMethod("addScheme",
                   if(is_na_mating){
                       if (crosstype == "pairing") {
                           mating <- t(expand.grid(last_gen, last_gen))
-                          mating <- unique(t(apply(mating, 2, sort)))
+                          mating <- apply(X = mating, MARGIN = 2, FUN = sort)
+                          mating <- unique(t(mating))
                           mating <- t(mating[mating[, 1] != mating[, 2], ])
                           message("As `mating` was not specified,",
                                   " set the following mating design.")
                           print(mating)
-                          crosstype <- rep(crosstype, ncol(mating))
+                          crosstype <- rep(x = crosstype, times = ncol(mating))
 
                       } else {
-                          mating <- matrix(rep(last_gen, each = 2), 2)
+                          mating <- matrix(data = rep(x = last_gen, each = 2), 
+                                           nrow = 2)
                           message("As `mating` was not specified,",
                                   " set the following mating design.")
                           print(mating)
-                          crosstype <- rep(crosstype, ncol(mating))
+                          crosstype <- rep(x = crosstype, times = ncol(mating))
                       }
                   } else {
-                      crosstype <- rep(crosstype, ncol(mating))
+                      crosstype <- rep(x = crosstype, times = ncol(mating))
                   }
               } else {
                   if(length(crosstype) != ncol(mating)){
@@ -113,14 +115,14 @@ setMethod("addScheme",
 setMethod("assignScheme",
           "GbsrScheme",
           function(object, id) {
-              valid_id <- unlist(slot(object, "progenies"))
+              valid_id <- unlist(slot(object = object, name = "progenies"))
               if(!all(id %in% valid_id)){
                   stop("Invalid specification of member ID(s) to sample(s)!\n",
                        "You can asign only progenies' member ID(s) to sample(s).\n",
                        "Progenies' member ID(s) are: ", paste(valid_id, collapse = ", "),
                        call. = FALSE)
               }
-              slot(object, "samples") <- id
+              slot(object = object, name = "samples") <- id
               return(object)
           })
 
@@ -140,19 +142,25 @@ setMethod("showScheme",
                   message("No scheme information.\nRun initScheme().")
               }
               n_gen <- length(object@progenies)
-              for (i in seq_len(n_gen)) {
+              
+              for(i in seq_len(n_gen)){
                   if (i == 1) {
                       message('\nGeneration: ', appendLF = FALSE)
                       cat("Parents")
+                      
                       parents <- object@parents
                       message('\nThe number of parents: ', appendLF = FALSE)
                       cat(length(unique(parents)))
+                      
                       message('\nSample IDs: ', appendLF = FALSE)
                       cat(parents_name)
+                      
                       message('\nMember IDs: ', appendLF = FALSE)
                       cat(parents)
+                      
                       message('\nCross type: ', appendLF = FALSE)
                       cat(object@crosstype[[i]])
+                      
                       message('\nMating: ')
                       mating <- object@mating[[i]]
                       rownames(mating) <-
@@ -160,20 +168,26 @@ setMethod("showScheme",
                       colnames(mating) <-
                           paste("combination", seq_len(ncol(mating)), sep = "")
                       print(mating)
+                      
                       message('Member IDs of progenites: ', appendLF = FALSE)
                       cat(object@progenies[[i]])
+                      
                   } else {
                       message("")
                       message("-------------------------")
                       message('Generation: ', appendLF = FALSE)
                       cat(i - 1)
+                      
                       members <- object@progenies[[i - 1]]
                       message('\nThe number of members: ', appendLF = FALSE)
                       cat(length(members))
+                      
                       message('\nMember IDs: ', appendLF = FALSE)
                       cat(members)
+                      
                       message('\nCross type: ', appendLF = FALSE)
                       cat(object@crosstype[[i]])
+                      
                       message('\nMating: ')
                       mating <- object@mating[[i]]
                       rownames(mating) <-
@@ -181,24 +195,30 @@ setMethod("showScheme",
                       colnames(mating) <-
                           paste("combination", seq_len(ncol(mating)), sep = "")
                       print(mating)
+                      
                       message('Member IDs of progenites: ', appendLF = FALSE)
                       cat(object@progenies[[i]])
                   }
+                
                   if(i == n_gen){
                       message('\nAssigned member IDs to samples: ',
                               appendLF = FALSE)
                       if(length(object@samples) == 0){
                           cat("Not assigned.")
+                        
                       } else {
                           message('')
-                          txt <- apply(pedigree, 1, paste, collapse = ":")
+                          txt <- apply(X = pedigree, MARGIN = 1, 
+                                       FUN = paste, collapse = ":")
                           n_txt <- length(txt)
                           for(i in seq_len(n_txt)){
                               if(i == n_txt){
                                   cat(txt[i])
+                                
                               } else {
                                   if(i %% 6 == 0){
                                       cat(paste0(txt[i], "\n"))
+                                    
                                   } else {
                                       cat(paste0(txt[i], ", "))
                                   }

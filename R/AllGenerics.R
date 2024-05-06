@@ -429,6 +429,7 @@ setGeneric("getGenotype", function(object,
                                    parents = FALSE,
                                    valid = TRUE,
                                    chr = NULL,
+                                   phased = FALSE,
                                    ...)
     standardGeneric("getGenotype"))
 

@@ -1,4 +1,3 @@
-library(GBScleanR)
 library(SeqArray)
 
 vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
@@ -11,7 +10,7 @@ test_that("Number of markers",
               gds <- loadGDS(gds_fn)
               expect_equal(nmar(gds),
                            length(seqGetData(gds, "chromosome")))
-              expect_equal(nmar(gds, chr=1),
+              expect_equal(nmar(gds, chr = 1),
                            length(seqGetData(gds, "chromosome") == 1))
               expect_equal(nmar(gds, chr = 100), 0)
               expect_equal(nmar(gds, valid=FALSE),
