@@ -1,5 +1,3 @@
-library(GBScleanR)
-
 test_that("gbsrGDS2VCF", {
     if(Sys.info()["sysname"] != "Windows"){
         vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")

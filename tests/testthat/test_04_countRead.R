@@ -1,5 +1,3 @@
-library(GBScleanR)
-
 vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
 gds_fn <- tempfile("sample", fileext = ".gds")
 gbsrVCF2GDS(vcf_fn, gds_fn)
