@@ -469,13 +469,16 @@ setMethod("getGenotype",
 
     # Prepare the output
     pgt_index <- index.gdsn(node = object, path = node)
-    sel <- list(rep(x = TRUE, times = length(member_id) * ploidy),
+    sel <- list(rep(x = TRUE, times = length(unique(member_id)) * ploidy),
                 filt_mar)
     out <- readex.gdsn(node = pgt_index, sel = sel)
+    p_info <- getParents(object = object)
+    p_indices <- rbind(p_info$memberID * 2 - 1, p_info$memberID * 2)
+    out <- out[as.vector(p_indices), ]
 
     # Set row and col names
-    rownames(out) <- paste(rep(x = member_id, each = ploidy),
-                           seq_len(ploidy), sep="_")
+    rownames(out) <- paste(rep(p_info$sampleID, each = ploidy),
+                           seq_len(ploidy), sep = "_")
     filters <- .makeFilter(object = object, parents = TRUE,
                            valid = valid, chr = chr)
     colnames(out) <- .filtData(object = object,
@@ -948,6 +951,16 @@ setMethod("setParents",
                   stop("No sample named: ", missing_id, call. = FALSE)
               }
 
+              # Check if specified parental samples have been set as replicates
+              replicates <- getReplicates(object = object, parents = TRUE)
+              p_replicates <- replicates[p_index]
+              if(any(duplicated(p_replicates))){
+                  stop("Some specified samples have been set as replicates.",
+                       "\nSpecify one of the sample IDs for the replicates as",
+                       " a parent.",
+                       "\nSee the vignette for more information.")
+              }
+
               # Set replicates to have the same index
               n_parents <- length(p_index)
               p_vec <- integer(nsam(object = object, valid = FALSE))
@@ -1066,17 +1079,35 @@ setMethod("setReplicates",
           "GbsrGenotypeData",
           function(object, replicates){
 
-              target_samples <- validSam(object = object)
-              if(sum(target_samples) != length(replicates)){
-                  stop("\nsum(validSam(object)) is not equal to",
-                       " lenght(replicates). \n",
-                       "Replicate IDs should be set to all valid samples.",
+              n_samples <- nsam(object = object, valid = FALSE)
+              if(sum(n_samples) != length(replicates)){
+                  stop("\nThe length of the vector specified to the replicates",
+                       " argument does not match the number of total samples ",
+                       "obtained by nsam(object = object, valid = FALSE).",
+                       "\nReplicate IDs should be set to all samples.",
+                       "\nSee the vignette for more information.",
                        call. = FALSE)
               }
               replicates <- as.numeric(factor(replicates))
               sample <- slot(object = object, name = "sample")
-              sample$replicates[target_samples] <- replicates
+              sample$replicates <- replicates
               slot(object = object, name = "sample") <- sample
+
+              p_info <- getParents(object = object)
+              n_p <- length(unique(p_info$memberID))
+              if(!is.null(p_info)){
+                  object <- setParents(object = object,
+                                       parents = p_info$sampleID)
+                  p_info <- getParents(object = object)
+                  n_p_updated <- length(unique(p_info$memberID))
+
+                  if(n_p != n_p_updated){
+                  warning("The number of parents was changed",
+                          " after setting replicates.",
+                          "\nCheck the parent information with 'getParents()'.")
+                  }
+              }
+
               return(object)
           })
 
@@ -2588,10 +2619,10 @@ setMethod("makeScheme",
               if(is.null(parents)){
                   stop("Parents have not been set.\n Run setParents().")
               }
-              if(parents$memberID %% 2 != 0){
+              if(!length(unique(parents$memberID)) %in% 2^(1:10)){
                   stop("The number of parents should be the Nth power of 2.")
               }
-              mating <- matrix(data = seq_along(parents$memberID),
+              mating <- matrix(data = seq_along(unique(parents$memberID)),
                                nrow = 2,
                                byrow = TRUE)
               object <- initScheme(object = object, mating = mating)

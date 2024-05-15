@@ -2633,7 +2633,7 @@ setGeneric("addScheme", function(object, crosstype, mating, ...)
 #'
 #' # Close the connection to the GDS file
 #' closeGDS(gds)
-setGeneric("makeScheme", function(object, crosstype, generation, ...)
+setGeneric("makeScheme", function(object, generation, crosstype, ...)
     standardGeneric("makeScheme"))
 
 #' Assign member IDs to samples
