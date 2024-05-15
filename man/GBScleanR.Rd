@@ -2,8 +2,8 @@
 % Please edit documentation in R/GBScleanR.R
 \docType{package}
 \name{GBScleanR}
-\alias{GBScleanR-package}
 \alias{GBScleanR}
+\alias{GBScleanR-package}
 \title{GBScleanR: A package to conduct error correction for noisy genotyping by
 sequencing (reduced representation sequencing based genotyoing) data.}
 \description{

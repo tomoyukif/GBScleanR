@@ -11,10 +11,11 @@ getGenotype(
   parents = FALSE,
   valid = TRUE,
   chr = NULL,
+  phased = FALSE,
   ...
 )
 
-\S4method{getGenotype}{GbsrGenotypeData}(object, node, parents, valid, chr)
+\S4method{getGenotype}{GbsrGenotypeData}(object, node, parents, valid, chr, phased)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
