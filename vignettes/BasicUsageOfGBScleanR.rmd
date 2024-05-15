@@ -471,6 +471,7 @@ The error correction algorithm of `r Biocpkg("GBScleanR")` bases on the HMM assu
 
 
 ## Set replicates
+The update on 
 ```{r}
 
 ```
@@ -609,7 +610,7 @@ The `coord` argument controls the number of rows and columns of the facets in th
 ## Genotype estimation
 ### Prepare scheme information
 Before executing the function for true genotype estimation, we need to build a scheme object. The update on May 17, 2024 added a wrapper function for scheme information preparation. If your population has been developed in a relatively simple scheme, you can use the `makeScheme()` function.
-```{r}
+```{r, eval=FALSE}
 # For selfed F2 population
 gds <- makeScheme(gds, generation = 2, crosstype = "self")
 
@@ -622,7 +623,15 @@ gds <- makeScheme(gds, generation = 5, crosstype = "self")
 # For F1 population
 gds <- makeScheme(gds, generation = 1) # the crosstype argument will be ignored.
 ```
-When your population has $2^n$ parents specified by `setParents()`, `makeScheme()` assumes those parents were crossed 
+When your population has $2^n$ parents specified by `setParents()`, `makeScheme()` assumes those parents were crossed in the "funnel" design in which $2^n$ parents are crossed to obtain $2^n/2$ F1 hybrids followed by successive intercrossings (pairings) of the hybrids to combine the genomes of all parents in one family of siblings. The `makeScheme()` function assumes that the parents that were assigned an odd number member ID (N) in `setParents()` had been crossed with the parent that were assigned an even number (N+1). For example, if you set parents as shown below. The `makeScheme()` function prepare a scheme information that indicates the intercrossings of "p1 x p2", "p3 x p4", "p5 x p6", and "p7 x p8" followed by crossing of "p1xp2_F1 x p3xp4_F1" and "p5xp6_F1 x p7xp8_F1" and then crossing of the two 4-way crossed liens to produce 8-way crossed hybrid lines. If, for example, `generation = 5` indicating an F5 generation was specified to `makeScheme()`, the function adds 4 successive selfing or sibling crossings in the scheme.
+```{r, eval=FALSE}
+gds <- setParents(gds, 
+                  parents = c("p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8"))
+# Member IDs will be 1, 2, 3, 4, 5, 6, 7, and 8 
+# for p1, p2, p3, p4, p5, p6, p7, and p8, respectively.
+```
+
+
 
 In many cases, `makeScheme()` is enough to prepare scheme information. However, if your population underwent more complicated crossings, please register scheme information step-by-step as shown below.
 
@@ -632,7 +641,7 @@ Our sample data is of a biparental F2 population derived from inbred founders. T
 # founders, never be "selfing" and a "sibling" cross,
 # the argument `crosstype` in initScheme() was deprecated on the update on April 6, 2023.
 # gds <- initScheme(gds, crosstype = "pairing", mating = matrix(1:2, 2))
-gds <- initScheme(gds, mating = matrix(1:2, 2))
+gds <- initScheme(gds, mating = rbind(1, 2))
 gds <- addScheme(gds, crosstype = "selfing")
 ```
 \ 

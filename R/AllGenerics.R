@@ -2573,6 +2573,69 @@ setGeneric("addScheme", function(object, crosstype, mating, ...)
     standardGeneric("addScheme"))
 
 
+#' Automate a [GbsrScheme] object building.
+#'
+#' [GBScleanR] uses breeding scheme information to set the expected
+#' number of cross overs in a chromosome which is a required parameter
+#' for the genotype error correction with the Hidden Markov model
+#' implemented in the `estGeno()` function.
+#' This function automates the building of a [GbsrScheme] object.
+#'
+#' @param object A [GbsrGenotypeData] object.
+#' @param crosstype A string to indicate the type of
+#' cross conducted with a given generation.
+#' @param generation An integer to indicate which generation of selfing or
+#' sibling-crossing your population is.
+#' @param ... Unused.
+#'
+#' @return A [GbsrGenotypeData] object storing
+#' a [GbsrScheme] object in the "scheme" slot.
+#'
+#' @details
+#' A scheme object is just a data.frame indicating a population size and
+#' a type of cross applied to each generation of the breeding process
+#' to generate the population which you are going to subject
+#' to the [estGeno()] function.
+#' The `crosstype` specified to [makeScheme()] can take "selfing" and "sibling".
+#' When your population has $2^n$ parents specified by [setParents()],
+#' [makeScheme()] assumes those parents were crossed in the "funnel" design in
+#' which $2^n$ parents are crossed to obtain $2^n/2$ F1 hybrids followed by
+#' successive intercrossings (pairings) of the hybrids to combine the genomes
+#' of all parents in one family of siblings. The [makeScheme()] function assumes
+#' that the parents that were assigned an odd number member ID (N) in
+#' [setParents()] had been crossed with the parent that were assigned an even
+#' number (N+1). For example, if you set parents as shown below. The
+#' [makeScheme()] function prepare a scheme information that indicates the
+#' intercrossings of "p1 x p2", "p3 x p4", "p5 x p6", and "p7 x p8" followed by
+#' crossing of "p1xp2_F1 x p3xp4_F1" and "p5xp6_F1 x p7xp8_F1" and then crossing
+#' of the two 4-way crossed liens to produce 8-way crossed hybrid lines. If,
+#' for example, `generation = 5` indicating an F5 generation was specified to
+#' [makeScheme()], the function adds 4 successive selfing or sibling crossings
+#' in the scheme. The created [GbsrScheme] object will be set in the `scheme`
+#' slot of the [GbsrGenotypeData] object.
+#'
+#' @export
+#'
+#' @seealso [initScheme()], [addScheme()], and [showScheme()]
+#'
+#' @examples
+#' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+#' gds <- loadGDS(gds_fn)
+#'
+#' # Biparental F2 population.
+#' gds <- setParents(gds, parents = c("Founder1", "Founder2"))
+#'
+#' gds <- makeScheme(gds, crosstype = "self")
+#'
+#' ############################################################################
+#' # Now you can execute `estGeno()` which requires a [GbsrScheme] object.
+#'
+#' # Close the connection to the GDS file
+#' closeGDS(gds)
+setGeneric("makeScheme", function(object, crosstype, generation, ...)
+    standardGeneric("makeScheme"))
+
 #' Assign member IDs to samples
 #'
 #' [GBScleanR] uses breeding scheme information to set the expected
