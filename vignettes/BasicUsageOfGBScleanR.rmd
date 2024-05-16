@@ -882,7 +882,7 @@ Alternatively, you can also output the genotype data into a CSV file using `gbsr
 ```{r eval=FALSE}
 out_fn <- tempfile("sample_est", fileext = ".csv")
 gbsrGDS2CSV(gds, out_fn)
-gbsrGDS2VCF(gds, out_fn, node = "cor")
+gbsrGDS2CSV(gds, out_fn, node = "cor")
 ```
 You can format the output for the `r CRANpkg("qtl")` package. 
 ```{r eval=FALSE}

@@ -2278,13 +2278,13 @@ setGeneric("gbsrGDS2VCF", function(object,
 #'
 #' @return The path to the CSV file.
 #'
-#' @details Create a CSV file at location specified by out_fn. The current
-#'  implementation only changes the behavior when `format = "qtl"` to export
-#'  the data in the r/qtl format that can be loaded using read.cross as
-#' `format = "csvs` with a phenotype data. Any other values are ignored and
-#' output a CSV file with the rows indicating chromosome ID and positions of
-#' markers followed by the rows indicating genotype or haplotype data of
-#' samples. If `read = TRUE`, the output of each genotype call would be in
+#' @details Create a CSV file at location specified by out_fn. The setting
+#' `format = "qtl"` makes the function export the data in the r/qtl format
+#' that can be loaded using read.cross as
+#' `format = "csvs` with a phenotype data. The output CSV file has the rows
+#' indicating chromosome ID and positions of markers followed by the rows
+#' indicating genotype or haplotype data of samples.
+#' If `read = TRUE`, the output of each genotype call would be in
 #' the form of `GT:ADR,ADA` where GT, ADR, and ADA represent genotype,
 #' referenece read count, and alternative read count, respectively.
 #' If `format = "qtl"`, `read = TRUE` will be ignored.
