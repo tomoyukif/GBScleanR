@@ -1212,7 +1212,8 @@ setMethod("estGeno",
         best_geno_r <- .hap2geno(hap = best_hap_r,
                                  p_geno = p_geno_r,
                                  param_list = param_list)
-        param_list$p_geno_fix <- best_pat_r$p_geno[param_list$n_mar]
+        last_half <- (round(param_list$n_mar / 2) + 1):param_list$n_mar
+        param_list$p_geno_fix <- best_pat_r$p_geno[last_half]
 
     } else {
         best_pat_f <- .getBestSeq(param_list = param_list, outprob = outprob)
@@ -1221,7 +1222,8 @@ setMethod("estGeno",
         best_geno_f <- .hap2geno(hap = best_hap_f,
                                  p_geno = p_geno_f,
                                  param_list = param_list)
-        param_list$p_geno_fix <- best_pat_f$p_geno[param_list$n_mar]
+        last_half <- (round(param_list$n_mar / 2) + 1):param_list$n_mar
+        param_list$p_geno_fix <- best_pat_f$p_geno[last_half]
     }
 
     message("\r", "Backward round of genotype estimation  ...")

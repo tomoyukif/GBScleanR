@@ -1,3 +1,12 @@
+Changes in version 1.9.3 (2024-5-16)
++ Modify the estGeno() function to make it fix the parental genotypes at the 
++ first half of markers, for the reverse-direction genotype estimation step, as 
++ those were estimated in the forward-direction genotype estimation step. This 
++ modification make the function to avoid estimating the different haplotype 
++ combinations as the border of the first half and last half of markers after 
++ the concatenation of the first half and last half of estimated haplotypes in 
++ the .halfJoint() function.
+
 Changes in version 1.9.2 (2024-5-16)
 + Update the vignette.
 
