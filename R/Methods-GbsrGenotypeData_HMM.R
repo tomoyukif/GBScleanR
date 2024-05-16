@@ -984,13 +984,38 @@ setMethod("estGeno",
 
 .solveBorderConflict <- function(best_hap, param_list){
     half <- round(param_list$n_mar / 2)
-    filp_i <- apply(X = best_hap, MARGIN = 2,
-                    FUN = function(x){
-                        return(any(x[, half] != x[, half + 1]))
-                    })
+    flip_i <- vapply(X = seq_len(dim(best_hap)[2]),
+                     FUN = .checkBorder,
+                     best_hap = best_hap,
+                     param_list = param_list,
+                     half = half,
+                     FUN.VALUE = logical(length = 1L))
     half_m <- -seq(1, half)
-    best_hap[, filp_i, half_m] <- best_hap[2:1, filp_i, half_m]
+    best_hap[, flip_i, half_m] <- best_hap[2:1, flip_i, half_m]
     return(best_hap)
+}
+
+.checkBorder <- function(i, best_hap, param_list, half){
+    if(i <= param_list$n_parents){
+        return(FALSE)
+    }
+    i_redigree <- param_list$pedigree[i - param_list$n_parents]
+    i_pedigree <- names(param_list$pat$hap_progeny) %in% i_redigree
+    i_pedigree <- which(i_pedigree)
+    i_hap_progeny <- t(param_list$pat$hap_progeny[[i_pedigree]])
+    hap1 <- which(colSums(i_hap_progeny == best_hap[, i, half]) == 2)
+    hap2 <- which(colSums(i_hap_progeny == best_hap[, i, half + 1]) == 2)
+    re <- rev(seq_along(best_hap[, i, half + 1]))
+    hap3 <- which(colSums(i_hap_progeny == best_hap[re, i, half + 1]) == 2)
+    prob1 <- param_list$trans_prob[[i_pedigree]][hap1, hap2, half]
+    prob2 <- param_list$trans_prob[[i_pedigree]][hap1, hap3, half]
+    if(prob1 < prob2){
+        out <- TRUE
+
+    } else {
+        out <- FALSE
+    }
+    return(out)
 }
 
 .minimizeRecombination <- function(best_hap){

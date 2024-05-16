@@ -1,3 +1,15 @@
+Changes in version 1.9.2 (2024-5-16)
++ Update the vignette.
+
+Changes in version 1.9.1 (2024-5-15)
++ Change .minimizeRecombination() to make it ignore the cases that are not listed
++ on the possible haplotype combinations.
++ Change the coding of .solveBorderConflict() to make it faster.
++ Add gbsrGDS2CSV() to output a CSV file.
++ Add setReplicates() to allow replicates in the data and modified estGeno() to
++ sum up read counts of replicates for genotype estimation.
++ Add makeScheme() to allow a simpler assignment of the scheme information.
+
 Changes in version 1.5.13 (2023-10-17)
 + Update manual pages for plotDosage() and plotReadRatio().
 
