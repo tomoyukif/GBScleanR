@@ -42,22 +42,30 @@ setMethod("estGeno",
               chr_levels <- unique(chr)
               no_eds <- FALSE
               for(chr_i in chr_levels) {
-                  message("\nNow cleaning chr ", chr_i, "...")
-                  clean_out <- .cleanEachChr(object = object,
-                                             chr_i = chr_i,
-                                             error_rate = error_rate,
-                                             recomb_rate = recomb_rate,
-                                             call_threshold = call_threshold,
-                                             het_parent = het_parent,
-                                             optim = optim,
-                                             iter = iter,
-                                             fix_bias = fix_bias,
-                                             fix_mismap = fix_mismap,
-                                             parentless = parentless,
-                                             dummy_reads = dummy_reads)
-                  # ### Debug
-                  # return(clean_out)
-                  # ###
+                  if(nmar(object = object, valid = TRUE, chr = chr_i) == 0){
+                      no_valid_marker <- TRUE
+
+                  } else {
+                      no_valid_marker <- FALSE
+
+                      message("\nNow cleaning chr ", chr_i, "...")
+                      clean_out <- .cleanEachChr(object = object,
+                                                 chr_i = chr_i,
+                                                 error_rate = error_rate,
+                                                 recomb_rate = recomb_rate,
+                                                 call_threshold = call_threshold,
+                                                 het_parent = het_parent,
+                                                 optim = optim,
+                                                 iter = iter,
+                                                 fix_bias = fix_bias,
+                                                 fix_mismap = fix_mismap,
+                                                 parentless = parentless,
+                                                 dummy_reads = dummy_reads)
+                      # ### Debug
+                      # return(clean_out)
+                      # ###
+                  }
+
 
                   # Make filters to store the output into the nodes
                   if(parentless){
@@ -72,15 +80,18 @@ setMethod("estGeno",
                   }
 
                   # Output values to the nodes
-                  .saveHap(object = object, clean_out = clean_out, sel = sel)
-                  .saveGeno(object = object, clean_out = clean_out, sel = sel)
-                  .savePGeno(object = object, clean_out = clean_out, sel = sel)
-                  .saveADB(object = object, clean_out = clean_out, sel = sel)
-                  .saveMR(object = object, clean_out = clean_out, sel = sel)
+                  .saveOutput(object = object,
+                              clean_out = clean_out,
+                              sel = sel,
+                              no_valid_marker = no_valid_marker,
+                              n_parents = n_parents)
 
                   # Output the dosage data if available
                   if(n_parents == 2 & !het_parent){
-                      .saveEDS(object = object, clean_out = clean_out, sel = sel)
+                      .saveEDS(object = object,
+                               clean_out = clean_out,
+                               sel = sel,
+                               no_valid_marker = no_valid_marker)
                   }
               }
 
@@ -206,12 +217,40 @@ setMethod("estGeno",
 ################################################################################
 ################################################################################
 # Save the ouput to the GDS file
+
+.saveOutput <- function(object, clean_out, sel, no_valid_marker, n_parents){
+    .saveHap(object = object,
+             clean_out = clean_out,
+             sel = sel,
+             no_valid_marker = no_valid_marker)
+    .saveGeno(object = object,
+              clean_out = clean_out,
+              sel = sel,
+              no_valid_marker = no_valid_marker)
+    .savePGeno(object = object,
+               clean_out = clean_out,
+               sel = sel,
+               no_valid_marker = no_valid_marker,
+               n_parents = n_parents)
+    .saveADB(object = object,
+             clean_out = clean_out,
+             sel = sel,
+             no_valid_marker = no_valid_marker)
+    .saveMR(object = object,
+            clean_out = clean_out,
+            sel = sel,
+            no_valid_marker = no_valid_marker)
+}
+
 #' @importFrom gdsfmt append.gdsn
-.saveHap <- function(object, clean_out, sel) {
+.saveHap <- function(object, clean_out, sel, no_valid_marker) {
     output <- array(data = 0, dim = c(2, length(sel$sam), length(sel$mar)))
-    rep_id <- getReplicates(object = object, parents = TRUE)
-    id_hit <- match(x = rep_id, table = clean_out$mapping_id)
-    output[, sel$sam, sel$mar] <- clean_out$best_hap[, id_hit,]
+
+    if(!no_valid_marker){
+        rep_id <- getReplicates(object = object, parents = TRUE)
+        id_hit <- match(x = rep_id, table = clean_out$mapping_id)
+        output[, sel$sam, sel$mar] <- clean_out$best_hap[, id_hit,]
+    }
 
     hap_gdsn <- index.gdsn(node = object, path = "annotation/format/HAP/data")
     gdsn_dim <- objdesp.gdsn(node = hap_gdsn)$dim
@@ -224,11 +263,14 @@ setMethod("estGeno",
     }
 }
 
-.saveEDS <- function(object, clean_out, sel) {
+.saveEDS <- function(object, clean_out, sel, no_valid_marker) {
     output <- array(data = NA, dim = c(2, length(sel$sam), length(sel$mar)))
-    rep_id <- getReplicates(object = object, parents = TRUE)
-    id_hit <- match(x = rep_id, table = clean_out$mapping_id)
-    output[, sel$sam, sel$mar] <- clean_out$best_hap[, id_hit,]
+
+    if(!no_valid_marker){
+        rep_id <- getReplicates(object = object, parents = TRUE)
+        id_hit <- match(x = rep_id, table = clean_out$mapping_id)
+        output[, sel$sam, sel$mar] <- clean_out$best_hap[, id_hit,]
+    }
 
     output[output == 0] <- NA
     output <- apply(X = output - 1, MARGIN = c(2, 3), FUN = sum)
@@ -246,11 +288,14 @@ setMethod("estGeno",
 }
 
 #' @importFrom gdsfmt append.gdsn
-.saveGeno <- function(object, clean_out, sel) {
+.saveGeno <- function(object, clean_out, sel, no_valid_marker) {
     output <- array(data = 3, dim = c(2, length(sel$sam), length(sel$mar)))
-    rep_id <- getReplicates(object = object, parents = TRUE)
-    id_hit <- match(x = rep_id, table = clean_out$mapping_id)
-    output[, sel$sam, sel$mar] <- clean_out$best_geno[, id_hit,]
+
+    if(!no_valid_marker){
+        rep_id <- getReplicates(object = object, parents = TRUE)
+        id_hit <- match(x = rep_id, table = clean_out$mapping_id)
+        output[, sel$sam, sel$mar] <- clean_out$best_geno[, id_hit,]
+    }
 
     out_gdsn <-index.gdsn(node = object, path = "annotation/format/CGT/data")
     gdsn_dim <- objdesp.gdsn(node = out_gdsn)$dim
@@ -264,9 +309,15 @@ setMethod("estGeno",
 }
 
 #' @importFrom gdsfmt append.gdsn
-.savePGeno <- function(object, clean_out, sel) {
-    output <- matrix(data = 3, nrow = nrow(clean_out$p_geno), length(sel$mar))
-    output[, sel$mar] <- clean_out$p_geno
+.savePGeno <- function(object, clean_out, sel, no_valid_marker, n_parents) {
+    n_ploidy <- attributes(slot(object = object, name = "sample"))$ploidy
+    n_row <- n_parents * n_ploidy
+    output <- matrix(data = 3, nrow = n_row, length(sel$mar))
+
+    if(!no_valid_marker){
+        output[, sel$mar] <- clean_out$p_geno
+    }
+
     out_gdsn <- index.gdsn(node = object, path = "annotation/info/PGT")
     gdsn_dim <- objdesp.gdsn(node = out_gdsn)$dim
     if (gdsn_dim[1] == 0) {
@@ -280,9 +331,13 @@ setMethod("estGeno",
 }
 
 #' @importFrom gdsfmt append.gdsn
-.saveADB <- function(object, clean_out, sel) {
+.saveADB <- function(object, clean_out, sel, no_valid_marker) {
     output <- rep(-1, length(sel$mar))
-    output[sel$mar] <- t(clean_out$bias)
+
+    if(!no_valid_marker){
+        output[sel$mar] <- t(clean_out$bias)
+    }
+
     out_gdsn <- index.gdsn(node = object, path = "annotation/info/ADB")
     gdsn_dim <- objdesp.gdsn(node = out_gdsn)$dim
     if (gdsn_dim[1] == 0) {
@@ -296,9 +351,13 @@ setMethod("estGeno",
 }
 
 #' @importFrom gdsfmt append.gdsn
-.saveMR <- function(object, clean_out, sel) {
-    output <- matrix(-1, nrow = ncol(clean_out$mismap), ncol = length(sel$mar))
-    output[, sel$mar] <- t(clean_out$mismap)
+.saveMR <- function(object, clean_out, sel, no_valid_marker) {
+    output <- matrix(-1, nrow = 2, ncol = length(sel$mar))
+
+    if(!no_valid_marker){
+        output[, sel$mar] <- t(clean_out$mismap)
+    }
+
     out_gdsn <- index.gdsn(object, "annotation/info/MR")
     gdsn_dim <- objdesp.gdsn(out_gdsn)$dim
     if (gdsn_dim[1] == 0) {
