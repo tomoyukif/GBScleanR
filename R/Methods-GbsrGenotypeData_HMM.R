@@ -38,7 +38,7 @@ setMethod("estGeno",
                        n_parents = n_parents)
 
               # Get chromosome information to loop over chromosomes
-              chr <- getChromosome(object = object)
+              chr <- getChromosome(object = object, valid = FALSE)
               chr_levels <- unique(chr)
               no_eds <- FALSE
               for(chr_i in chr_levels) {
