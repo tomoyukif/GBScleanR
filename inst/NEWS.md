@@ -1,4 +1,4 @@
-Changes in version 1.9.5 (2024-5-21)
+Changes in version 1.9.6 (2024-5-21)
 + Fix minor bugs in the documents.
 
 Changes in version 1.9.3 (2024-5-16)

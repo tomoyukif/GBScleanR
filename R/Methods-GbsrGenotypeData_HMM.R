@@ -589,6 +589,7 @@ setMethod("estGeno",
 
     if (n_pairing == 0) {
         jnum <- .initJnum(n_origin = n_origin)
+
     } else {
         next_crosstype <- xtype[n_pairing + 1]
         if(is.na(next_crosstype)){
@@ -629,7 +630,7 @@ setMethod("estGeno",
             jnum$j1232 <- jnum$r <- n_pairing - 1
 
         } else {
-            r <- switch(n_pairing, "1" = 0, n_pairing - 2)
+            r <- ifelse(test = n_pairing == 1, yes = 0, no = n_pairing - 2)
             jnum$j1232 <- jnum$k1232 <- jnum$r <- r
 
             if (n_origin > 2) {
@@ -706,7 +707,6 @@ setMethod("estGeno",
                             scheme, het_parent){
     out <- lapply(X = seq_along(pat$hap_progeny),
                   FUN = function(i){
-                      all_hap <- do.call(what = "rbind", args = pat$hap_progeny)
                       hap_progeny_i <- pat$hap_progeny[[i]]
                       n_origin <- length(unique(as.vector(hap_progeny_i)))
                       jnum <- .getJnum(scheme = scheme,
