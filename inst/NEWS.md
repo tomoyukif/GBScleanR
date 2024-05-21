@@ -1,4 +1,4 @@
-Changes in version 1.9.9 (2024-5-21)
+Changes in version 1.9.10 (2024-5-21)
 + Fix minor bugs in closeGDS(), estGeno(), and the documents.
 
 Changes in version 1.9.3 (2024-5-16)
