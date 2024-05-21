@@ -30,6 +30,10 @@ parents or not or to get data only for parents. Ignored if \verb{node = "parents
 \item{chr}{A integer vector of indexes indicating chromosomes
 to get read count data.}
 
+\item{phased}{If set \code{TRUE} to \code{phased}, the function will return phased
+genotype data in a P x N x M array where P, N, and M are the ploidy, number
+of samples, and number of markers.}
+
 \item{...}{Unused.}
 }
 \value{

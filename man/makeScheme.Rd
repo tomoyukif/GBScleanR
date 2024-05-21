@@ -62,7 +62,7 @@ gds <- loadGDS(gds_fn)
 # Biparental F2 population.
 gds <- setParents(gds, parents = c("Founder1", "Founder2"))
 
-gds <- makeScheme(gds, crosstype = "self")
+gds <- makeScheme(gds, generation = 2, crosstype = "self")
 
 ############################################################################
 # Now you can execute `estGeno()` which requires a [GbsrScheme] object.
