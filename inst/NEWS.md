@@ -1,3 +1,6 @@
+Changes in version 1.9.5 (2024-5-21)
++ Fix minor bugs in the documents.
+
 Changes in version 1.9.3 (2024-5-16)
 + Modify the estGeno() function to make it fix the parental genotypes at the 
 + first half of markers, for the reverse-direction genotype estimation step, as 
