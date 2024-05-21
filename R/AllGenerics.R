@@ -391,6 +391,9 @@ setGeneric("getRead", function(object, node = "raw", parents = FALSE,
 #' @param valid A logical value. See details.
 #' @param chr A integer vector of indexes indicating chromosomes
 #' to get read count data.
+#' @param phased If set `TRUE` to `phased`, the function will return phased
+#' genotype data in a P x N x M array where P, N, and M are the ploidy, number
+#' of samples, and number of markers.
 #' @param ... Unused.
 #'
 #' @return An integer matirix of genotype data which is represented
@@ -2626,7 +2629,7 @@ setGeneric("addScheme", function(object, crosstype, mating, ...)
 #' # Biparental F2 population.
 #' gds <- setParents(gds, parents = c("Founder1", "Founder2"))
 #'
-#' gds <- makeScheme(gds, crosstype = "self")
+#' gds <- makeScheme(gds, generation = 2, crosstype = "self")
 #'
 #' ############################################################################
 #' # Now you can execute `estGeno()` which requires a [GbsrScheme] object.
