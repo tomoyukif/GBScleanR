@@ -849,7 +849,7 @@ est_hap <- getHaplotype(gds)
 The function `gbsrGDS2VCF()` generate a VCF file containing the estimated genotype data and phased haplotype information. The estimated haplotypes are indicated in the FORMAT field with the HAP tag. The parent genotypes correspond to each haplotype are indicated in the INFO field with the PGT tag. HAP shows the pair of haplotype for each marker of each sample, while PGT shows the allele of each haplotype. HAP is indicated by two numbers separated by a pipe symbol "|". Each of the numbers takes one of the numbers from 1 to 2*N, where N is the number of parents.
 PGT is indicated by 2*N numbers separated by a pipe symbol "|". The first number in PGT represents the allele of haplotype 1 at the marker, and the rest numbers also show the alleles of rest haplotypes 2, 3 and 4, if your population is of biparental diploid samples. As a default, `gbsrGDS2VCF()` outputs the estimated genotype data as entries of the CGT tag in the FORMAT field. With `node = "cor"`, you can output a VCF file in which GT field was replaced with the estimated genotype data obtained via `estGeno()`.
 
-```{r eval=FALSE}
+```{r}
 out_fn <- tempfile("sample_est", fileext = ".vcf.gz")
 gbsrGDS2VCF(gds, out_fn)
 gbsrGDS2VCF(gds, out_fn, node = "cor")
@@ -867,13 +867,13 @@ HAP and EDS indicate descendent haplotypes and haplotype dosage at the given mar
 
 
 Alternatively, you can also output the genotype data into a CSV file using `gbsrGDS2CSV()`
-```{r eval=FALSE}
+```{r}
 out_fn <- tempfile("sample_est", fileext = ".csv")
 gbsrGDS2CSV(gds, out_fn)
 gbsrGDS2CSV(gds, out_fn, node = "cor")
 ```
 You can format the output for the `r CRANpkg("qtl")` package. 
-```{r eval=FALSE}
+```{r}
 out_fn <- tempfile("sample_est", fileext = ".csv")
 gbsrGDS2CSV(gds, out_fn, format = "qtl")
 gbsrGDS2CSV(gds, out_fn, node = "cor", format = "qtl")
