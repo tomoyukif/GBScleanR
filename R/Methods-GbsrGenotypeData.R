@@ -1007,7 +1007,7 @@ setMethod("setParents",
                       valid = FALSE, chr = NULL)
         rep_id <- getReplicates(object = object, parents = "only")
         ad <- .pileupAD(ad = ad, rep_id = rep_id)
-        gt <- .recalcGT(ad =  ad)
+        gt <- .recalcGT(ad = ad)
 
     } else {
         gt <- getGenotype(object = object, node = "raw", parents = "only",
@@ -1029,7 +1029,7 @@ setMethod("setParents",
     }
 
     if(bi){
-        bi <- colSums(gt == 0) != 0 & colSums(gt == 2) != 0
+        bi <- colSums(gt == 0) != nrow(gt) & colSums(gt == 2) != nrow(gt)bi
         bi[is.na(bi)] <- FALSE
     } else {
         bi <- rep(TRUE, nmar(object, FALSE))
