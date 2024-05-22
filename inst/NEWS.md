@@ -1,4 +1,4 @@
-Changes in version 1.9.11 (2024-5-22)
+Changes in version 1.9.12 (2024-5-22)
 + Fix a bug in setParents() with setting `bi = TRUE`.
 
 Changes in version 1.9.10 (2024-5-21)

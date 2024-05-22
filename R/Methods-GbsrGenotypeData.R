@@ -1029,7 +1029,7 @@ setMethod("setParents",
     }
 
     if(bi){
-        bi <- colSums(gt == 0) != nrow(gt) & colSums(gt == 2) != nrow(gt)bi
+        bi <- colSums(gt == 0) != nrow(gt) & colSums(gt == 2) != nrow(gt)
         bi[is.na(bi)] <- FALSE
     } else {
         bi <- rep(TRUE, nmar(object, FALSE))
