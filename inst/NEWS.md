@@ -1,3 +1,6 @@
+Changes in version 1.9.14 (2024-5-23)
++ Minor update in setCallFilter().
+
 Changes in version 1.9.13 (2024-5-22)
 + Fix a bug in setParents() with setting `bi = TRUE`.
 

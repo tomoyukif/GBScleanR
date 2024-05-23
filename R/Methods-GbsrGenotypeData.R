@@ -1505,13 +1505,15 @@ setMethod("setCallFilter",
 
 #' @importFrom stats quantile
 .applySampleCallFilter <- function(object, filt_list){
-    read <- getRead(object = object, node = "raw", parents = TRUE, valid = FALSE)
+    read <- getRead(object = object, node = "raw")
     read$dp <- read$ref + read$alt
 
     # Record valid calls
+    valid_sam <- validSam(object = object)
+    valid_mar <- validMar(object = object)
     filter_matrix <- matrix(data = TRUE,
-                            nrow = nrow(read$ref),
-                            ncol = ncol(read$ref))
+                            nrow = length(valid_sam),
+                            ncol = length(valid_mar))
 
     # Set filtering parameters
     val <- c("dp", "ref", "alt", "dp", "ref", "alt")
@@ -1538,16 +1540,19 @@ setMethod("setCallFilter",
                                          threshold = threshold,
                                          default = def[[i]],
                                          greater = TRUE, equal = TRUE)
-            filter_matrix <- filter_matrix & filter_out
+            filter_matrix[valid_sam, valid_mar] <- filter_matrix[valid_sam, valid_mar] & filter_out
         }
     }
 
     # Create filtered data
-    .makeCallFilterData(object = object, read = read, filter_matrix = filter_matrix)
+    rm(read)
+    gc()
+    .makeCallFilterData(object = object, filter_matrix = filter_matrix)
 }
 
 #' @importFrom gdsfmt write.gdsn index.gdsn read.gdsn
-.makeCallFilterData <- function(object, read, filter_matrix){
+.makeCallFilterData <- function(object, filter_matrix){
+    read <- getRead(object = object, node = "raw", parents = TRUE, valid = FALSE)
 
     # Create filtered allele read depth data
     fad_data <- index.gdsn(node = object$root,

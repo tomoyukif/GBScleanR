@@ -43,6 +43,8 @@ setMethod("estGeno",
               no_eds <- FALSE
               for(chr_i in chr_levels) {
                   if(nmar(object = object, valid = TRUE, chr = chr_i) < 2){
+                      message("Skip the genotype estimation for ", chr_i,
+                              " that has less than two valid markers.")
                       no_valid_marker <- TRUE
 
                   } else {
