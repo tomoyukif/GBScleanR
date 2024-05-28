@@ -1,3 +1,6 @@
+Changes in version 1.9.15 (2024-5-28)
++ Minor update in resetCallFilter().
+
 Changes in version 1.9.14 (2024-5-23)
 + Minor update in setCallFilter().
 

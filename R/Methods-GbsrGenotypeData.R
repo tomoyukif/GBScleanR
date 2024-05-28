@@ -2210,7 +2210,7 @@ setMethod("resetMarFilter",
 setMethod("resetCallFilter",
           "GbsrGenotypeData",
           function(object){
-              if(exist.gdsn(node = object, path = "annotation/format/CFT/data")){
+              if(exist.gdsn(node = object, path = "annotation/format/CGT/data")){
                   seqDelete(gdsfile = object, fmt.var = c("CFT", "FGT", "FAD"),
                             verbose = FALSE)
               }
