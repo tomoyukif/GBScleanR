@@ -1,5 +1,6 @@
-Changes in version 1.8.17 (2024-6-11)
-+ Minor bug fis in getGenotype().
+Changes in version 1.8.18 (2024-6-11)
++ Minor bug fix in getGenotype().
++ Update README.
 
 Changes in version 1.8.16 (2024-5-28)
 + Minor update in resetCallFilter().

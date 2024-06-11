@@ -23,9 +23,6 @@ setMethod("estGeno",
                               name = "parents")
               n_parents <- length(unique(parents))
               parentless <- all(is.na(parents))
-              if(parentless){
-                  message("Run in the parentless mode...")
-              }
 
               # Set the number of threads
               .setThreads(n_threads = n_threads)
@@ -219,7 +216,6 @@ setMethod("estGeno",
 ################################################################################
 ################################################################################
 # Save the ouput to the GDS file
-
 .saveOutput <- function(object, clean_out, sel, no_valid_marker, n_parents){
     .saveHap(object = object,
              clean_out = clean_out,
@@ -1381,6 +1377,15 @@ setMethod("estGeno",
                             param_list$reads$p_alt[, param_list$n_mar])
         if (p_read_s < p_read_e) {
             param_list$flip <- TRUE
+
+        } else if (p_read_s == p_read_e) {
+            p_read_s <- sum(param_list$reads$p_ref[, 1] +
+                                param_list$reads$p_alt[, 1])
+            p_read_e <- sum(param_list$reads$p_ref[, param_list$n_mar] +
+                                param_list$reads$p_alt[, param_list$n_mar])
+            if (p_read_s < p_read_e) {
+                param_list$flip <- TRUE
+            }
         }
     }
     return(param_list)
@@ -1442,5 +1447,6 @@ setMethod("estGeno",
                               outprob = TRUE,
                               outgeno = TRUE)
     }
+
     return(out_list)
 }
