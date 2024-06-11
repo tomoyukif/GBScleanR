@@ -1,3 +1,6 @@
+Changes in version 1.9.17 (2024-6-11)
++ Minor bug fis in getGenotype().
+
 Changes in version 1.9.16 (2024-5-28)
 + Minor update in resetCallFilter().
 

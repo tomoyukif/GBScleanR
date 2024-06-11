@@ -276,7 +276,7 @@ setMethod("estGeno",
 
     output[output == 0] <- NA
     output <- apply(X = output - 1, MARGIN = c(2, 3), FUN = sum)
-    output[is.na(output)] <- 8
+    output[is.na(output)] <- 64
 
     eds_gdsn <- index.gdsn(node = object, path = "annotation/format/EDS/data")
     gdsn_dim <- objdesp.gdsn(node = eds_gdsn)$dim

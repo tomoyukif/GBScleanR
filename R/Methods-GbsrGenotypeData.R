@@ -371,7 +371,12 @@ setMethod("getGenotype",
                   }
 
               } else {
-                  reduce <- TRUE
+                  if(node == "dosage"){
+                      reduce <- FALSE
+
+                  } else {
+                      reduce <- TRUE
+                  }
               }
 
               # Set the node from which the data is retrieved
@@ -401,7 +406,7 @@ setMethod("getGenotype",
 
               # Set numerically expressed missing values to NA
               if(grepl(pattern = "EDS", x = node)){
-                  out[out == 8] <- NA
+                  out[out == 64] <- NA
 
               } else {
                   out[out == 3] <- NA
