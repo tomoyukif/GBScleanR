@@ -1,3 +1,6 @@
+Changes in version 1.9.20 (2024-6-11)
++ Version bump to sync the devel version and RELEASE_3_19
+
 Changes in version 1.8.18 (2024-6-11)
 + Minor bug fix in getGenotype().
 + Update README.
