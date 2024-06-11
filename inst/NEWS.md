@@ -1,21 +1,21 @@
-Changes in version 1.9.18 (2024-6-11)
-+ Minor bug fis in getGenotype().
+Changes in version 1.8.18 (2024-6-11)
++ Minor bug fix in getGenotype().
 + Update README.
 
 
-Changes in version 1.9.16 (2024-5-28)
+Changes in version 1.8.16 (2024-5-28)
 + Minor update in resetCallFilter().
 
-Changes in version 1.9.14 (2024-5-23)
+Changes in version 1.8.14 (2024-5-23)
 + Minor update in setCallFilter().
 
-Changes in version 1.9.13 (2024-5-22)
+Changes in version 1.8.13 (2024-5-22)
 + Fix a bug in setParents() with setting `bi = TRUE`.
 
-Changes in version 1.9.10 (2024-5-21)
+Changes in version 1.8.10 (2024-5-21)
 + Fix minor bugs in closeGDS(), estGeno(), and the documents.
 
-Changes in version 1.9.3 (2024-5-16)
+Changes in version 1.8.3 (2024-5-16)
 + Modify the estGeno() function to make it fix the parental genotypes at the 
 + first half of markers, for the reverse-direction genotype estimation step, as 
 + those were estimated in the forward-direction genotype estimation step. This 
@@ -24,10 +24,10 @@ Changes in version 1.9.3 (2024-5-16)
 + the concatenation of the first half and last half of estimated haplotypes in 
 + the .halfJoint() function.
 
-Changes in version 1.9.2 (2024-5-16)
+Changes in version 1.8.2 (2024-5-16)
 + Update the vignette.
 
-Changes in version 1.9.1 (2024-5-15)
+Changes in version 1.8.1 (2024-5-15)
 + Change .minimizeRecombination() to make it ignore the cases that are not listed
 + on the possible haplotype combinations.
 + Change the coding of .solveBorderConflict() to make it faster.
