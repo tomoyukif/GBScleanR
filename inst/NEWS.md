@@ -1,3 +1,41 @@
+Changes in version 1.9.18 (2024-6-11)
++ Minor bug fis in getGenotype().
++ Update README.
+
+
+Changes in version 1.9.16 (2024-5-28)
++ Minor update in resetCallFilter().
+
+Changes in version 1.9.14 (2024-5-23)
++ Minor update in setCallFilter().
+
+Changes in version 1.9.13 (2024-5-22)
++ Fix a bug in setParents() with setting `bi = TRUE`.
+
+Changes in version 1.9.10 (2024-5-21)
++ Fix minor bugs in closeGDS(), estGeno(), and the documents.
+
+Changes in version 1.9.3 (2024-5-16)
++ Modify the estGeno() function to make it fix the parental genotypes at the 
++ first half of markers, for the reverse-direction genotype estimation step, as 
++ those were estimated in the forward-direction genotype estimation step. This 
++ modification make the function to avoid estimating the different haplotype 
++ combinations as the border of the first half and last half of markers after 
++ the concatenation of the first half and last half of estimated haplotypes in 
++ the .halfJoint() function.
+
+Changes in version 1.9.2 (2024-5-16)
++ Update the vignette.
+
+Changes in version 1.9.1 (2024-5-15)
++ Change .minimizeRecombination() to make it ignore the cases that are not listed
++ on the possible haplotype combinations.
++ Change the coding of .solveBorderConflict() to make it faster.
++ Add gbsrGDS2CSV() to output a CSV file.
++ Add setReplicates() to allow replicates in the data and modified estGeno() to
++ sum up read counts of replicates for genotype estimation.
++ Add makeScheme() to allow a simpler assignment of the scheme information.
+
 Changes in version 1.5.13 (2023-10-17)
 + Update manual pages for plotDosage() and plotReadRatio().
 

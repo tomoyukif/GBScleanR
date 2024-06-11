@@ -391,6 +391,9 @@ setGeneric("getRead", function(object, node = "raw", parents = FALSE,
 #' @param valid A logical value. See details.
 #' @param chr A integer vector of indexes indicating chromosomes
 #' to get read count data.
+#' @param phased If set `TRUE` to `phased`, the function will return phased
+#' genotype data in a P x N x M array where P, N, and M are the ploidy, number
+#' of samples, and number of markers.
 #' @param ... Unused.
 #'
 #' @return An integer matirix of genotype data which is represented
@@ -2278,13 +2281,13 @@ setGeneric("gbsrGDS2VCF", function(object,
 #'
 #' @return The path to the CSV file.
 #'
-#' @details Create a CSV file at location specified by out_fn. The current
-#'  implementation only changes the behavior when `format = "qtl"` to export
-#'  the data in the r/qtl format that can be loaded using read.cross as
-#' `format = "csvs` with a phenotype data. Any other values are ignored and
-#' output a CSV file with the rows indicating chromosome ID and positions of
-#' markers followed by the rows indicating genotype or haplotype data of
-#' samples. If `read = TRUE`, the output of each genotype call would be in
+#' @details Create a CSV file at location specified by out_fn. The setting
+#' `format = "qtl"` makes the function export the data in the r/qtl format
+#' that can be loaded using read.cross as
+#' `format = "csvs` with a phenotype data. The output CSV file has the rows
+#' indicating chromosome ID and positions of markers followed by the rows
+#' indicating genotype or haplotype data of samples.
+#' If `read = TRUE`, the output of each genotype call would be in
 #' the form of `GT:ADR,ADA` where GT, ADR, and ADA represent genotype,
 #' referenece read count, and alternative read count, respectively.
 #' If `format = "qtl"`, `read = TRUE` will be ignored.
@@ -2626,7 +2629,7 @@ setGeneric("addScheme", function(object, crosstype, mating, ...)
 #' # Biparental F2 population.
 #' gds <- setParents(gds, parents = c("Founder1", "Founder2"))
 #'
-#' gds <- makeScheme(gds, crosstype = "self")
+#' gds <- makeScheme(gds, generation = 2, crosstype = "self")
 #'
 #' ############################################################################
 #' # Now you can execute `estGeno()` which requires a [GbsrScheme] object.

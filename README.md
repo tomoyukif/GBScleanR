@@ -20,6 +20,23 @@ F2 from inbred parents, biparental F2 from outbred parents, and 8-way
 recombinant inbred lines (8-way RILs) which can be refered to as MAGIC 
 population.
 
+## Prerequisites
+You may need to install the latest versions of the following packages.
+```
+BiocManager::install("gdsfmt")
+BiocManager::install("SeqArray")
+install.packages("ggplot2")
+install.packages("tidyr")
+install.packages("expm")
+install.packages("Rcpp")
+install.packages("RcppParallel")
+
+# To create the vignette of GBScleanR
+install.packages("rmarkdown")
+install.packages("knitr")
+BiocManager::install("BiocStyle")
+```
+
 ## Installation
 You can install `GBScleanR` from the Bioconductor repository with running the 
 following code on an R console. Currently `GBScleanR` is listed in the 

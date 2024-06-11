@@ -76,7 +76,7 @@ gbsrVCF2GDS <- function(vcf_fn,
     }
 
     # Create GDS file formatted in the SeqArray style.
-    stropt <- seqStorageOption(mode = c ('annotation/format/AD' = "int64"))
+    stropt <- seqStorageOption(mode = c('annotation/format/AD' = "int64"))
     if(!is.null(fmt.import)){
       fmt.import <- unique(c("AD", fmt.import))
     }
