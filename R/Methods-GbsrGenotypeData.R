@@ -362,6 +362,13 @@ setMethod("getGenotype",
 
               }
 
+              # Set the node from which the data is retrieved
+              switch(node,
+                     raw = node <- "genotype",
+                     filt = node <- "annotation/format/FGT",
+                     cor = node <- "annotation/format/CGT",
+                     dosage = node <- "annotation/format/EDS")
+
               # Set FALSE to reduce if phased == TRUE
               if(phased){
                   reduce <- FALSE
@@ -379,12 +386,9 @@ setMethod("getGenotype",
                   }
               }
 
-              # Set the node from which the data is retrieved
-              switch(node,
-                     raw = node <- "genotype/data",
-                     filt = node <- "annotation/format/FGT/data",
-                     cor = node <- "annotation/format/CGT/data",
-                     dosage = node <- "annotation/format/EDS")
+              if(reduce){
+                  node <- paste0(node, "/data")
+              }
 
               # Check whether the specified node exists
               if(!exist.gdsn(node = object, path = node)){
