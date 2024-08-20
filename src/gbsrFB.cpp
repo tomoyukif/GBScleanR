@@ -19,7 +19,6 @@ struct ParFB : public Worker {
     const RMatrix<double> alt;
     const RVector<double> eseq;
     const RVector<double> w1;
-    const RVector<double> w2;
     const RVector<double> mismap1;
     const RVector<double> mismap2;
     const RVector<int> possiblehap;
@@ -41,7 +40,6 @@ struct ParFB : public Worker {
           const NumericMatrix alt,
           const NumericVector eseq,
           const NumericVector w1,
-          const NumericVector w2,
           const NumericVector mismap1,
           const NumericVector mismap2,
           const IntegerVector possiblehap,
@@ -62,7 +60,6 @@ struct ParFB : public Worker {
           alt(alt),
           eseq(eseq),
           w1(w1),
-          w2(w2),
           mismap1(mismap1),
           mismap2(mismap2),
           possiblehap(possiblehap),
@@ -108,12 +105,12 @@ struct ParFB : public Worker {
                                                  alt,
                                                  eseq,
                                                  w1,
-                                                 w2,
                                                  mismap1,
                                                  mismap2,
                                                  m,
                                                  sample_i,
-                                                 het);
+                                                 het,
+                                                 ploidy[0]);
                 if(m == 0){
                     j = p_geno[0];
                     for(int k = 0; k < n_hap_i; ++k){
@@ -123,7 +120,7 @@ struct ParFB : public Worker {
                     }
 
                 } else {
-                    size_t j = p_geno[m];
+                    j = p_geno[m];
 
                     for(int k2 = 0; k2 < n_hap_i; ++k2){
                         for(int k1 = 0; k1 < n_hap_i; ++k1){
@@ -142,43 +139,29 @@ struct ParFB : public Worker {
                 }
             }
 
-            vector<double> gamma_i1{neg_inf};
-            vector<double> gamma_i2{neg_inf};
-            vector<double> gamma_i3{neg_inf};
+            int n_levels = ploidy[0] + 1;
             double gamma_tmp;
-            vector<double> gamma_i_tmp(3);
+            int target_hap;
+            vector<double> gamma_i_sum(n_levels, neg_inf);
             for(int k = 0; k < n_hap_i; ++k){
-                int j = p_geno[n_marker[0] - 1];
+                j = p_geno[n_marker[0] - 1];
                 target_i = hap_offset[pedigree_i] + j * n_hap_i + k;
                 gamma_tmp = beta[k] + alpha[n_marker[0] - 1][k];
                 if(!isinf(gamma_tmp)){
-                    if(possiblehap[target_i] == 0){
-                        gamma_i1.push_back(gamma_tmp);
-                    }
-                    if(possiblehap[target_i] == 1){
-                        gamma_i2.push_back(gamma_tmp);
-                    }
-                    if(possiblehap[target_i] == 2){
-                        gamma_i3.push_back(gamma_tmp);
-                    }
+                    target_hap = possiblehap[target_i];
+                    logsum2(gamma_i_sum[target_hap], gamma_tmp);
                 }
             }
 
-            gamma_i_tmp[0] = logsum(gamma_i1);
-            gamma_i_tmp[1] = logsum(gamma_i2);
-            gamma_i_tmp[2] = logsum(gamma_i3);
-            lognorm_vec(gamma_i_tmp);
-            for(int g = 0; g < 3;++g){
-                gamma_i[(n_marker[0] - 1) * 3 + g] = gamma_i_tmp[g];
+            lognorm_vec(gamma_i_sum);
+            for(int g = 0; g < n_levels; ++g){
+                gamma_i[(n_marker[0] - 1) * n_levels + g] = gamma_i_sum[g];
             }
 
             for(int m = n_marker[0] - 1; m > 0; --m){
-
-                vector<double> gamma_i1{neg_inf};
-                vector<double> gamma_i2{neg_inf};
-                vector<double> gamma_i3{neg_inf};
                 double gamma_tmp;
-                vector<double> gamma_i_tmp(3);
+                int target_hap;
+                vector<double> gamma_i_sum(n_levels, neg_inf);
 
                 for(int k1 = 0; k1 < n_hap_i; ++k1){
                     for(int k2 = 0; k2 < n_hap_i; ++k2){
@@ -194,24 +177,14 @@ struct ParFB : public Worker {
                     target_i = hap_offset[pedigree_i] + j * n_hap_i + k1;
                     gamma_tmp = sum_k + alpha[m - 1][k1];
                     if(!isinf(gamma_tmp)){
-                        if(possiblehap[target_i] == 0){
-                            gamma_i1.push_back(gamma_tmp);
-                        }
-                        if(possiblehap[target_i] == 1){
-                            gamma_i2.push_back(gamma_tmp);
-                        }
-                        if(possiblehap[target_i] == 2){
-                            gamma_i3.push_back(gamma_tmp);
-                        }
+                        target_hap = possiblehap[target_i];
+                        logsum2(gamma_i_sum[target_hap], gamma_tmp);
                     }
                 }
 
-                gamma_i_tmp[0] = logsum(gamma_i1);
-                gamma_i_tmp[1] = logsum(gamma_i2);
-                gamma_i_tmp[2] = logsum(gamma_i3);
-                lognorm_vec(gamma_i_tmp);
-                for(int g = 0; g < 3; ++g){
-                    gamma_i[(m-1) * 3 + g] = gamma_i_tmp[g];
+                lognorm_vec(gamma_i_sum);
+                for(int g = 0; g < n_levels; ++g){
+                    gamma_i[(m-1) * n_levels + g] = gamma_i_sum[g];
                 }
             }
         }
@@ -239,18 +212,16 @@ NumericMatrix run_fb(NumericMatrix ref,
 
     // Initialize arrays to store output, alpha values,
     // // emittion probs, and beta values.
-    NumericMatrix gamma(n_offspring[0],  n_marker[0] * 3);
+    int n_levels = ploidy[0] + 1;
+    NumericMatrix gamma(n_offspring[0],  n_levels * n_marker[0]);
 
     // Convert values to ones used here.
     NumericVector w1(n_marker[0]);
-    NumericVector w2(n_marker[0]);
     NumericVector eseq(2);
     NumericVector mismap1 = mismap( _ , 0 );
     NumericVector mismap2 = mismap( _ , 1 );
     eseq = clone(eseq_in);
     w1 = clone(bias);
-    w2 = clone(bias);
-    w2 = 1 - w2;
 
     // Calculate offsets to access pedigree dependent parameters
     IntegerVector hap_offset(n_hap.size());
@@ -271,7 +242,6 @@ NumericMatrix run_fb(NumericMatrix ref,
                   alt,
                   eseq,
                   w1,
-                  w2,
                   mismap1,
                   mismap2,
                   possiblehap,
@@ -289,6 +259,6 @@ NumericMatrix run_fb(NumericMatrix ref,
 
     parallelFor(0, iter_sample.length(), calc_fb);
 
-    gamma.attr("dim") = Dimension(n_offspring[0], 3, n_marker[0]);
+    gamma.attr("dim") = Dimension(n_offspring[0], n_levels, n_marker[0]);
     return gamma;
 }

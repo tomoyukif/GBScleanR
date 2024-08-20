@@ -36,8 +36,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // get_genocall
-LogicalMatrix get_genocall(NumericMatrix ref, NumericMatrix alt, NumericVector eseq_in, NumericVector bias, NumericMatrix mismap, int& n_o, int& n_m);
-RcppExport SEXP _GBScleanR_get_genocall(SEXP refSEXP, SEXP altSEXP, SEXP eseq_inSEXP, SEXP biasSEXP, SEXP mismapSEXP, SEXP n_oSEXP, SEXP n_mSEXP) {
+LogicalMatrix get_genocall(NumericMatrix ref, NumericMatrix alt, NumericVector eseq_in, NumericVector bias, NumericMatrix mismap, int& n_o, int& n_m, IntegerVector ploidy);
+RcppExport SEXP _GBScleanR_get_genocall(SEXP refSEXP, SEXP altSEXP, SEXP eseq_inSEXP, SEXP biasSEXP, SEXP mismapSEXP, SEXP n_oSEXP, SEXP n_mSEXP, SEXP ploidySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -48,7 +48,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericMatrix >::type mismap(mismapSEXP);
     Rcpp::traits::input_parameter< int& >::type n_o(n_oSEXP);
     Rcpp::traits::input_parameter< int& >::type n_m(n_mSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_genocall(ref, alt, eseq_in, bias, mismap, n_o, n_m));
+    Rcpp::traits::input_parameter< IntegerVector >::type ploidy(ploidySEXP);
+    rcpp_result_gen = Rcpp::wrap(get_genocall(ref, alt, eseq_in, bias, mismap, n_o, n_m, ploidy));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -122,7 +123,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_GBScleanR_run_fb", (DL_FUNC) &_GBScleanR_run_fb, 15},
-    {"_GBScleanR_get_genocall", (DL_FUNC) &_GBScleanR_get_genocall, 7},
+    {"_GBScleanR_get_genocall", (DL_FUNC) &_GBScleanR_get_genocall, 8},
     {"_GBScleanR_count_geno", (DL_FUNC) &_GBScleanR_count_geno, 1},
     {"_GBScleanR_count_read", (DL_FUNC) &_GBScleanR_count_read, 2},
     {"_GBScleanR_thinout_marker", (DL_FUNC) &_GBScleanR_thinout_marker, 4},

@@ -12,27 +12,36 @@ vector<double> calcGenoprob(const double & ref,
                             const double & eseq0,
                             const double & eseq1,
                             const double & w1,
-                            const double & w2,
-                            const bool & het){
-    vector<double> prob(3);
+                            const bool & het,
+                            const int & ploidy){
+    vector<double> prob(ploidy + 1);
+    double d_ploidy = (double)ploidy;
+    double interval = eseq0 - eseq1;
+    double denomi;
 
-    double logeseq0 = log10_safe_d(eseq0);
-    double logeseq1 = log10_safe_d(eseq1);
-    double logw1 = log10_safe_d(w1);
-    double logw2 = log10_safe_d(w2);
-    vector<double> ref_multiplier = {logeseq0, logw1, logeseq1};
-    vector<double> alt_multiplier = {logeseq1, logw2, logeseq0};
-    for(int g = 0; g < 3; ++g){
-        prob[g] = ref * ref_multiplier[g] +
-            alt * alt_multiplier[g];
+    double ref_multiplier;
+    double alt_multiplier;
+
+    for(int g = 0; g < prob.size(); ++g){
+        double d_g = (double)g;
+        denomi = w1 * (d_ploidy - d_g) + (1 - w1) * d_g;
+        ref_multiplier = w1 * (d_ploidy - d_g) / denomi;
+        ref_multiplier = ref_multiplier * interval + eseq1;
+        alt_multiplier = 1 - ref_multiplier;
+        ref_multiplier = log10_safe_d(ref_multiplier);
+        alt_multiplier = log10_safe_d(alt_multiplier);
+        prob[g] = ref * ref_multiplier + alt * alt_multiplier;
     }
 
-    if(!het){ prob[1] = 0; }
+    if(!het){
+        for(int g = 0; g < prob.size(); ++g){
+            if(g != 0 & g != ploidy){
+                prob[g] = -numeric_limits<double>::infinity();
+            }
+        }
+    }
 
     lognorm_vec(prob);
-    for(int g = 0; g < 3; ++g){
-        prob[g] = pow(10, prob[g]);
-    }
     return prob;
 }
 
@@ -40,59 +49,114 @@ vector<double> calcGenoprob(const double & ref,
 void calcMissmap(vector<double> & prob,
                  const double & mismap1,
                  const double & mismap2,
-                 const bool & het){
-    vector<double> v1 = {1 - mismap1, mismap1, 0};
-    vector<double> v2 = {0, 1, 0};
-    vector<double> v3 = {0, mismap2, 1 - mismap2};
-    double sum_v1 = 0.0;
-    double sum_v2 = 0.0;
-    double sum_v3 = 0.0;
-    double sum_v = 0.0;
-    double prob_lowest = 0.005;
+                 const bool & het,
+                 const int & ploidy){
+    vector<double> mismap_prob(prob.size());
+    vector<double> sum_prob(prob.size());
+    double prob_lowest = -2.30103; //log10(0.005)
+    double n_het = prob.size() - 2;
+    bool check = false;
 
-    for(size_t g = 0; g < 3; ++g){
-        sum_v1 += v1[g] * prob[g];
-        sum_v2 += v2[g] * prob[g];
-        sum_v3 += v3[g] * prob[g];
+    for(size_t g = 0; g < prob.size(); ++g){
+        if(g == 0){
+            for(size_t h = 0; h < prob.size(); ++h){
+                if(h == 0){
+                    mismap_prob[h] = 1 - mismap1;
+
+                } else {
+                    mismap_prob[h] = 0;
+                }
+            }
+
+        } else if(g == ploidy){
+            for(size_t h = 0; h < prob.size(); ++h){
+                if(h == ploidy){
+                    mismap_prob[h] = 1 - mismap2;
+
+                } else {
+                    mismap_prob[h] = 0;
+                }
+            }
+
+        } else {
+            for(size_t h = 0; h < prob.size(); ++h){
+                if(h == 0){
+                    mismap_prob[h] = mismap1 / n_het;
+
+                } else if(h == ploidy){
+                    mismap_prob[h] = mismap2 / n_het;
+
+                } else if(h == g){
+                    mismap_prob[h] = 1;
+
+                } else {
+                    mismap_prob[h] = 0;
+                }
+            }
+        }
+
+        if(g == 0){
+            for(size_t h = 0; h < prob.size(); ++h){
+                log10_safe(mismap_prob[h]);
+                mismap_prob[h] = mismap_prob[h] + prob[g];
+                sum_prob[h] = mismap_prob[h];
+            }
+
+        } else {
+            for(size_t h = 0; h < prob.size(); ++h){
+                log10_safe(mismap_prob[h]);
+                mismap_prob[h] = mismap_prob[h] + prob[g];
+                logsum2(sum_prob[h], mismap_prob[h]);
+            }
+        }
     }
 
-    sum_v = sum_v1 + sum_v2 + sum_v3;
-    if(sum_v == 0){
+    double all_sum = logsum(sum_prob);
+    if(all_sum == 0){
         if(het){
-            prob.assign(3, 1/3);
+            double even_prob = 1/(double)prob.size();
+            log10_safe(even_prob);
+            prob.assign(prob.size(), even_prob);
+
         } else {
-            prob = {0.5, 0, 0.5};
+            prob.assign(prob.size(), -pow(10, 100));
+            for(size_t g = 0; g < prob.size(); ++g){
+                if(g == 0){
+                    prob[g] = -0.30103;
+
+                } else if(g == ploidy){
+                    prob[g] = -0.30103;
+                }
+            }
         }
 
     } else {
-        if(sum_v1 < prob_lowest){
-            sum_v1 += prob_lowest;
-            sum_v2 += prob_lowest;
-            sum_v3 += prob_lowest;
+        lognorm_vec(sum_prob);
+
+        for(size_t g = 0; g < prob.size(); ++g){
+            if(!check){
+                check = sum_prob[g] < prob_lowest;
+            }
         }
-        if(sum_v2 < prob_lowest){
-            sum_v1 += prob_lowest;
-            sum_v2 += prob_lowest;
-            sum_v3 += prob_lowest;
+
+        if(check){
+            for(size_t g = 0; g < prob.size(); ++g){
+                logsum2(sum_prob[g], prob_lowest);
+            }
+            lognorm_vec(sum_prob);
         }
-        if(sum_v3 < prob_lowest){
-            sum_v1 += prob_lowest;
-            sum_v2 += prob_lowest;
-            sum_v3 += prob_lowest;
+
+        for(size_t g = 0; g < prob.size(); ++g){
+            prob[g] = sum_prob[g];
         }
-        prob[0] = sum_v1 / sum_v;
-        prob[1] = sum_v2 / sum_v;
-        prob[2] = sum_v3 / sum_v;
     }
 }
-
 
 // Function to calculate probabilities of founder genotype patterns.
 NumericVector calcPemit(NumericMatrix p_ref,
                         NumericMatrix p_alt,
                         NumericVector eseq,
                         NumericVector w1,
-                        NumericVector w2,
                         NumericVector mismap1,
                         NumericVector mismap2,
                         IntegerVector possiblegeno,
@@ -100,12 +164,11 @@ NumericVector calcPemit(NumericMatrix p_ref,
                         IntegerVector n_f,
                         IntegerVector n_p,
                         LogicalVector het,
-                        IntegerVector ploidy
-){
+                        int ploidy){
     vector<double> prob;
     double p_prob;
     int col_i;
-    NumericVector p_emit(n_p[0], 1.0);
+    NumericVector p_emit(n_p[0]);
 
     for(int i = 0; i < n_f[0]; ++i){
         NumericMatrix::Row ref_i = p_ref.row(i);
@@ -113,28 +176,19 @@ NumericVector calcPemit(NumericMatrix p_ref,
 
         prob = calcGenoprob(ref_i[m], alt_i[m],
                             eseq[0], eseq[1],
-                                         w1[m], w2[m], het[0]);
-        calcMissmap(prob, mismap1[m], mismap2[m], het[0]);
+                            w1[m], het[0], ploidy);
+        calcMissmap(prob, mismap1[m], mismap2[m], het[0], ploidy);
         for(int j = 0; j < n_p[0]; ++j){
             col_i = j * n_f[0] + i;
             p_prob = prob[possiblegeno[col_i]];
 
-            if(p_prob < 0.01){
-                p_prob = 0;
+            if(p_prob < -2){ // log10(0.01)
+                p_prob = -numeric_limits<double>::infinity();
             }
-            p_emit[j] = p_emit[j] * p_prob;
-
+            p_emit[j] = p_emit[j] + p_prob;
         }
     }
 
-    for(int j = 0; j < n_p[0]; ++j){
-        if(p_emit[j] == 0){
-            double neg_inf = -numeric_limits<double>::infinity();
-            p_emit[j] = neg_inf;
-        } else {
-            log10_safe(p_emit[j]);
-        }
-    }
     p_emit = lognorm(p_emit);
 
     return p_emit;
@@ -145,23 +199,18 @@ vector<double> calcEmit(RMatrix<double> ref,
                         RMatrix<double> alt,
                         RVector<double> eseq,
                         RVector<double> w1,
-                        RVector<double> w2,
                         RVector<double> mismap1,
                         RVector<double> mismap2,
                         int m,
                         int & sample_i,
-                        bool & het
-){
-    vector<double> prob;
+                        bool & het,
+                        int ploidy){
+    vector<double> prob(ploidy + 1);
     RMatrix<double>::Row ref_i = ref.row(sample_i);
     RMatrix<double>::Row alt_i = alt.row(sample_i);
 
-    prob = calcGenoprob(ref_i[m], alt_i[m], eseq[0], eseq[1], w1[m], w2[m], het);
-    calcMissmap(prob, mismap1[m], mismap2[m], het);
-
-    for(size_t i = 0; i < prob.size(); ++i){
-        log10_safe(prob[i]);
-    }
+    prob = calcGenoprob(ref_i[m], alt_i[m], eseq[0], eseq[1], w1[m], het, ploidy);
+    calcMissmap(prob, mismap1[m], mismap2[m], het, ploidy);
 
     return prob;
 }

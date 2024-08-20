@@ -58,6 +58,21 @@ double logsum(vector<double> & v){
     return log_sum;
 }
 
+// Calculate the log10 of the sum of probabilities.
+void logsum2(double & v1, double & v2){
+    if(!isinf(v1) && !isinf(v2)){
+        if(v1 > v2){
+            v1 = v1 + log10(1 + pow(10, v2 - v1));
+
+        } else {
+            v1 = v2 + log10(1 + pow(10, v1 - v2));
+        }
+
+    } else if(isinf(v1)){
+        v1 = v2;
+    }
+}
+
 // Calculate the log10 values of normalized probabilities
 // for an Rcpp's NumericVector object.
 NumericVector lognorm(NumericVector v){

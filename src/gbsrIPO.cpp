@@ -16,9 +16,9 @@ struct ParGenoProb : public Worker {
     const RMatrix<double> alt;
     const RVector<double> eseq;
     const RVector<double> w1;
-    const RVector<double> w2;
     const RVector<double> mismap1;
     const RVector<double> mismap2;
+    const RVector<int> ploidy;
 
     ParGenoProb(LogicalMatrix genocall,
                 const LogicalVector iter_sample,
@@ -26,18 +26,18 @@ struct ParGenoProb : public Worker {
                 const NumericMatrix alt,
                 const NumericVector eseq,
                 const NumericVector w1,
-                const NumericVector w2,
                 const NumericVector mismap1,
-                const NumericVector mismap2)
+                const NumericVector mismap2,
+                const IntegerVector ploidy)
         : genocall(genocall),
           iter_sample(iter_sample),
           ref(ref),
           alt(alt),
           eseq(eseq),
           w1(w1),
-          w2(w2),
           mismap1(mismap1),
-          mismap2(mismap2) {}
+          mismap2(mismap2),
+          ploidy(ploidy) {}
 
     void operator()(size_t begin, size_t end) {
         bool het = true;
@@ -48,12 +48,12 @@ struct ParGenoProb : public Worker {
             RMatrix<int>::Row genocall_i = genocall.row(sample_i);
             RMatrix<double>::Row ref_i = ref.row(sample_i);
             RMatrix<double>::Row alt_i = alt.row(sample_i);
-            vector<double> prob(3);
+            vector<double> prob(ploidy[0]);
             int sel;
             double threshold = 0.99;
 
             for(size_t m=0; m<ref_i.size(); ++m){
-                prob = calcGenoprob(ref_i[m], alt_i[m], eseq[0], eseq[1], w1[m], w2[m], het);
+                prob = calcGenoprob(ref_i[m], alt_i[m], eseq[0], eseq[1], w1[m], het, ploidy[0]);
                 sel = get_max_int(prob);
                 if(prob[sel] > threshold){
                     genocall_i[m] = 0;
@@ -72,7 +72,9 @@ LogicalMatrix get_genocall(NumericMatrix ref,
                            NumericVector bias,
                            NumericMatrix mismap,
                            int & n_o,
-                           int & n_m
+                           int & n_m,
+                           IntegerVector ploidy
+
 ){
     // Initialize arrays to store output
     LogicalMatrix genocall(n_o,  n_m);
@@ -85,8 +87,6 @@ LogicalMatrix get_genocall(NumericMatrix ref,
     NumericVector mismap2 = mismap( _ , 1 );
     eseq = clone(eseq_in);
     w1 = clone(bias);
-    w2 = clone(bias);
-    w2 = 1 - w2;
 
     LogicalVector iter_sample(n_o);
 
@@ -96,9 +96,9 @@ LogicalMatrix get_genocall(NumericMatrix ref,
                         alt,
                         eseq,
                         w1,
-                        w2,
                         mismap1,
-                        mismap2);
+                        mismap2,
+                        ploidy);
 
     parallelFor(0, iter_sample.length(), calc_gp);
 

@@ -5,8 +5,8 @@ run_fb <- function(ref, alt, eseq_in, bias, mismap, possiblehap, trans_prob, ini
     .Call(`_GBScleanR_run_fb`, ref, alt, eseq_in, bias, mismap, possiblehap, trans_prob, init_prob, n_pgeno, n_hap, n_offspring, n_marker, pedigree, p_geno, ploidy)
 }
 
-get_genocall <- function(ref, alt, eseq_in, bias, mismap, n_o, n_m) {
-    .Call(`_GBScleanR_get_genocall`, ref, alt, eseq_in, bias, mismap, n_o, n_m)
+get_genocall <- function(ref, alt, eseq_in, bias, mismap, n_o, n_m, ploidy) {
+    .Call(`_GBScleanR_get_genocall`, ref, alt, eseq_in, bias, mismap, n_o, n_m, ploidy)
 }
 
 count_geno <- function(geno) {

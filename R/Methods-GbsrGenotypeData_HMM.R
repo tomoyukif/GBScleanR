@@ -242,7 +242,9 @@ setMethod("estGeno",
 
 #' @importFrom gdsfmt append.gdsn
 .saveHap <- function(object, clean_out, sel, no_valid_marker) {
-    output <- array(data = 0, dim = c(2, length(sel$sam), length(sel$mar)))
+    n_ploidy <- dim(clean_out$best_hap)[1]
+    output <- array(data = 0,
+                    dim = c(n_ploidy, length(sel$sam), length(sel$mar)))
 
     if(!no_valid_marker){
         rep_id <- getReplicates(object = object, parents = TRUE)
@@ -262,7 +264,8 @@ setMethod("estGeno",
 }
 
 .saveEDS <- function(object, clean_out, sel, no_valid_marker) {
-    output <- array(data = NA, dim = c(2, length(sel$sam), length(sel$mar)))
+    n_ploidy <- dim(clean_out$best_hap)[1]
+    output <- array(data = NA, dim = c(n_ploidy, length(sel$sam), length(sel$mar)))
 
     if(!no_valid_marker){
         rep_id <- getReplicates(object = object, parents = TRUE)
@@ -287,7 +290,8 @@ setMethod("estGeno",
 
 #' @importFrom gdsfmt append.gdsn
 .saveGeno <- function(object, clean_out, sel, no_valid_marker) {
-    output <- array(data = 3, dim = c(2, length(sel$sam), length(sel$mar)))
+    n_ploidy <- dim(clean_out$best_geno)[1]
+    output <- array(data = 3, dim = c(n_ploidy, length(sel$sam), length(sel$mar)))
 
     if(!no_valid_marker){
         rep_id <- getReplicates(object = object, parents = TRUE)
@@ -308,8 +312,7 @@ setMethod("estGeno",
 
 #' @importFrom gdsfmt append.gdsn
 .savePGeno <- function(object, clean_out, sel, no_valid_marker, n_parents) {
-    n_ploidy <- attributes(slot(object = object, name = "sample"))$ploidy
-    n_row <- n_parents * n_ploidy
+    n_row <- dim(clean_out$p_geno)[1]
     output <- matrix(data = 3, nrow = n_row, length(sel$mar))
 
     if(!no_valid_marker){
@@ -396,9 +399,9 @@ setMethod("estGeno",
                            parents = "only", valid = TRUE, chr = chr_i)
         rep_id <- getReplicates(object = object, parents = "only")
         p_reads <- .pileupAD(ad = p_reads, rep_id = rep_id)
+        p_reads <- .orderParents(object = object, p_reads = p_reads)
     }
 
-    p_reads <- .orderParents(object = object, p_reads = p_reads)
 
     return(list(p_ref = p_reads$ref,
                 p_alt = p_reads$alt,
@@ -435,9 +438,9 @@ setMethod("estGeno",
     return(out)
 }
 
-.makeGenoParents <- function(n_parents, alleles, het_parent){
+.makeGenoParents <- function(n_parents, n_ploidy, alleles, het_parent){
     out <- NULL
-    for (i in seq_len(n_parents * 2)) {
+    for (i in seq_len(n_parents * n_ploidy)) {
         out <- c(out, list(alleles))
     }
     out <- expand.grid(out, KEEP.OUT.ATTRS = FALSE)
@@ -445,48 +448,48 @@ setMethod("estGeno",
                        FUN = function(x) length(unique(x)) > 1)
     out <- as.matrix(out[valid_pat,])
     if (!het_parent) {
-        valid <- out[, c(TRUE, FALSE)] == out[, c(FALSE, TRUE)]
-        valid <- apply(X = valid, MARGIN = 1, FUN = all)
-        out <- out[valid, ]
+        check1 <- rowSums(out[, seq_len(n_ploidy)]) %in% c(0, n_ploidy)
+        check2 <- rowSums(out[, -seq_len(n_ploidy)]) %in% c(0, n_ploidy)
+        out <- out[check1 & check2, ]
     }
     attributes(out) <- list(dim = dim(out))
     return(out)
 }
 
-.initialPattern <- function(mt, xtype, het_parent, n_origin){
+.initialPattern <- function(mt, xtype, het_parent, n_parents, n_ploidy){
     if (het_parent) {
-        out <- apply(X = matrix(data = seq_len(n_origin), 2),
+        out <- apply(X = matrix(data = seq_len(n_ploidy * n_parents),
+                                ncol = n_parents),
                      MARGIN = 2,
                      FUN = paste, collapse="/")
         out <- lapply(X = seq_along(xtype[[1]]),
                       FUN = function(i){
-                          gamet <- out[match(x = mt[[1]][, i],
-                                             table = seq_len(0.5 * n_origin))]
-                          return(paste(gamet, collapse = "|"))
+                          gamete <- out[mt[[1]][, i]]
+                          return(paste(gamete, collapse = "|"))
                       })
 
     } else {
-        gamet <- mt[[1]]
-        gamet[gamet != 1] <- gamet[gamet != 1] * 2 - 1
+        gamete <- mt[[1]]
+        gamete[gamete != 1] <- (gamete[gamete != 1] - 1) * n_ploidy + 1
         out <- lapply(X = seq_along(xtype[[1]]),
                       FUN = function(i){
-                          return(paste(gamet[, i], collapse = "|"))
+                          return(paste(gamete[, i], collapse = "|"))
                       })
     }
     return(out)
 }
 
-.progenyPattern <- function(gamet, mt, xtype, pg, het_parent){
+.progenyPattern <- function(gamete, mt, xtype, pg, het_parent){
     if(all(xtype == "pairing")){
         out <- vapply(X = seq_along(xtype),
                       FUN.VALUE = list(1),
                       FUN = function(i){
-                          i_gamet <- gamet[match(mt[, i], pg)]
-                          return(list(paste(i_gamet, collapse = "|")))
+                          i_gamete <- gamete[match(mt[, i], pg)]
+                          return(list(paste(i_gamete, collapse = "|")))
                       })
 
     } else if(all(xtype != "pairing")){
-        out <- vapply(X = gamet,
+        out <- vapply(X = gamete,
                       FUN.VALUE = list(1),
                       FUN = function(x){
                           return(list(paste(x, x, sep = "|")))
@@ -495,7 +498,7 @@ setMethod("estGeno",
     return(out)
 }
 
-.getValidPat <- function(scheme, het_parent, n_origin) {
+.getValidPat <- function(scheme, het_parent, n_parents, n_ploidy) {
     Var1 <- Var2 <- NULL
     homo <- FALSE
 
@@ -510,15 +513,16 @@ setMethod("estGeno",
     pat <- c(pat, list(.initialPattern(mt = mt,
                                        xtype = xtype,
                                        het_parent = het_parent,
-                                       n_origin = n_origin)))
+                                       n_parents = n_parents,
+                                       n_ploidy = n_ploidy)))
 
     # Progeny
     if(length(xtype) >= 2){
         for(i in seq_along(xtype)[-1]) {
-            gamet <- lapply(X = pat[[i - 1]],
-                            FUN = sub, pattern = "\\|", replacement = "/")
+            gamete <- lapply(X = pat[[i - 1]],
+                             FUN = sub, pattern = "\\|", replacement = "/")
             pat <- c(pat,
-                     list(.progenyPattern(gamet = gamet,
+                     list(.progenyPattern(gamete = gamete,
                                           mt = mt[[i]],
                                           xtype = xtype[[i]],
                                           pg = pg[[i - 1]],
@@ -527,48 +531,62 @@ setMethod("estGeno",
     }
     target_index <- which(unlist(pg) %in% target_pedigree)
     target_pat <- unlist(pat)[target_index]
-    gamet <- lapply(X = target_pat,
-                    FUN = function(x) unlist(strsplit(x, split = "\\|")))
-    out <- lapply(X = gamet,
+    gamete <- lapply(X = target_pat,
+                     FUN = function(x) unlist(strsplit(x, split = "\\|")))
+    out <- lapply(X = gamete,
                   FUN = function(x){
-                      gamet1 <- as.numeric(unlist(strsplit(x[1], "/")))
-                      gamet2 <- as.numeric(unlist(strsplit(x[2], "/")))
-                      tmp <- expand.grid(gamet1, gamet2, stringsAsFactors = FALSE)
-                      tmp <- as.matrix(tmp)
-                      tmp <- rbind(tmp, tmp[, 2:1])
-                      tmp <- unique(tmp)
-                      tmp <- tmp[order(tmp[, 1], tmp[, 2]),]
-                      return(tmp)
+                      gamete1 <- as.numeric(unlist(strsplit(x[1], "/")))
+                      gamete2 <- as.numeric(unlist(strsplit(x[2], "/")))
+                      gamete1 <- lapply(seq_len(n_ploidy * 0.5),
+                                        FUN = function(i) return(gamete1))
+                      gamete1 <- expand.grid(gamete1)
+                      gamete2 <- lapply(seq_len(n_ploidy * 0.5),
+                                        FUN = function(i) return(gamete2))
+                      gamete2 <- expand.grid(gamete2)
+                      zygote <- expand.grid(seq_len(nrow(gamete1)),
+                                            seq_len(nrow(gamete2)),
+                                            stringsAsFactors = FALSE)
+                      zygote <- cbind(gamete1[zygote[, 1], ],
+                                      gamete2[zygote[, 2], ])
+                      zygote <- unique(zygote)
+                      zygote <- zygote[, rev(seq_len(ncol(zygote)))]
+                      zygote <- as.matrix(zygote)
+                      return(zygote)
                   })
 
     names(out) <- target_pedigree
     return(out)
 }
 
-.getPossibleHap <- function(hap_progeny, geno_parents, geno_pat){
+.getPossibleHap <- function(hap_progeny, geno_parents, geno_pat, n_ploidy){
     hap_vec <- as.vector(t(hap_progeny))
 
     derived_geno <- apply(X = geno_parents, MARGIN = 1,
                           FUN = function(x){
                               x <- x[hap_vec]
-                              x <- x[c(TRUE, FALSE)] + x[c(FALSE, TRUE)]
+                              x <- matrix(x, nrow = n_ploidy)
+                              x <- colSums(x)
                               return(x)
                           })
     derived_geno <- as.vector(derived_geno)
-    out <- rbind(derived_geno, derived_geno, derived_geno) == geno_pat
+    out <- rep(derived_geno, n_ploidy + 1)
+    out <- matrix(out, nrow = n_ploidy + 1, byrow = TRUE)
+    out <- out == geno_pat
     out <- apply(X = out, MARGIN = 2, FUN = which)
     return(out)
 }
 
-.getPossibleGeno <- function(geno_parents, geno_pat){
-    out <- apply(X = geno_parents, MARGIN = 1, FUN = function(x) {
-        x <- x[c(TRUE, FALSE)] + x[c(FALSE, TRUE)]
+.getPossibleGeno <- function(geno_parents, geno_pat, n_ploidy){
+    derived_geno <- apply(X = geno_parents, MARGIN = 1, FUN = function(x) {
+        x <- matrix(x, nrow = n_ploidy)
+        x <- colSums(x)
         return(x)
     })
-    out <- as.vector(out)
-    out <- rbind(out, out, out) == geno_pat
+    derived_geno <- as.vector(derived_geno)
+    out <- rep(derived_geno, n_ploidy + 1)
+    out <- matrix(out, nrow = n_ploidy + 1, byrow = TRUE)
+    out <- out == geno_pat
     out <- apply(X = out, MARGIN = 2, FUN = which)
-
     return(out)
 }
 
@@ -582,20 +600,23 @@ setMethod("estGeno",
 
     geno_pat <- .makeGenoPat(n_ploidy = n_ploidy, alleles = alleles)
     geno_parents <- .makeGenoParents(n_parents = n_parents,
+                                     n_ploidy = n_ploidy,
                                      alleles = alleles,
                                      het_parent = het_parent)
-    n_origin <- n_parents * 2^het_parent
     hap_progeny <- .getValidPat(scheme = scheme,
                                 het_parent = het_parent,
-                                n_origin = n_origin)
+                                n_parents = n_parents,
+                                n_ploidy = n_ploidy)
 
     possiblehap <- lapply(X = hap_progeny,
                           FUN = .getPossibleHap,
                           geno_parents = geno_parents,
-                          geno_pat = geno_pat)
+                          geno_pat = geno_pat,
+                          n_ploidy = n_ploidy)
 
     possiblegeno <- .getPossibleGeno(geno_parents = geno_parents,
-                                     geno_pat = geno_pat)
+                                     geno_pat = geno_pat,
+                                     n_ploidy = n_ploidy)
 
     n_p_pat <- nrow(geno_parents)
     n_hap_pat <- vapply(X = hap_progeny, FUN = nrow, FUN.VALUE = numeric(1))
@@ -761,7 +782,7 @@ setMethod("estGeno",
 }
 
 .transitionProb <- function(pat, pos, recomb_rate,
-                            scheme, het_parent){
+                            scheme, het_parent, n_ploidy){
     out <- lapply(X = seq_along(pat$hap_progeny),
                   FUN = function(i){
                       hap_progeny_i <- pat$hap_progeny[[i]]
@@ -771,38 +792,42 @@ setMethod("estGeno",
                                        het_parent = het_parent,
                                        i = i)
                       jrate <- .getXoFreq(jnum = jnum, n_origin = n_origin)
-                      invalid_joint <- apply(X = hap_progeny_i,
+                      q_mat <- apply(X = hap_progeny_i,
                                              MARGIN = 1,
                                              FUN = function(x) {
                                                  apply(X = hap_progeny_i,
                                                        MARGIN = 1,
                                                        FUN = function(y) {
-                                                           check1 <- x[1] == x[2] & y[1] == y[2]
-                                                           check2 <- any(x == y)
-                                                           return(!check1 & !check2)
+                                                           no_change <- x == y
+                                                           if(sum(no_change) == n_ploidy){
+                                                               out <- NA
+
+                                                           } else {
+                                                               joint_pat <- paste(x, y, sep = "_")
+                                                               joint_pat <- joint_pat[!no_change]
+                                                               if(length(unique(joint_pat)) > 1){
+                                                                   out <- 0
+                                                               } else {
+                                                                   if(length(joint_pat) > 1){
+                                                                       out <- jrate$r11/length(joint_pat)
+
+                                                                   } else {
+                                                                       out <- jrate$r01
+                                                                   }
+                                                               }
+                                                           }
+                                                           return(out)
                                                        })
                                              })
-
-                      ibd <- apply(X = hap_progeny_i,
-                                   MARGIN = 1,
-                                   FUN = function(x) abs(length(unique(x)) - 2))
-                      ibd <- vapply(X = ibd,
-                                    FUN = function(x) paste0(ibd, x),
-                                    FUN.VALUE = character(length(ibd)))
-                      ibd[ibd == "00"] <- jrate$r00
-                      ibd[ibd == "01"] <- jrate$r01
-                      ibd[ibd == "10"] <- jrate$r10
-                      ibd[ibd == "11"] <- jrate$r11
-                      ibd[invalid_joint] <- 0
-                      q_mat <- as.numeric(ibd)
-
-                      mar_dist <- diff(pos)
-                      rf <- mar_dist * 1e-6 * recomb_rate
-                      q_mat <- matrix(q_mat,
-                                      nrow(hap_progeny_i),
-                                      nrow(hap_progeny_i))
-                      diag(q_mat) <- NA
                       diag(q_mat) <- -rowSums(q_mat, na.rm = TRUE)
+                      mar_dist <- diff(pos)
+                      if(any(mar_dist < 0)){
+                          stop("Negative value(s) was obtained in the calculation of marker distances \n",
+                               "based on physical positions of the given markers.",
+                               "\nThe order of the markers might not be valid.",
+                               call. = FALSE)
+                      }
+                      rf <- mar_dist * 1e-6 * recomb_rate
                       prob <- vapply(X = rf,
                                      FUN = function(x) expm.Higham08(q_mat * x),
                                      FUN.VALUE = numeric(length(q_mat)))
@@ -832,7 +857,8 @@ setMethod("estGeno",
                        call_threshold, het_parent, fix_bias, fix_mismap,
                        parentless, dummy_reads) {
     reads <- .loadReadCounts(object = object, chr_i = chr_i,
-                             parentless = parentless, dummy_reads = dummy_reads)
+                             parentless = parentless,
+                             dummy_reads = dummy_reads)
     if(parentless){
         n_parents <- 2
 
@@ -853,9 +879,12 @@ setMethod("estGeno",
     trans_prob <- .transitionProb(pat = pat, pos = pos,
                                   recomb_rate = recomb_rate,
                                   scheme = slot(object = object, name = "scheme"),
-                                  het_parent = het_parent)
-    init_prob <- lapply(X = trans_prob, FUN = .getInitProb,
-                        n_pat = pat$n_p_pat, n_samples = n_samples)
+                                  het_parent = het_parent,
+                                  n_ploidy = n_ploidy)
+    init_prob <- lapply(X = trans_prob,
+                        FUN = .getInitProb,
+                        n_pat = pat$n_p_pat,
+                        n_samples = n_samples)
     if(is.null(fix_mismap)){
         mismap <-  matrix(data = 0.005, nrow = n_mar, ncol = 2)
         fix_mismap <- FALSE
@@ -867,6 +896,7 @@ setMethod("estGeno",
     if(is.null(fix_bias)){
         bias <- rep(x = 0.5, times = n_mar)
         fix_bias <- FALSE
+
     } else {
         bias <- rep(x = fix_bias, times = n_mar)
         fix_bias <- TRUE
@@ -948,7 +978,9 @@ setMethod("estGeno",
         prob <- array(data = apply(X = prob,
                                    MARGIN = 3,
                                    FUN = function(x) return(t(x))),
-                      dim = c(3, param_list$n_samples, param_list$n_mar))
+                      dim = c(param_list$n_ploidy + 1,
+                              param_list$n_samples,
+                              param_list$n_mar))
         out_list$prob <- prob
 
     } else {
@@ -968,8 +1000,10 @@ setMethod("estGeno",
 
     if(param_list$het_parent){
         parent_hap <- rep(x = seq_len(n_parents_chr), each = param_list$n_mar)
+
     } else {
-        parent_hap <- rep(x = seq(1, by = 2, length.out = param_list$n_parents),
+        parent_hap <- rep(x = seq(1, by = param_list$n_ploidy,
+                                  length.out = param_list$n_parents),
                           each = param_list$n_ploidy * param_list$n_mar)
     }
     parent_hap <- matrix(data = parent_hap, nrow = n_parents_chr, byrow = TRUE)
@@ -977,15 +1011,14 @@ setMethod("estGeno",
     pat_i <- match(x = param_list$pedigree,
                    table = names(param_list$pat$hap_progeny))
     sample_hap <- vapply(X = seq_len(param_list$n_samples),
-                         FUN.VALUE = numeric(2 * param_list$n_mar),
+                         FUN.VALUE = numeric(param_list$n_ploidy * param_list$n_mar),
                          FUN = function(i) {
                              hap_i <- param_list$pat$hap_progeny[[pat_i[i]]]
-                             out <- c(hap_i[sample_pat[, i], 1],
-                                      hap_i[sample_pat[, i], 2])
+                             out <- as.vector(hap_i[sample_pat[, i], ])
                              return(out)
                          })
     sample_hap <- matrix(data = sample_hap,
-                         nrow = param_list$n_samples * 2,
+                         nrow = param_list$n_samples * param_list$n_ploidy,
                          ncol = param_list$n_mar,
                          byrow = TRUE)
     out_hap <- rbind(parent_hap, sample_hap)
@@ -1032,7 +1065,7 @@ setMethod("estGeno",
               best_pat_f$prob[, , latter])
     prob <- array(data = prob, dim = dim(best_pat_f$prob))
     prob <- apply(X = prob, MARGIN = 2, FUN = function(x) return(x))
-    prob <- array(data = prob, dim = c(3, n_mar, n_sample))
+    prob <- array(data = prob, dim = c(param_list$n_ploidy, n_mar, n_sample))
     out_list <- list(best_seq = best_seq,
                      p_geno = p_geno,
                      prob = prob)
@@ -1048,7 +1081,8 @@ setMethod("estGeno",
                      half = half,
                      FUN.VALUE = logical(length = 1L))
     half_m <- -seq(1, half)
-    best_hap[, flip_i, half_m] <- best_hap[2:1, flip_i, half_m]
+    reorder <- rev(seq_len(param_list$n_ploidy))
+    best_hap[, flip_i, half_m] <- best_hap[reorder, flip_i, half_m]
     return(best_hap)
 }
 
@@ -1060,10 +1094,10 @@ setMethod("estGeno",
     i_pedigree <- names(param_list$pat$hap_progeny) %in% i_redigree
     i_pedigree <- which(i_pedigree)
     i_hap_progeny <- t(param_list$pat$hap_progeny[[i_pedigree]])
-    hap1 <- which(colSums(i_hap_progeny == best_hap[, i, half]) == 2)
-    hap2 <- which(colSums(i_hap_progeny == best_hap[, i, half + 1]) == 2)
+    hap1 <- which(colSums(i_hap_progeny == best_hap[, i, half]) == param_list$n_ploidy)
+    hap2 <- which(colSums(i_hap_progeny == best_hap[, i, half + 1]) == param_list$n_ploidy)
     re <- rev(seq_along(best_hap[, i, half + 1]))
-    hap3 <- which(colSums(i_hap_progeny == best_hap[re, i, half + 1]) == 2)
+    hap3 <- which(colSums(i_hap_progeny == best_hap[re, i, half + 1]) == param_list$n_ploidy)
     prob1 <- param_list$trans_prob[[i_pedigree]][hap1, hap2, half]
     prob2 <- param_list$trans_prob[[i_pedigree]][hap1, hap3, half]
     if(prob1 < prob2){
@@ -1079,19 +1113,20 @@ setMethod("estGeno",
     for(i in seq_len(dim(best_hap)[2])){
         recomb <- apply(X = best_hap[, i,], MARGIN = 1, FUN = diff) != 0
         n_recomb <- rowSums(recomb)
-        recomb_pos <- which(n_recomb == 1)
+        recomb_pos <- which(n_recomb >= 1)
         for(j in seq_along(recomb_pos)){
             if(j == 1){
                 prev_xo <- recomb[recomb_pos[j], ]
 
             } else {
-                is_homo_j <- diff(best_hap[, i, recomb_pos[j]]) == 0
+                is_homo_j <- all(diff(best_hap[, i, recomb_pos[j]]) == 0)
                 if(is_homo_j){
                     j_xo <- recomb[recomb_pos[j], ]
                     if(all(j_xo == prev_xo)){
-                        prev_xo <- j_xo[2:1]
+                        re_order <- c(seq(2, length(j_xo)), 1)
+                        prev_xo <- j_xo[re_order]
                         flip_i <- -seq(1, recomb_pos[j])
-                        best_hap[, i, flip_i] <- best_hap[2:1, i, flip_i]
+                        best_hap[, i, flip_i] <- best_hap[re_order, i, flip_i]
                     }
                 }
             }
@@ -1103,19 +1138,22 @@ setMethod("estGeno",
 .summarizeEst <- function(best_hap, best_geno, pat_prob, param_list) {
     n_mar <- param_list$n_mar
     n_sample <- param_list$n_samples
+    n_levels <- param_list$n_ploidy + 1
     i_sample <- -seq_len(param_list$n_parents)
     sample_geno <- apply(X = best_geno[, i_sample, ], MARGIN = 2, FUN = colSums)
     sample_geno <- as.vector(sample_geno + 1)
-    sample_geno <- sample_geno + seq(0, by=3, length.out = n_mar * n_sample)
+    sample_geno <- sample_geno + seq(0, by = n_levels, length.out = n_mar * n_sample)
     log10_th <- log10(param_list$call_threshold)
     geno_prob <- matrix(data = pat_prob[sample_geno],
                         nrow = n_mar,
                         ncol = n_sample)
     geno_prob <- t(geno_prob < log10_th)
-    best_geno[1, i_sample, ][geno_prob] <- 3
-    best_geno[2, i_sample, ][geno_prob] <- 3
+    for(i in seq_len(param_list$n_ploidy)){
+        best_geno[i, i_sample, ][geno_prob] <- 3
+    }
     if (!param_list$het_parent) {
-        best_hap[best_hap != 1] <- (best_hap[best_hap != 1] + 1) / 2
+        new_num <- ceiling(best_hap[best_hap != 1] / param_list$n_ploidy)
+        best_hap[best_hap != 1] <- new_num
     }
     best_hap[1, i_sample, ][geno_prob] <- 0
     best_hap[2, i_sample, ][geno_prob] <- 0
@@ -1126,16 +1164,17 @@ setMethod("estGeno",
 ################################################################################
 ################################################################################
 # Marker specific error rate estimation
-.getBias <- function(best_seq, type, ref, alt) {
+.getBias <- function(best_seq, type, ref, alt, n_ploidy) {
     if (type == 1) {
-        est_het <- best_seq == 1
+        est_het <- !(best_seq == 0 | best_seq == n_ploidy)
         ref[!est_het] <- NA
         ref <- colSums(ref, na.rm = TRUE)
-        n_ref <- colSums(est_het, na.rm = TRUE)
+        best_seq[!est_het] <- NA
+        n_ref <- colSums(n_ploidy - best_seq, na.rm = TRUE)
         ref_prop <- ref / n_ref
         alt[!est_het] <- NA
         alt <- colSums(alt, na.rm = TRUE)
-        n_alt <- colSums(est_het, na.rm = TRUE)
+        n_alt <- colSums(best_seq, na.rm = TRUE)
         alt_prop <- alt / n_alt
         bias <- ref_prop / (ref_prop + alt_prop)
 
@@ -1143,13 +1182,13 @@ setMethod("estGeno",
         est_ref <- best_seq == 0
         ref[!est_ref] <- NA
         ref <- colSums(ref, na.rm = TRUE)
-        n_ref <- colSums(est_ref, na.rm = TRUE)
+        n_ref <- colSums(est_ref, na.rm = TRUE) * n_ploidy
         ref_prop <- ref / n_ref
 
         est_alt <- best_seq == 2
         alt[!est_alt] <- NA
         alt <- colSums(alt, na.rm = TRUE)
-        n_alt <- colSums(est_alt, na.rm = TRUE)
+        n_alt <- colSums(est_alt, na.rm = TRUE) * n_ploidy
         alt_prop <- alt / n_alt
         bias <- ref_prop / (ref_prop + alt_prop)
     }
@@ -1171,8 +1210,10 @@ setMethod("estGeno",
     ref <- rbind(param_list$reads$p_ref, param_list$reads$ref)
     alt <- rbind(param_list$reads$p_alt, param_list$reads$alt)
 
-    bias1 <- .getBias(best_seq = best_seq, type = 1, ref = ref, alt = alt)
-    bias2 <- .getBias(best_seq = best_seq, type = 2, ref = ref, alt = alt)
+    bias1 <- .getBias(best_seq = best_seq, type = 1,
+                      ref = ref, alt = alt, n_ploidy = param_list$n_ploidy)
+    bias2 <- .getBias(best_seq = best_seq, type = 2,
+                      ref = ref, alt = alt, n_ploidy = param_list$n_ploidy)
     bias_cor <- cor(x = bias1$bias, y = bias2$bias, use = "pair")
     if (!is.na(bias_cor) & bias_cor > 0.7) {
         bias <- .sumUpBias(bias1 = bias1, bias2 = bias2)
@@ -1191,7 +1232,8 @@ setMethod("estGeno",
                               bias = param_list$bias,
                               mismap = param_list$mismap,
                               n_o = param_list$n_samples,
-                              n_m = param_list$n_mar)
+                              n_m = param_list$n_mar,
+                              ploidy = param_list$n_ploidy)
     missing <- param_list$reads$ref == 0 & param_list$reads$alt == 0
     geno_call[missing] <- FALSE
 
@@ -1203,7 +1245,7 @@ setMethod("estGeno",
     alt[!geno_call] <- FALSE
     alt_mis <- colSums(alt, na.rm = TRUE) / n_ref
 
-    est <- best_seq[i_samples, ] == 2
+    est <- best_seq[i_samples, ] == param_list$n_ploidy
     n_alt <- colSums(est, na.rm = TRUE)
     ref <- param_list$reads$ref > 0
     ref[!est] <- FALSE

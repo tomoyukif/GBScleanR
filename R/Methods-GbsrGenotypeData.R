@@ -1111,9 +1111,9 @@ setMethod("setReplicates",
                   n_p_updated <- length(unique(p_info$memberID))
 
                   if(n_p != n_p_updated){
-                  warning("The number of parents was changed",
-                          " after setting replicates.",
-                          "\nCheck the parent information with 'getParents()'.")
+                      warning("The number of parents was changed",
+                              " after setting replicates.",
+                              "\nCheck the parent information with 'getParents()'.")
                   }
               }
 
@@ -2471,6 +2471,8 @@ setMethod("gbsrGDS2VCF",
     delete.gdsn(node = index.gdsn(node = object,
                                   path = "annotation/format/CGT"))
 }
+
+
 ###############################################################################
 #' @rdname gbsrGDS2CSV
 #' @importFrom utils write.table

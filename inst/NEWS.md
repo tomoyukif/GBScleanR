@@ -1,3 +1,7 @@
+Changes in version 2.0.1 (2024-8-21)
++ Release of GBScleanR version 2.
++ GBScleanR version 2 supports polyploid populations.
+
 Changes in version 1.9.22 (2024-8-27)
 + Update in gbsrGDS2VCF() to solve the issue that an open GDS file cannot be copied on Windows machines
 
@@ -5,7 +9,7 @@ Changes in version 1.9.21 (2024-8-27)
 + Fix a minor bug in getGenotype().
 
 Changes in version 1.9.20 (2024-6-11)
-+ Version bump to sync the devel version and RELEASE_3_19
++ Version bump to sync the devel version and RELEASE_3_19.
 
 Changes in version 1.8.18 (2024-6-11)
 + Minor bug fix in getGenotype().
