@@ -92,14 +92,16 @@ struct ParInitVit : public Worker {
             int target_i;
             int valid_j;
             int target_k;
+            int hap_offset_i = hap_offset[pedigree_i];
+            int init_offset_i = init_offset[pedigree_i];
 
             for(int j = 0; j < (int)valid_p_indices.size(); ++j){
                 for(int k = 0; k < n_hap_i; ++k){
                     valid_j = valid_p_indices[j];
-                    target_i = hap_offset[pedigree_i] + valid_j * n_hap_i + k;
+                    target_i = hap_offset_i + valid_j * n_hap_i + k;
                     hap_prob = prob_i[possiblehap[target_i]];
                     target_i = j * n_hap_i + k;
-                    target_k = init_offset[pedigree_i] + k;
+                    target_k = init_offset_i + k;
                     vit_i[target_i] = hap_prob + init_prob[target_k];
                 }
             }
@@ -151,11 +153,12 @@ struct ParCalcVitFounder : public Worker {
             vector<double> score_jkk(n_hap_i);
             vector<double> max_scores_jk(n_hap_i);
             int trans_prob_target;
+            int trans_offset_i = trans_offset[pedigree_i];
 
             for(int j = 0; j < (int)valid_p_indices.size(); ++j){
                 for(int k2 = 0; k2 < n_hap_i; ++k2){
                     for(int k1 = 0; k1 < n_hap_i; ++k1){
-                        trans_prob_target = trans_offset[pedigree_i] +
+                        trans_prob_target = trans_offset_i +
                             n_hap_i * n_hap_i * (m[0] - 1) +
                             n_hap_i * k2 + k1;
                         trans_kk = trans_prob[trans_prob_target];
@@ -267,6 +270,7 @@ struct ParCalcPathFounder : public Worker {
                     RMatrix<double>::Row in_i = in_score.row(sample_i);
                     int pedigree_i = pedigree[sample_i];
                     int n_hap_i = n_hap[pedigree_i];
+                    int hap_offset_i = hap_offset[pedigree_i];
 
                     // Calculate genotype probabilies
                     vector<double> prob_i = calcEmit(ref,
@@ -294,7 +298,7 @@ struct ParCalcPathFounder : public Worker {
                                 }
                             }
                             for(int k = 0; k < n_hap_i; ++k){
-                                target_i = hap_offset[pedigree_i] + j2 * n_hap_i + k;
+                                target_i = hap_offset_i + j2 * n_hap_i + k;
                                 hap_prob = prob_i[possiblehap[target_i]];
                                 target_i = valid_j1 * n_hap_i + k;
                                 score_ijk[k] = in_i[target_i] + hap_prob;
@@ -335,6 +339,7 @@ struct ParCalcPathFounder : public Worker {
                     RMatrix<double>::Row in_i = in_score.row(sample_i);
                     int pedigree_i = pedigree[sample_i];
                     int n_hap_i = n_hap[pedigree_i];
+                    int hap_offset_i = hap_offset[pedigree_i];
 
                     // Calculate genotype probabilies
                     vector<double> prob_i = calcEmit(ref,
@@ -349,7 +354,7 @@ struct ParCalcPathFounder : public Worker {
                                                       ploidy[0]);
 
                     for(int k = 0; k < n_hap_i; ++k){
-                        target_i = hap_offset[pedigree_i] + j2 * n_hap_i + k;
+                        target_i = hap_offset_i + j2 * n_hap_i + k;
                         hap_prob = prob_i[possiblehap[target_i]];
                         target_i = max_valid_index * n_hap_i + k;
                         out_i = j2_valid_index * n_hap_i + k;
@@ -499,6 +504,8 @@ struct ParVitOffspring : public Worker {
             int sample_i = distance(iter_sample.begin(), i);
             int pedigree_i = pedigree[sample_i];
             int n_hap_i = n_hap[pedigree_i];
+            int hap_offset_i = hap_offset[pedigree_i];
+            int trans_offset_i = trans_offset[pedigree_i];
 
             RMatrix<int>::Column o_seq_i = o_seq.column(sample_i);
             vector<vector<unsigned short>> o_path(n_marker[0],
@@ -531,7 +538,7 @@ struct ParVitOffspring : public Worker {
 
                 if(m == 0){
                     for(int k = 0; k < n_hap_i; ++k){
-                        target_i = hap_offset[pedigree_i] + f_geno * n_hap_i + k;
+                        target_i = hap_offset_i + f_geno * n_hap_i + k;
                         hap_prob = prob_i[possiblehap[target_i]];
                         vit[k] = hap_prob + init_prob[k];
                     }
@@ -539,7 +546,7 @@ struct ParVitOffspring : public Worker {
 
                     for(int k2 = 0; k2 < n_hap_i; ++k2){
                         for(int k1 = 0; k1 < n_hap_i; ++k1){
-                            trans_prob_target = trans_offset[pedigree_i] +
+                            trans_prob_target = trans_offset_i +
                                 n_hap_i * n_hap_i * (m - 1) +
                                 n_hap_i * k2 + k1;
                             trans_kk = trans_prob[trans_prob_target];
@@ -550,7 +557,7 @@ struct ParVitOffspring : public Worker {
                         max_scores_jk[k2] = score_jkk[max_i];
                     }
                     for(int k2 = 0; k2 < n_hap_i; ++k2){
-                        target_i = hap_offset[pedigree_i] + f_geno * n_hap_i + k2;
+                        target_i = hap_offset_i + f_geno * n_hap_i + k2;
                         hap_prob = prob_i[possiblehap[target_i]];
                         vit[k2] = max_scores_jk[k2] + hap_prob;
                     }
