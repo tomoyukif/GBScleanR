@@ -1200,8 +1200,8 @@ setMethod("estGeno",
 }
 
 .sumUpBias <- function(bias1, bias2) {
-    ref_prop <- (bias1$ref + bias2$ref) / (bias1$n_ref + bias2$n_ref * 2)
-    alt_prop <- (bias1$alt + bias2$alt) / (bias1$n_alt + bias2$n_alt * 2)
+    ref_prop <- (bias1$ref + bias2$ref) / (bias1$n_ref + bias2$n_ref)
+    alt_prop <- (bias1$alt + bias2$alt) / (bias1$n_alt + bias2$n_alt)
     bias <- ref_prop / (ref_prop + alt_prop)
     return(bias)
 }
