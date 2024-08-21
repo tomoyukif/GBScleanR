@@ -82,6 +82,7 @@ struct ParFB : public Worker {
             int sample_i = distance(iter_sample.begin(), i);
             int pedigree_i = pedigree[sample_i];
             int n_hap_i = n_hap[pedigree_i];
+            int n_hap_i2 = n_hap_i * n_hap_i;
 
             RMatrix<double>::Row gamma_i = gamma.row(sample_i);
 
@@ -96,8 +97,13 @@ struct ParFB : public Worker {
             double trans_kk;
             double sum_k;
             int target_i;
+            int target_ik2;
             int j;
             int trans_prob_target;
+            int hap_offset_i = hap_offset[pedigree_i];
+            int hap_offset_ij;
+            int trans_offset_i = trans_offset[pedigree_i];
+            int trans_offset_im;
             double neg_inf = -numeric_limits<double>::infinity();
 
             for(int m = 0; m < n_marker[0]; ++m){
@@ -113,25 +119,26 @@ struct ParFB : public Worker {
                                                  ploidy[0]);
                 if(m == 0){
                     j = p_geno[0];
+                    hap_offset_ij = hap_offset_i + j * n_hap_i;
                     for(int k = 0; k < n_hap_i; ++k){
-                        target_i = hap_offset[pedigree_i] + j * n_hap_i + k;
+                        target_i = hap_offset_ij + k;
                         hap_prob = prob_i[possiblehap[target_i]];
                         alpha[m][k] = hap_prob + init_prob[k];
                     }
 
                 } else {
                     j = p_geno[m];
-
+                    hap_offset_ij = hap_offset_i + j * n_hap_i;
+                    trans_offset_im = trans_offset_i + n_hap_i2 * (m - 1);
                     for(int k2 = 0; k2 < n_hap_i; ++k2){
+                        target_ik2 = n_hap_i * k2;
                         for(int k1 = 0; k1 < n_hap_i; ++k1){
-                            trans_prob_target = trans_offset[pedigree_i] +
-                                n_hap_i * n_hap_i * (m - 1) +
-                                n_hap_i * k2 + k1;
+                            trans_prob_target = trans_offset_im + target_ik2 + k1;
                             trans_kk = trans_prob[trans_prob_target];
                             score_k.at(k1) = alpha[m - 1][k1] + trans_kk;
                         }
                         sum_k = logsum(score_k);
-                        target_i = hap_offset[pedigree_i] + j * n_hap_i + k2;
+                        target_i = hap_offset_ij + k2;
                         hap_prob = prob_i[possiblehap[target_i]];
                         emit[m][k2] = hap_prob;
                         alpha[m][k2] = hap_prob + sum_k;
@@ -145,7 +152,7 @@ struct ParFB : public Worker {
             vector<double> gamma_i_sum(n_levels, neg_inf);
             for(int k = 0; k < n_hap_i; ++k){
                 j = p_geno[n_marker[0] - 1];
-                target_i = hap_offset[pedigree_i] + j * n_hap_i + k;
+                target_i = hap_offset_ij + k;
                 gamma_tmp = beta[k] + alpha[n_marker[0] - 1][k];
                 if(!isinf(gamma_tmp)){
                     target_hap = possiblehap[target_i];
@@ -158,23 +165,24 @@ struct ParFB : public Worker {
                 gamma_i[(n_marker[0] - 1) * n_levels + g] = gamma_i_sum[g];
             }
 
+            int trans_offset_imk1;
             for(int m = n_marker[0] - 1; m > 0; --m){
                 double gamma_tmp;
                 int target_hap;
                 vector<double> gamma_i_sum(n_levels, neg_inf);
+                trans_offset_im = trans_offset_i + n_hap_i2 * (m - 1);
 
                 for(int k1 = 0; k1 < n_hap_i; ++k1){
+                    trans_offset_imk1 = trans_offset_im + k1;
                     for(int k2 = 0; k2 < n_hap_i; ++k2){
-                        trans_prob_target = trans_offset[pedigree_i] +
-                            n_hap_i * n_hap_i * (m - 1) +
-                            n_hap_i * k2 + k1;
+                        trans_prob_target = trans_offset_imk1 + n_hap_i * k2;
                         trans_kk = trans_prob[trans_prob_target];
                         score_k[k2] = emit[m][k2] + beta[k2] + trans_kk;
                     }
                     sum_k = logsum(score_k);
                     beta[k1] = sum_k;
                     j = p_geno[m - 1];
-                    target_i = hap_offset[pedigree_i] + j * n_hap_i + k1;
+                    target_i = hap_offset_i + j * n_hap_i + k1;
                     gamma_tmp = sum_k + alpha[m - 1][k1];
                     if(!isinf(gamma_tmp)){
                         target_hap = possiblehap[target_i];

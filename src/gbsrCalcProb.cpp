@@ -176,7 +176,7 @@ NumericVector calcPemit(NumericMatrix p_ref,
 
         prob = calcGenoprob(ref_i[m], alt_i[m],
                             eseq[0], eseq[1],
-                            w1[m], het[0], ploidy);
+                                         w1[m], het[0], ploidy);
         calcMissmap(prob, mismap1[m], mismap2[m], het[0], ploidy);
         for(int j = 0; j < n_p[0]; ++j){
             col_i = j * n_f[0] + i;
