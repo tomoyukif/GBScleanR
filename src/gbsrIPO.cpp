@@ -48,7 +48,7 @@ struct ParGenoProb : public Worker {
             RMatrix<int>::Row genocall_i = genocall.row(sample_i);
             RMatrix<double>::Row ref_i = ref.row(sample_i);
             RMatrix<double>::Row alt_i = alt.row(sample_i);
-            vector<double> prob(ploidy[0]);
+            vector<double> prob(ploidy[0] + 1);
             int sel;
             double threshold = 0.99;
 
@@ -81,7 +81,6 @@ LogicalMatrix get_genocall(NumericMatrix ref,
 
     // Convert values to ones used here.
     NumericVector w1(n_m);
-    NumericVector w2(n_m);
     NumericVector eseq(2);
     NumericVector mismap1 = mismap( _ , 0 );
     NumericVector mismap2 = mismap( _ , 1 );
