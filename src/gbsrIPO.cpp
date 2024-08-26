@@ -54,6 +54,9 @@ struct ParGenoProb : public Worker {
 
             for(size_t m=0; m<ref_i.size(); ++m){
                 prob = calcGenoprob(ref_i[m], alt_i[m], eseq[0], eseq[1], w1[m], het, ploidy[0]);
+                for(int g = 0; g < prob.size(); ++g){
+                    prob[g] = pow(10, prob[g]);
+                }
                 sel = get_max_int(prob);
                 if(prob[sel] > threshold){
                     genocall_i[m] = 0;
