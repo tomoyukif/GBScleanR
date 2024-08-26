@@ -168,6 +168,7 @@ NumericVector calcPemit(NumericMatrix p_ref,
     vector<double> prob;
     double p_prob;
     int col_i;
+    double neg_inf = -numeric_limits<double>::infinity();
     NumericVector p_emit(n_p[0]);
 
     for(int i = 0; i < n_f[0]; ++i){
@@ -182,10 +183,14 @@ NumericVector calcPemit(NumericMatrix p_ref,
             col_i = j * n_f[0] + i;
             p_prob = prob[possiblegeno[col_i]];
 
-            if(p_prob < -2){ // log10(0.01)
-                p_prob = -numeric_limits<double>::infinity();
+            if(p_emit[j] != neg_inf){
+                if(p_prob < -2){ // log10(0.01)
+                    p_emit[j] = neg_inf;
+
+                } else {
+                    p_emit[j] = p_emit[j] + p_prob;
+                }
             }
-            p_emit[j] = p_emit[j] + p_prob;
         }
     }
 
