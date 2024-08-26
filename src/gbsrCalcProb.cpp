@@ -119,13 +119,15 @@ void calcMissmap(vector<double> & prob,
             prob.assign(prob.size(), even_prob);
 
         } else {
-            prob.assign(prob.size(), -pow(10, 100));
             for(size_t g = 0; g < prob.size(); ++g){
                 if(g == 0){
-                    prob[g] = -0.30103;
+                    prob[g] = -0.30103; // log10(0.5)
 
                 } else if(g == ploidy){
-                    prob[g] = -0.30103;
+                    prob[g] = -0.30103; // log10(0.5)
+
+                } else {
+                    prob[g] = -numeric_limits<double>::infinity();
                 }
             }
         }
