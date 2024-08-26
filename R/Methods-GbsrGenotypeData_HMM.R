@@ -448,9 +448,9 @@ setMethod("estGeno",
                        FUN = function(x) length(unique(x)) > 1)
     out <- as.matrix(out[valid_pat,])
     if (!het_parent) {
-        check1 <- rowSums(out[, seq_len(n_ploidy)]) %in% c(0, n_ploidy)
-        check2 <- rowSums(out[, -seq_len(n_ploidy)]) %in% c(0, n_ploidy)
-        out <- out[check1 & check2, ]
+        valid <- out[, c(TRUE, FALSE)] == out[, c(FALSE, TRUE)]
+        valid <- apply(X = valid, MARGIN = 1, FUN = all)
+        out <- out[valid, ]
     }
     attributes(out) <- list(dim = dim(out))
     return(out)
