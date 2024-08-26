@@ -134,8 +134,6 @@ void calcMissmap(vector<double> & prob,
         }
 
     } else {
-        lognorm_vec(sum_prob);
-
         for(size_t g = 0; g < prob.size(); ++g){
             if(!check){
                 check = sum_prob[g] < prob_lowest;
@@ -146,9 +144,9 @@ void calcMissmap(vector<double> & prob,
             for(size_t g = 0; g < prob.size(); ++g){
                 logsum2(sum_prob[g], prob_lowest);
             }
-            lognorm_vec(sum_prob);
         }
 
+        lognorm_vec(sum_prob);
         for(size_t g = 0; g < prob.size(); ++g){
             prob[g] = sum_prob[g];
         }
