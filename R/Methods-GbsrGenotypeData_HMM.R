@@ -812,7 +812,14 @@ setMethod("estGeno",
                                                                        out <- jrate$r11/length(joint_pat)
 
                                                                    } else {
-                                                                       out <- jrate$r01
+                                                                       check1 <- length(unique(x)) == 1
+                                                                       check2 <- length(unique(y)) == 1
+                                                                       if(check1 & !check2){
+                                                                           out <- jrate$r01
+
+                                                                       } else {
+                                                                           out <- jrate$r10
+                                                                       }
                                                                    }
                                                                }
                                                            }
