@@ -56,6 +56,7 @@ void calcMissmap(vector<double> & prob,
     double prob_lowest = -2.30103; //log10(0.005)
     double n_het = prob.size() - 2;
     bool check = false;
+    double neg_inf = -numeric_limits<double>::infinity();
 
     for(size_t g = 0; g < prob.size(); ++g){
         if(g == 0){
@@ -112,7 +113,7 @@ void calcMissmap(vector<double> & prob,
     }
 
     double all_sum = logsum(sum_prob);
-    if(all_sum == 0){
+    if(all_sum == neg_inf){
         if(het){
             double even_prob = 1/(double)prob.size();
             log10_safe(even_prob);
@@ -127,7 +128,7 @@ void calcMissmap(vector<double> & prob,
                     prob[g] = -0.30103; // log10(0.5)
 
                 } else {
-                    prob[g] = -numeric_limits<double>::infinity();
+                    prob[g] = neg_inf;
                 }
             }
         }
