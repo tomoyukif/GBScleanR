@@ -1,10 +1,10 @@
-Changes in version 2.0.3 (2024-8-27)
+Changes in version 1.99.3 (2024-8-27)
 + Fix bugs in the functions that have been modified to support polyploids.
 
-Changes in version 2.0.2 (2024-8-27)
+Changes in version 1.99.2 (2024-8-27)
 + Fix a minor bug in counting up chromosomes in .sumUpBias().
 
-Changes in version 2.0.1 (2024-8-27)
+Changes in version 1.99.1 (2024-8-27)
 + Release of GBScleanR version 2.
 + GBScleanR version 2 supports polyploid populations.
 
