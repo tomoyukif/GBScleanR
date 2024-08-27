@@ -1,3 +1,6 @@
+Changes in version 1.9.22 (2024-8-27)
++ Update in gbsrGDS2VCF() to solve the issue that an open GDS file cannot be copied on Windows machines
+
 Changes in version 1.9.21 (2024-8-27)
 + Fix a minor bug in getGenotype().
 
