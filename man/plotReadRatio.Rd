@@ -26,15 +26,14 @@ columns to draw faceted line plots for chromosomes.}
 
 \item{ind}{A string of sample id or an index to specify the sample to be drawn.}
 
-\item{node}{Either one of "raw", "filt", and "cor" to output raw
-genotype data, filtered genotype data, or corrected genotype data,
+\item{node}{Either one of "raw" or "filt" to output raw read data, or filtered read data,
 respectively.}
 
-\item{dot_fill}{A string to indicate the dot color in a plot.}
+\item{dot_fill}{A vector of two strings to indicate the dot colors in the plot. The first and second elements of the vector are set as the colors for the lowest and highest values in the gradient coloring of the dots indicating total read counts par marker.}
 
-\item{size}{A positive number to indicate the dot size in a plot.}
+\item{size}{A positive number to indicate the dot size in the plot.}
 
-\item{alpha}{A positive number in 0-1 to indicate the dot opacity in a plot.}
+\item{alpha}{A positive number in 0-1 to indicate the dot opacity in the plot.}
 }
 \value{
 A ggplot object.

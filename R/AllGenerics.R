@@ -182,7 +182,7 @@ setGeneric("getChromosome", function(object, valid = TRUE, ...)
 #' @details
 #' If `valid = TRUE`, the positions of the markers which are labeled `TRUE` in
 #' the "valid" column of the "marker" slot will be returned. If you need the
-#' number of over all markers, set `valid = FALSE`. [validMar()] tells you
+#' positions of over all markers, set `valid = FALSE`. [validMar()] tells you
 #' which markers are valid.
 #'
 #' @examples
@@ -2005,6 +2005,84 @@ setGeneric("setInfoFilter", function(object,
                                      ...)
     standardGeneric("setInfoFilter"))
 
+
+#' Set dominant markers
+#'
+#' Set identifiers for dominant markers
+#'
+#' @param object A [GbsrGenotypeData] object.
+#' @param id A vector of integers matching with marker IDs which can
+#' be retrieve by `getMarID()`. The markers with the specified IDs
+#' will be set as dominant markers. You can also specify a logical vector that
+#' indicates dominant markers. The length of the logical vector should match the
+#' number of valid markers.
+#' @param ... Unused.
+#'
+#' @return A [GbsrGenotypeData] object after adding dominant marker information
+#'
+#' @examples
+#' # Create a GDS file from a sample VCF file.
+#' vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
+#' gds_fn <- tempfile("sample", fileext = ".gds")
+#' gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
+#'
+#' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
+#' gds <- loadGDS(gds_fn)
+#'
+#' # Set dominant markers.
+#' id <- sample(getMarID(gds), 10) # Assume 10 markers are dominant markers.
+#' gds <- setDominantMarkers(gds, id = id)
+#'
+#' # Close the connection to the GDS file
+#' closeGDS(gds)
+#'
+#' @export
+#'
+setGeneric("setDominantMarkers", function(object, id, ...)
+    standardGeneric("setDominantMarkers"))
+
+
+#' Get dominant markers
+#'
+#' Get identifiers for dominant markers
+#'
+#' @param object A [GbsrGenotypeData] object.
+#' @param valid A logical value. See details.
+#' @param chr A integer or string to specify chromosome to get information.
+#' @param ... Unused.
+#'
+#' @return A logical vector indicating the dominant markers.
+#'
+#' @details
+#' If `valid = TRUE`, A logical vector for the markers which are labeled `TRUE` in
+#' the "valid" column of the "marker" slot will be returned. If you need check
+#' the dominant markers in all markers, set `valid = FALSE`. [validMar()] tells you
+#' which markers are valid.
+#'
+#' @return A [GbsrGenotypeData] object after adding dominant marker information
+#'
+#' @examples
+#' # Create a GDS file from a sample VCF file.
+#' vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
+#' gds_fn <- tempfile("sample", fileext = ".gds")
+#' gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
+#'
+#' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
+#' gds <- loadGDS(gds_fn)
+#'
+#' # Set dominant markers.
+#' id <- sample(getMarID(gds), 10) # Assume 10 markers are dominant markers.
+#' gds <- setDominantMarkers(gds, id = id)
+#'
+#' dominant_mar <- getDominantMarkers(gds)
+#'
+#' # Close the connection to the GDS file
+#' closeGDS(gds)
+#'
+#' @export
+#'
+setGeneric("getDominantMarkers", function(object, valid = TRUE, chr = NULL, ...)
+    standardGeneric("getDominantMarkers"))
 
 #' Reset the filter made by [setSamFilter()]
 #'

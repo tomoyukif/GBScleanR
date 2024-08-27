@@ -27,7 +27,7 @@ This function returns physical positions of markers.
 \details{
 If \code{valid = TRUE}, the positions of the markers which are labeled \code{TRUE} in
 the "valid" column of the "marker" slot will be returned. If you need the
-number of over all markers, set \code{valid = FALSE}. \code{\link[=validMar]{validMar()}} tells you
+positions of over all markers, set \code{valid = FALSE}. \code{\link[=validMar]{validMar()}} tells you
 which markers are valid.
 }
 \examples{

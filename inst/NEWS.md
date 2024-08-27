@@ -1,3 +1,6 @@
+Changes in version 2.0.3 (2024-8-27)
++ Fix bugs in the functions that have been modified to support polyploids.
+
 Changes in version 2.0.2 (2024-8-21)
 + Fix a minor bug in counting up chromosomes in .sumUpBias().
 

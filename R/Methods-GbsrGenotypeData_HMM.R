@@ -901,6 +901,7 @@ setMethod("estGeno",
         fix_mismap <- TRUE
     }
     if(is.null(fix_bias)){
+        dominant <- getDominantMarkers(object = object, chr = chr_i)
         bias <- rep(x = 0.5, times = n_mar)
         fix_bias <- FALSE
 

@@ -842,13 +842,12 @@ pairsGBSR  <- function(x,
 #' and columns to draw faceted line plots for chromosomes.
 #' @param chr A vector of indexes to specify chromosomes to be drawn.
 #' @param ind An index to specify samples to be drawn.
-#' @param node Either one of "raw", "filt", and "cor" to output raw
-#' genotype data, filtered genotype data, or corrected genotype data,
+#' @param node Either one of "raw" or "filt" to output raw read data, or filtered read data,
 #' respectively.
 #' @param showratio If `TRUE`, draw dots indicating read ratio.
 #' @param line_color A string to indicate the line color in the plot.
-#' @param dot_fill A string to indicate the dot color in a plot.
-#' @param size A positive number to indicate the dot size in a plot.
+#' @param dot_fill A vector of two strings to indicate the dot colors in the plot. The first and second elements of the vector are set as the colors for the lowest and highest values in the gradient coloring of the dots indicating total read counts par marker.
+##' @param size A positive number to indicate the dot size in a plot.
 #' @param alpha A positive number in 0-1 to indicate the dot opacity in a plot.
 #'
 #' @examples
@@ -902,14 +901,14 @@ plotDosage <- function(x,
 
     if(showratio){
         ploidy <- attributes(slot(x, "sample"))[["ploidy"]]
-        read <- getRead(x, node = "raw", valid = TRUE, parents = parents)
+        read <- getRead(x, node = node, valid = TRUE, parents = parents)
         ref <- read$ref[ind, chr]
         alt <- read$alt[ind, chr]
         dp <- ref + alt
         ad <- alt / dp * ploidy
     }
 
-    geno <- getGenotype(x, node=node, valid = TRUE, parents = parents)[ind, chr]
+    geno <- getGenotype(x, node = "dosage", valid = TRUE, parents = parents)[ind, chr]
     if(all(is.na(geno))){
         warning("Missing values at all markers./n",
                 "This sample might have no read at all markers.")
@@ -959,12 +958,11 @@ plotDosage <- function(x,
 #' columns to draw faceted line plots for chromosomes.
 #' @param chr A vector of indexes to specify chromosomes to be drawn.
 #' @param ind A string of sample id or an index to specify the sample to be drawn.
-#' @param node Either one of "raw", "filt", and "cor" to output raw
-#' genotype data, filtered genotype data, or corrected genotype data,
+#' @param node Either one of "raw" or "filt" to output raw read data, or filtered read data,
 #' respectively.
-#' @param dot_fill A string to indicate the dot color in a plot.
-#' @param size A positive number to indicate the dot size in a plot.
-#' @param alpha A positive number in 0-1 to indicate the dot opacity in a plot.
+#' @param dot_fill A vector of two strings to indicate the dot colors in the plot. The first and second elements of the vector are set as the colors for the lowest and highest values in the gradient coloring of the dots indicating total read counts par marker.
+#' @param size A positive number to indicate the dot size in the plot.
+#' @param alpha A positive number in 0-1 to indicate the dot opacity in the plot.
 #'
 #'
 #' @examples

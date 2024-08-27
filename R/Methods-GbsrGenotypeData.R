@@ -989,6 +989,13 @@ setMethod("setParents",
               valid_sam[p_vec != 0] <- FALSE
               validSam(object = object) <- valid_sam
               slot(object = object, name = "sample")[["parents"]] <- p_vec
+              .create_gdsn(root_node = object$root,
+                           target_node = "",
+                           new_node = "parents",
+                           val = rep(0, nsam(object = object)),
+                           storage = "int",
+                           valdim = nmar(object = object, valid = TRUE),
+                           replace = TRUE, attr = NULL)
 
               # Parental genotype based marker filtering
               if(mono | bi){
@@ -2187,6 +2194,37 @@ setMethod("setInfoFilter",
     }
     return(v)
 }
+
+###############################################################################
+## Set dominant markers
+#' @rdname setDominantMarkers
+#' @importFrom methods slot<-
+setMethod("setDominantMarkers",
+          "GbsrGenotypeData",
+          function(object, id){
+              valid_marker <- validMar(object = object)
+              marker_id <- getMarID(object = object, valid = TRUE)
+              if(!is.logical(id)){
+                  id <- marker_id %in% id
+              }
+              valid_marker[valid_marker][!id] <- FALSE
+              slot(object = object, name = "marker")[["dominant"]] <- valid_marker
+              return(object)
+          })
+
+#' @rdname getDominantMarkers
+setMethod("getDominantMarkers",
+          "GbsrGenotypeData",
+          function(object, valid, chr){
+              out <- slot(object = object, name = "marker")[["dominant"]]
+              if(valid){
+                  out <- out[validMar(object = object)]
+              }
+              if(!is.null(chr)){
+                  out <- out[getChromosome(object = object, valid = valid) %in% chr]
+              }
+              return(out)
+          })
 
 ###############################################################################
 ## Functions to reset filters.
