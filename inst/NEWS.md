@@ -1,3 +1,6 @@
+Changes in version 1.9.21 (2024-8-27)
++ Fix a minor bug in getGenotype().
+
 Changes in version 1.9.20 (2024-6-11)
 + Version bump to sync the devel version and RELEASE_3_19
 
