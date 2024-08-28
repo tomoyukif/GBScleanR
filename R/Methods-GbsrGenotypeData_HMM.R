@@ -1163,8 +1163,10 @@ setMethod("estGeno",
         new_num <- ceiling(best_hap[best_hap != 1] / param_list$n_ploidy)
         best_hap[best_hap != 1] <- new_num
     }
-    best_hap[1, i_sample, ][geno_prob] <- 0
-    best_hap[2, i_sample, ][geno_prob] <- 0
+
+    for(i in seq_len(param_list$n_ploidy)){
+        best_hap[i, i_sample, ][geno_prob] <- 0
+    }
     out_list <- list(best_hap = best_hap, best_geno = best_geno)
     return(out_list)
 }
