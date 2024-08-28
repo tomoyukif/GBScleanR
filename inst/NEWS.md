@@ -1,32 +1,21 @@
-Changes in version 1.99.6 (2024-8-28)
+Changes in version 1.99.7 (2024-8-28)
 + Minor bug fix in getGenotype().
-
-Changes in version 1.99.5 (2024-8-28)
 + Modify getRead() and getGenotype() to make them work with the modified .filtData().
-
-Changes in version 1.99.4 (2024-8-28)
 + Modify .filtData() because seqGetData does not work on polyploids.
++ Fix a bug in .summarizeEst() to support polyploids.
 
 Changes in version 1.99.3 (2024-8-27)
 + Fix bugs in the functions that have been modified to support polyploids.
-
-Changes in version 1.99.2 (2024-8-27)
 + Fix a minor bug in counting up chromosomes in .sumUpBias().
-
-Changes in version 1.99.1 (2024-8-27)
 + Release of GBScleanR version 2.
 + GBScleanR version 2 supports polyploid populations.
 
 Changes in version 1.9.22 (2024-8-27)
 + Update in gbsrGDS2VCF() to solve the issue that an open GDS file cannot be copied on Windows machines
-
-Changes in version 1.9.21 (2024-8-27)
 + Fix a minor bug in getGenotype().
 
 Changes in version 1.9.20 (2024-6-11)
 + Version bump to sync the devel version and RELEASE_3_19.
-
-Changes in version 1.8.18 (2024-6-11)
 + Minor bug fix in getGenotype().
 + Update README.
 
