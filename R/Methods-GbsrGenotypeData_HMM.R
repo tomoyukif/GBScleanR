@@ -795,17 +795,18 @@ setMethod("estGeno",
                                                        joint_pat <- joint_pat[!no_change]
                                                        if(length(unique(joint_pat)) > 1){
                                                            out <- 0
+
                                                        } else {
                                                            if(length(joint_pat) > 1){
                                                                out <- jrate$r11/length(joint_pat)
 
                                                            } else {
-                                                               check1 <- length(unique(x)) == 1
-                                                               check2 <- length(unique(y)) == 1
-                                                               if(check1 & !check2){
+                                                               check1 <- max(table(x))
+                                                               check2 <- max(table(y))
+                                                               if(check1 > check2){
                                                                    out <- jrate$r01
 
-                                                               } else if(!check1 & check2){
+                                                               } else if(check1 < check2){
                                                                    out <- jrate$r10
 
                                                                } else {
@@ -836,7 +837,7 @@ setMethod("estGeno",
     return(out)
 }
 
-.getInitProb <- function(prob, n_pat, n_samples) {
+.getInitProb <- function(prob, n_samples) {
     ev1 <- eigen(t(prob[, , 1]))$vectors[, 1]
     init <- ev1 / sum(ev1)
     return(init)
@@ -878,7 +879,6 @@ setMethod("estGeno",
                                   n_ploidy = n_ploidy)
     init_prob <- lapply(X = trans_prob,
                         FUN = .getInitProb,
-                        n_pat = pat$n_p_pat,
                         n_samples = n_samples)
     if(is.null(fix_mismap)){
         mismap <-  matrix(data = 0.005, nrow = n_mar, ncol = 2)

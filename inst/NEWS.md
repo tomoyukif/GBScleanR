@@ -1,4 +1,4 @@
-Changes in version 1.99.11 (2024-8-28)
+Changes in version 1.99.12 (2024-8-28)
 + Minor bug fix in getGenotype().
 + Modify getRead() and getGenotype() to make them work with the modified .filtData().
 + Modify .filtData() because seqGetData does not work on polyploids.
