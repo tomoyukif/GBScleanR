@@ -1,4 +1,4 @@
-Changes in version 1.99.9 (2024-8-28)
+Changes in version 2.0.9 (2024-8-28)
 + Minor bug fix in getGenotype().
 + Modify getRead() and getGenotype() to make them work with the modified .filtData().
 + Modify .filtData() because seqGetData does not work on polyploids.
@@ -6,7 +6,7 @@ Changes in version 1.99.9 (2024-8-28)
 + Fix a bug in .transitionProb() to support polyploids.
 + Update .getValidPat() and change the timing when .makePattern() run in estGeno().
 
-Changes in version 1.99.3 (2024-8-27)
+Changes in version 2.0.3 (2024-8-27)
 + Fix bugs in the functions that have been modified to support polyploids.
 + Fix a minor bug in counting up chromosomes in .sumUpBias().
 + Release of GBScleanR version 2.
