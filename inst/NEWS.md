@@ -1,3 +1,6 @@
+Changes in version 2.0.4 (2024-8-28)
++ Modify .filtData() because seqGetData does not work on polyploids.
+
 Changes in version 2.0.3 (2024-8-27)
 + Fix bugs in the functions that have been modified to support polyploids.
 
