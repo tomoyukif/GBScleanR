@@ -11,30 +11,26 @@
     }
 
     # Prepare filtered output
-    if(reduce){
-        # Reduce the dimensions of the output array
-        obj <- objdesp.gdsn(index.gdsn(node = object, path = node))
-        dim1 <- obj$dim[1]
-        sel <- list(rep(TRUE, dim1), filters$sam, filters$mar)
-        out <- apply.gdsn(index.gdsn(node = object, path = node),
-                          margin = 2, FUN = colSums,
-                          selection = sel, as.is = "list")
-        out <- do.call(what = "rbind", args = out)
-        out[out == 3*dim1] <- NA
+    target_node <- index.gdsn(node = object, path = node)
+    obj <- objdesp.gdsn(target_node)
+    dim <- obj$dim
+    if(length(dim) == 2){
+        sel <- list(filters$sam, filters$mar)
 
     } else {
-        # Use SeqArray::seqSetFilter() to set filter on samples and markars
-        seqSetFilter(object = object,
-                     variant.sel = filters$mar,
-                     sample.sel = filters$sam,
-                     action = "push+set",
-                     verbose = FALSE)
-        out <- seqGetData(gdsfile = object, var.name = node)
-        seqSetFilter(object = object, action = "pop", verbose = FALSE)
-        if(length(x = out) == 0){
-            stop('Nothing to return.')
-        }
+        sel <- list(rep(TRUE, dim[1]), filters$sam, filters$mar)
     }
+    out <- readex.gdsn(node = target_node, sel = sel)
+
+    if(reduce){
+        if(length(dim(out)) == 2){
+            stop("'reduce' is applicable when the data has 3 dimentions.")
+        }
+        # Reduce the dimensions of the output array
+        out[out == 3] <- NA
+        out <- apply(out, 2, colSums)
+    }
+
     return(out)
 }
 
