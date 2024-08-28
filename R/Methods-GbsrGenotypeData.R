@@ -1,6 +1,5 @@
 ###############################################################################
-#' @importFrom gdsfmt exist.gdsn apply.gdsn objdesp.gdsn
-#' @importFrom SeqArray seqSetFilter seqGetData
+#' @importFrom gdsfmt exist.gdsn apply.gdsn objdesp.gdsn readex.gdsn
 .filtData <- function(object, node, filters, reduce = FALSE){
     # Check if the specified node exists
     if(!exist.gdsn(node = object, path = node)){
@@ -14,7 +13,15 @@
     target_node <- index.gdsn(node = object, path = node)
     obj <- objdesp.gdsn(target_node)
     dim <- obj$dim
-    if(length(dim) == 2){
+    if(length(dim) == 1){
+        if(grepl("sample\\.id", node)){
+            sel <- list(filters$sam)
+
+        } else {
+            sel <- list(filters$mar)
+        }
+
+    } else if(length(dim) == 2){
         sel <- list(filters$sam, filters$mar)
 
     } else {
@@ -28,7 +35,7 @@
         }
         # Reduce the dimensions of the output array
         out[out == 3] <- NA
-        out <- apply(out, 2, colSums)
+        out <- apply(out, 3, colSums)
     }
 
     return(out)
@@ -37,8 +44,8 @@
 #' @importFrom SeqArray seqGetData
 .makeFilter <- function(object, valid = FALSE, parents = FALSE, chr = NULL){
     # Initialize filters
-    filt_mar <- rep(x = TRUE, times = nmar(object, FALSE))
-    filt_sam <- rep(x = TRUE, times = nsam(object, FALSE))
+    filt_mar <- rep(x = TRUE, times = nmar(object = object, valid = FALSE))
+    filt_sam <- rep(x = TRUE, times = nsam(object = object, valid = FALSE))
 
     # Set validity filter
     if(valid){
@@ -306,12 +313,13 @@ setMethod("getInfo",
 ## Get read count data from the annotation/format/AD/data node
 ## in the GDS file connected to the GbsrGenotypeData object.
 #' @rdname getRead
+#' @importFrom gdsfmt index.gdsn read.gdsn
 setMethod("getRead",
           "GbsrGenotypeData",
           function(object, node, parents, valid, chr){
               node <- match.arg(arg = node, choices = c("raw", "filt"))
-              if(node == "raw"){ node <- "annotation/format/AD" }
-              if(node == "filt"){ node <- "annotation/format/FAD" }
+              if(node == "raw"){ node <- "annotation/format/AD/data" }
+              if(node == "filt"){ node <- "annotation/format/FAD/data" }
 
               if(!exist.gdsn(node = object, path = node)){
                   stop("The GDS node annotation/format/FAD does not exists.\n",
@@ -321,15 +329,27 @@ setMethod("getRead",
               filters <- .makeFilter(object = object, parents = parents,
                                      valid = valid, chr = chr)
 
+              sample_id <- .filtData(object = object,
+                                     node = "sample.id",
+                                     filters = filters)
+              variant_id <- .filtData(object = object,
+                                      node = "variant.id",
+                                      filters = filters)
+              at_data_node <- sub("data", "@data", node)
+              at_data <- read.gdsn(index.gdsn(node = object,
+                                              path = at_data_node))
+              at_data <- vapply(X = seq_along(at_data),
+                                FUN.VALUE = list(1),
+                                FUN = function(i){
+                                    return(list(rep(i, at_data[i])))
+                                })
+              at_data <- unlist(at_data)
+              filters$mar <- filters$mar[at_data]
               out <- .filtData(object = object, node = node, filters = filters)
-              ref <- subset(out$data, select = c(TRUE, FALSE))
-              alt <- subset(out$data, select = c(FALSE, TRUE))
-              rownames(ref) <- rownames(alt) <- .filtData(object = object,
-                                                          node = "sample.id",
-                                                          filters = filters)
-              colnames(ref) <- colnames(alt) <- .filtData(object = object,
-                                                          node = "variant.id",
-                                                          filters = filters)
+              ref <- subset(out, select = c(TRUE, FALSE))
+              alt <- subset(out, select = c(FALSE, TRUE))
+              rownames(ref) <- rownames(alt) <- sample_id
+              colnames(ref) <- colnames(alt) <- variant_id
 
               ref[is.na(ref)] <- 0
               alt[is.na(alt)] <- 0
@@ -377,14 +397,10 @@ setMethod("getGenotype",
 
               # Set the node from which the data is retrieved
               switch(node,
-                     raw = node <- "genotype",
-                     filt = node <- "annotation/format/FGT",
-                     cor = node <- "annotation/format/CGT",
-                     dosage = node <- "annotation/format/EDS")
-
-              if(reduce){
-                  node <- paste0(node, "/data")
-              }
+                     raw = node <- "genotype/data",
+                     filt = node <- "annotation/format/FGT/data",
+                     cor = node <- "annotation/format/CGT/data",
+                     dosage = node <- "annotation/format/EDS/data")
 
               # Check whether the specified node exists
               if(!exist.gdsn(node = object, path = node)){
