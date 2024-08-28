@@ -34,6 +34,22 @@ setMethod("estGeno",
                        het_parent = het_parent,
                        n_parents = n_parents)
 
+              # Generate genotype pattern list
+              if(parentless){
+                  n_parents <- 2
+
+              } else {
+                  parents <- getParents(object = object)
+                  n_parents <- length(unique(parents$memberID))
+              }
+              n_samples <- length(unique(getReplicates(object = object)))
+              n_alleles <- 2
+              n_ploidy <- attributes(slot(object = object, name = "sample"))$ploidy
+              pat <- .makePattern(n_parents = n_parents, n_ploidy = n_ploidy,
+                                  n_alleles = n_alleles, n_samples = n_samples,
+                                  het_parent = het_parent,
+                                  scheme = slot(object = object, name = "scheme"))
+
               # Get chromosome information to loop over chromosomes
               chr <- getChromosome(object = object, valid = FALSE)
               chr_levels <- unique(chr)
@@ -59,7 +75,8 @@ setMethod("estGeno",
                                                  fix_bias = fix_bias,
                                                  fix_mismap = fix_mismap,
                                                  parentless = parentless,
-                                                 dummy_reads = dummy_reads)
+                                                 dummy_reads = dummy_reads,
+                                                 pat = pat)
                       # ### Debug
                       # return(clean_out)
                       # ###
@@ -456,104 +473,67 @@ setMethod("estGeno",
     return(out)
 }
 
-.initialPattern <- function(mt, xtype, het_parent, n_parents, n_ploidy){
-    if (het_parent) {
-        out <- apply(X = matrix(data = seq_len(n_ploidy * n_parents),
-                                ncol = n_parents),
-                     MARGIN = 2,
-                     FUN = paste, collapse="/")
-        out <- lapply(X = seq_along(xtype[[1]]),
-                      FUN = function(i){
-                          gamete <- out[mt[[1]][, i]]
-                          return(paste(gamete, collapse = "|"))
-                      })
+.progenyPattern <- function(zygotes, index, mt, n_ploidy){
+    gamete_ploidy <- n_ploidy / 2
+    rev_index <- rev(seq_len(gamete_ploidy))
 
-    } else {
-        gamete <- mt[[1]]
-        gamete[gamete != 1] <- (gamete[gamete != 1] - 1) * n_ploidy + 1
-        out <- lapply(X = seq_along(xtype[[1]]),
-                      FUN = function(i){
-                          return(paste(gamete[, i], collapse = "|"))
-                      })
-    }
+    out <- vapply(X = seq_len(ncol(mt[[index]])),
+                  FUN = .mateGametes,
+                  FUN.VALUE = list(0),
+                  zygotes = zygotes,
+                  mate = mt[[index]],
+                  n_ploidy = n_ploidy,
+                  gamete_ploidy = gamete_ploidy,
+                  rev_index = rev_index)
+    out <- c(zygotes, out)
+
     return(out)
 }
 
-.progenyPattern <- function(gamete, mt, xtype, pg, het_parent){
-    if(all(xtype == "pairing")){
-        out <- vapply(X = seq_along(xtype),
-                      FUN.VALUE = list(1),
-                      FUN = function(i){
-                          i_gamete <- gamete[match(mt[, i], pg)]
-                          return(list(paste(i_gamete, collapse = "|")))
-                      })
-
-    } else if(all(xtype != "pairing")){
-        out <- vapply(X = gamete,
-                      FUN.VALUE = list(1),
-                      FUN = function(x){
-                          return(list(paste(x, x, sep = "|")))
-                      })
+.mateGametes <- function(index, zygotes, mate, n_ploidy, gamete_ploidy, rev_index){
+    i_mate <- mate[, index]
+    zygote1 <- zygotes[[i_mate[1]]]
+    zygote2 <- zygotes[[i_mate[2]]]
+    comb1 <- combn(seq_len(n_ploidy), gamete_ploidy)
+    comb2 <- combn(seq_len(n_ploidy), gamete_ploidy)
+    if(length(rev_index) > 1){
+        comb1 <- cbind(comb1, comb1[rev_index, ])
+        comb2 <- cbind(comb2, comb2[rev_index, ])
     }
-    return(out)
+    gamete1 <- matrix(apply(zygote1, 1, "[", comb1), nrow = gamete_ploidy)
+    gamete1 <- unique(t(gamete1))
+    gamete2 <- matrix(apply(zygote2, 1, "[", comb2), nrow = gamete_ploidy)
+    gamete2 <- unique(t(gamete2))
+    comb <- expand.grid(seq_len(nrow(gamete1)), seq_len(nrow(gamete2)))
+    zygotes <- unique(cbind(gamete1[comb[, 1], ], gamete2[comb[, 2], ]))
+    return(list(zygotes))
 }
 
 .getValidPat <- function(scheme, het_parent, n_parents, n_ploidy) {
-    Var1 <- Var2 <- NULL
-    homo <- FALSE
-
     target_pedigree <- sort(unique(slot(object = scheme, name = "samples")))
     mt <- slot(object = scheme, name = "mating")
     xtype <- slot(object = scheme, name = "crosstype")
     pg <- slot(object = scheme, name = "progenies")
 
-    pat <- NULL
-
-    # Pairing of founders
-    pat <- c(pat, list(.initialPattern(mt = mt,
-                                       xtype = xtype,
-                                       het_parent = het_parent,
-                                       n_parents = n_parents,
-                                       n_ploidy = n_ploidy)))
-
-    # Progeny
-    if(length(xtype) >= 2){
-        for(i in seq_along(xtype)[-1]) {
-            gamete <- lapply(X = pat[[i - 1]],
-                             FUN = sub, pattern = "\\|", replacement = "/")
-            pat <- c(pat,
-                     list(.progenyPattern(gamete = gamete,
-                                          mt = mt[[i]],
-                                          xtype = xtype[[i]],
-                                          pg = pg[[i - 1]],
-                                          het_parent = het_parent)))
+    # Simulate possible zygotes and gametes
+    # Founder zygotes
+    zygotes <- lapply(seq_len(n_parents), function(i){
+        n <- seq(n_ploidy * (i - 1) + 1, length.out = n_ploidy)
+        if(!het_parent){
+            n <- rep(n[1], n_ploidy)
         }
-    }
-    target_index <- which(unlist(pg) %in% target_pedigree)
-    target_pat <- unlist(pat)[target_index]
-    gamete <- lapply(X = target_pat,
-                     FUN = function(x) unlist(strsplit(x, split = "\\|")))
-    out <- lapply(X = gamete,
-                  FUN = function(x){
-                      gamete1 <- as.numeric(unlist(strsplit(x[1], "/")))
-                      gamete2 <- as.numeric(unlist(strsplit(x[2], "/")))
-                      gamete1 <- lapply(seq_len(n_ploidy * 0.5),
-                                        FUN = function(i) return(gamete1))
-                      gamete1 <- expand.grid(gamete1)
-                      gamete2 <- lapply(seq_len(n_ploidy * 0.5),
-                                        FUN = function(i) return(gamete2))
-                      gamete2 <- expand.grid(gamete2)
-                      zygote <- expand.grid(seq_len(nrow(gamete1)),
-                                            seq_len(nrow(gamete2)),
-                                            stringsAsFactors = FALSE)
-                      zygote <- cbind(gamete1[zygote[, 1], ],
-                                      gamete2[zygote[, 2], ])
-                      zygote <- unique(zygote)
-                      zygote <- zygote[, rev(seq_len(ncol(zygote)))]
-                      zygote <- as.matrix(zygote)
-                      return(zygote)
-                  })
+        return(t(n))
+    })
 
+    # Progeny zygotes
+    for(i in seq_along(mt)) {
+        zygotes <- .progenyPattern(zygotes = zygotes,
+                                   index = i,
+                                   mt = mt,
+                                   n_ploidy = n_ploidy)
+    }
+
+    out <- zygotes[as.numeric(target_pedigree)]
     names(out) <- target_pedigree
     return(out)
 }
@@ -793,39 +773,39 @@ setMethod("estGeno",
                                        i = i)
                       jrate <- .getXoFreq(jnum = jnum, n_origin = n_origin)
                       q_mat <- apply(X = hap_progeny_i,
-                                             MARGIN = 1,
-                                             FUN = function(x) {
-                                                 apply(X = hap_progeny_i,
-                                                       MARGIN = 1,
-                                                       FUN = function(y) {
-                                                           no_change <- x == y
-                                                           if(sum(no_change) == n_ploidy){
-                                                               out <- NA
+                                     MARGIN = 1,
+                                     FUN = function(x) {
+                                         apply(X = hap_progeny_i,
+                                               MARGIN = 1,
+                                               FUN = function(y) {
+                                                   no_change <- x == y
+                                                   if(sum(no_change) == n_ploidy){
+                                                       out <- NA
+
+                                                   } else {
+                                                       joint_pat <- paste(x, y, sep = "_")
+                                                       joint_pat <- joint_pat[!no_change]
+                                                       if(length(unique(joint_pat)) > 1){
+                                                           out <- 0
+                                                       } else {
+                                                           if(length(joint_pat) > 1){
+                                                               out <- jrate$r11/length(joint_pat)
 
                                                            } else {
-                                                               joint_pat <- paste(x, y, sep = "_")
-                                                               joint_pat <- joint_pat[!no_change]
-                                                               if(length(unique(joint_pat)) > 1){
-                                                                   out <- 0
+                                                               check1 <- length(unique(x)) == 1
+                                                               check2 <- length(unique(y)) == 1
+                                                               if(check1 & !check2){
+                                                                   out <- jrate$r01
+
                                                                } else {
-                                                                   if(length(joint_pat) > 1){
-                                                                       out <- jrate$r11/length(joint_pat)
-
-                                                                   } else {
-                                                                       check1 <- length(unique(x)) == 1
-                                                                       check2 <- length(unique(y)) == 1
-                                                                       if(check1 & !check2){
-                                                                           out <- jrate$r01
-
-                                                                       } else {
-                                                                           out <- jrate$r10
-                                                                       }
-                                                                   }
+                                                                   out <- jrate$r10
                                                                }
                                                            }
-                                                           return(out)
-                                                       })
-                                             })
+                                                       }
+                                                   }
+                                                   return(out)
+                                               })
+                                     })
                       diag(q_mat) <- -rowSums(q_mat, na.rm = TRUE)
                       mar_dist <- diff(pos)
                       if(any(mar_dist < 0)){
@@ -862,10 +842,11 @@ setMethod("estGeno",
 
 .getParams <- function(object, chr_i, error_rate, recomb_rate,
                        call_threshold, het_parent, fix_bias, fix_mismap,
-                       parentless, dummy_reads) {
+                       parentless, dummy_reads, pat) {
     reads <- .loadReadCounts(object = object, chr_i = chr_i,
                              parentless = parentless,
                              dummy_reads = dummy_reads)
+
     if(parentless){
         n_parents <- 2
 
@@ -876,10 +857,6 @@ setMethod("estGeno",
     n_samples <- length(unique(getReplicates(object = object)))
     n_alleles <- 2
     n_ploidy <- attributes(slot(object = object, name = "sample"))$ploidy
-    pat <- .makePattern(n_parents = n_parents, n_ploidy = n_ploidy,
-                        n_alleles = n_alleles, n_samples = n_samples,
-                        het_parent = het_parent,
-                        scheme = slot(object = object, name = "scheme"))
 
     pos <- getPosition(object = object, valid = TRUE, chr = chr_i)
     n_mar <- nmar(object = object, valid = TRUE, chr = chr_i)
@@ -1457,7 +1434,8 @@ setMethod("estGeno",
                           fix_bias,
                           fix_mismap,
                           parentless,
-                          dummy_reads) {
+                          dummy_reads,
+                          pat) {
     param_list <- .getParams(object = object,
                              chr_i = chr_i,
                              error_rate = error_rate,
@@ -1467,7 +1445,8 @@ setMethod("estGeno",
                              fix_bias = fix_bias,
                              fix_mismap = fix_mismap,
                              parentless = parentless,
-                             dummy_reads = dummy_reads)
+                             dummy_reads = dummy_reads,
+                             pat = pat)
     param_list <- .checkPread(param_list = param_list)
 
     # ### Debug
