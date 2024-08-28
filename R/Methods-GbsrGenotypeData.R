@@ -432,16 +432,16 @@ setMethod("getGenotype",
               sample_id <- .filtData(object = object,
                                      node = "sample.id",
                                      filters = filters)
-              marker_id <- .filtData(object = object,
+              variant_id <- .filtData(object = object,
                                      node = "variant.id",
                                      filters = filters)
 
               if(length(dim(out)) == 2){
                   rownames(out) <- sample_id
-                  colnames(out) <- marker_id
+                  colnames(out) <- variant_id
 
               } else {
-                  dimnames(out) <- list(phase = seq_len(2),
+                  dimnames(out) <- list(phase = seq_len(dim(out)[1]),
                                         sample = sample_id,
                                         marker = variant_id)
               }
