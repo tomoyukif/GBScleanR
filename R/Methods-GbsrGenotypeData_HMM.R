@@ -641,6 +641,7 @@ setMethod("estGeno",
     i_pairing <- grep(pattern = "pairing", x = xtype)
     if (length(i_pairing) == 0) {
         n_pairing  <- 0
+
     } else {
         n_pairing <- max(i_pairing)
     }
@@ -772,6 +773,7 @@ setMethod("estGeno",
                                        het_parent = het_parent,
                                        i = i)
                       jrate <- .getXoFreq(jnum = jnum, n_origin = n_origin)
+                      jrate[is.na(jrate)] <- 0
                       q_mat <- apply(X = hap_progeny_i,
                                      MARGIN = 1,
                                      FUN = function(x) {
@@ -797,8 +799,11 @@ setMethod("estGeno",
                                                                if(check1 & !check2){
                                                                    out <- jrate$r01
 
-                                                               } else {
+                                                               } else if(!check1 & check2){
                                                                    out <- jrate$r10
+
+                                                               } else {
+                                                                   out <- jrate$r00
                                                                }
                                                            }
                                                        }
