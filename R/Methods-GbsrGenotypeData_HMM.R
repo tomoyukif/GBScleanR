@@ -505,7 +505,10 @@ setMethod("estGeno",
     gamete2 <- matrix(apply(zygote2, 1, "[", comb2), nrow = gamete_ploidy)
     gamete2 <- unique(t(gamete2))
     comb <- expand.grid(seq_len(nrow(gamete1)), seq_len(nrow(gamete2)))
-    zygotes <- unique(cbind(gamete1[comb[, 1], ], gamete2[comb[, 2], ]))
+    zygotes <- unique(rbind(cbind(gamete1[comb[, 1], ],
+                                  gamete2[comb[, 2], ]),
+                            cbind(gamete2[comb[, 1], ],
+                                  gamete1[comb[, 2], ])))
     return(list(zygotes))
 }
 
