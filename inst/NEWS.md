@@ -1,3 +1,6 @@
+Changes in version 2.0.6 (2024-8-28)
++ Minor bug fix in getGenotype().
+
 Changes in version 2.0.5 (2024-8-28)
 + Modify getRead() and getGenotype() to make them work with the modified .filtData().
 
