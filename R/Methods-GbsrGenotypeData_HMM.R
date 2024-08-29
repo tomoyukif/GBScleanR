@@ -11,9 +11,7 @@ setMethod("estGeno",
                    optim,
                    iter,
                    n_threads,
-                   dummy_reads,
-                   fix_bias,
-                   fix_mismap) {
+                   dummy_reads) {
 
               # Check the validity of the registered scheme
               object <- .checkScheme(object = object)
@@ -50,6 +48,8 @@ setMethod("estGeno",
                                   het_parent = het_parent,
                                   scheme = slot(object = object, name = "scheme"))
 
+              .showPattern(pat = pat)
+
               # Get chromosome information to loop over chromosomes
               chr <- getChromosome(object = object, valid = FALSE)
               chr_levels <- unique(chr)
@@ -72,8 +72,6 @@ setMethod("estGeno",
                                                  het_parent = het_parent,
                                                  optim = optim,
                                                  iter = iter,
-                                                 fix_bias = fix_bias,
-                                                 fix_mismap = fix_mismap,
                                                  parentless = parentless,
                                                  dummy_reads = dummy_reads,
                                                  pat = pat)
@@ -605,7 +603,11 @@ setMethod("estGeno",
                                      n_ploidy = n_ploidy)
 
     n_p_pat <- nrow(geno_parents)
-    n_hap_pat <- vapply(X = hap_progeny, FUN = nrow, FUN.VALUE = numeric(1))
+    n_hap_pat <- vapply(X = seq_along(hap_progeny),
+                        FUN.VALUE = numeric(1),
+                        FUN = function(i){
+                            return(nrow(hap_progeny[[i]]))
+                        })
     return(list(alleles = alleles,
                 geno_pat = geno_pat,
                 geno_parents = geno_parents,
@@ -615,6 +617,13 @@ setMethod("estGeno",
                 n_p_pat = n_p_pat,
                 n_hap_pat = n_hap_pat,
                 n_samples = n_samples))
+}
+
+.showPattern <- function(pat){
+    message("Possible allele dosages: ", paste(pat$geno_pat, collapse = " "))
+    message("Number of possible founder genotypes: ", pat$n_p_pat)
+    message("Member ID(s) to be processed: ", paste(names(pat$hap_progeny), collapse = " "))
+    message("Number of offspring haplotypes: ", paste(pat$n_hap_pat, collapse = " "))
 }
 
 ################################################################################
@@ -853,7 +862,7 @@ setMethod("estGeno",
 }
 
 .getParams <- function(object, chr_i, error_rate, recomb_rate,
-                       call_threshold, het_parent, fix_bias, fix_mismap,
+                       call_threshold, het_parent,
                        parentless, dummy_reads, pat) {
     reads <- .loadReadCounts(object = object, chr_i = chr_i,
                              parentless = parentless,
@@ -880,23 +889,11 @@ setMethod("estGeno",
     init_prob <- lapply(X = trans_prob,
                         FUN = .getInitProb,
                         n_samples = n_samples)
-    if(is.null(fix_mismap)){
-        mismap <-  matrix(data = 0.005, nrow = n_mar, ncol = 2)
-        fix_mismap <- FALSE
 
-    } else {
-        mismap <- matrix(data = fix_mismap, nrow = n_mar, ncol = 2)
-        fix_mismap <- TRUE
-    }
-    if(is.null(fix_bias)){
-        dominant <- getDominantMarkers(object = object, chr = chr_i)
-        bias <- rep(x = 0.5, times = n_mar)
-        fix_bias <- FALSE
-
-    } else {
-        bias <- rep(x = fix_bias, times = n_mar)
-        fix_bias <- TRUE
-    }
+    mismap <-  matrix(data = 0.005, nrow = n_mar, ncol = 2)
+    bias <- rep(x = 0.5, times = n_mar)
+    fixed_bias <- getFixedBias(object = object, chr = chr_i)
+    bias[!is.na(fixed_bias)] <- na.omit(fixed_bias)
 
     return(list(n_parents = n_parents,
                 n_samples = n_samples,
@@ -915,8 +912,7 @@ setMethod("estGeno",
                 pat = pat,
                 bias = bias,
                 mismap = mismap,
-                fix_mismap = fix_mismap,
-                fix_bias = fix_bias,
+                fixed_bias = fixed_bias,
                 trans_prob = lapply(X = trans_prob, FUN = log10),
                 init_prob = lapply(X = init_prob, FUN = log10),
                 count = 0,
@@ -1355,18 +1351,13 @@ setMethod("estGeno",
         error_r <- .calcErrors(best_seq = best_geno_r[,,param_list$n_mar:1],
                                param_list = param_list)
         error <- .bindErrors(error_f = error_f, error_r = error_r)
+        error$bias[!is.na(param_list$fixed_bias)] <- na.omit(param_list$fixed_bias)
         check <- error$bias > param_list$error_rate[1]
         error$bias[check] <- param_list$error_rate[1]
         check <- error$bias < param_list$error_rate[2]
         error$bias[check] <- param_list$error_rate[2]
-
-        if(!param_list$fix_bias){
-            param_list$bias <- error$bias
-        }
-
-        if(!param_list$fix_mismap){
-            param_list$mismap <- error$mismap
-        }
+        param_list$bias <- error$bias
+        param_list$mismap <- error$mismap
     }
 
     if (outgeno) {
@@ -1442,8 +1433,6 @@ setMethod("estGeno",
                           het_parent,
                           optim,
                           iter,
-                          fix_bias,
-                          fix_mismap,
                           parentless,
                           dummy_reads,
                           pat) {
@@ -1453,8 +1442,6 @@ setMethod("estGeno",
                              recomb_rate = recomb_rate,
                              call_threshold = call_threshold,
                              het_parent = het_parent,
-                             fix_bias = fix_bias,
-                             fix_mismap = fix_mismap,
                              parentless = parentless,
                              dummy_reads = dummy_reads,
                              pat = pat)

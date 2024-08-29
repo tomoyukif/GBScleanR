@@ -2209,26 +2209,27 @@ setMethod("setInfoFilter",
 
 ###############################################################################
 ## Set dominant markers
-#' @rdname setDominantMarkers
+#' @rdname setFixedBias
 #' @importFrom methods slot<-
-setMethod("setDominantMarkers",
+setMethod("setFixedBias",
           "GbsrGenotypeData",
-          function(object, id){
+          function(object, bias){
               valid_marker <- validMar(object = object)
-              marker_id <- getMarID(object = object, valid = TRUE)
-              if(!is.logical(id)){
-                  id <- marker_id %in% id
-              }
-              valid_marker[valid_marker][!id] <- FALSE
-              slot(object = object, name = "marker")[["dominant"]] <- valid_marker
+              out <- rep(NA, length(valid_marker))
+              out[valid_marker] <- bias
+              slot(object = object, name = "marker")[["dominant"]] <- out
               return(object)
           })
 
-#' @rdname getDominantMarkers
-setMethod("getDominantMarkers",
+#' @rdname getFixedBias
+setMethod("getFixedBias",
           "GbsrGenotypeData",
           function(object, valid, chr){
               out <- slot(object = object, name = "marker")[["dominant"]]
+              if(is.null(out)){
+                  out <- rep(NA, nmar(object = object, valid = valid, chr = chr))
+                  return(out)
+              }
               if(valid){
                   out <- out[validMar(object = object)]
               }

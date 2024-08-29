@@ -2006,19 +2006,24 @@ setGeneric("setInfoFilter", function(object,
     standardGeneric("setInfoFilter"))
 
 
-#' Set dominant markers
+#' Set fixed allele read biases
 #'
-#' Set identifiers for dominant markers
+#' Set fixed allele read biases of valid markers
 #'
 #' @param object A [GbsrGenotypeData] object.
-#' @param id A vector of integers matching with marker IDs which can
-#' be retrieve by `getMarID()`. The markers with the specified IDs
-#' will be set as dominant markers. You can also specify a logical vector that
-#' indicates dominant markers. The length of the logical vector should match the
-#' number of valid markers.
+#' @param bias A numeric vector of fixed allele read biases to be assigned to
+#' valid markers. The length of `bias` vector should match the number of valid
+#' markers. The values in the `bias` vector are assigned to the valid markers
+#' according to their order. NAs in the `bias` vector indicates non-fixed biases.
 #' @param ... Unused.
 #'
 #' @return A [GbsrGenotypeData] object after adding dominant marker information
+#'
+#' @details
+#' Since the bias set by [setFixedBias()] function is the reference allele read
+#' bias. Thus, the values 0 and 1 mean that the marker only gives alternative
+#' and reference allele reads, respectively.
+#' Set these fixed biases if some of your markers are dominant markers.
 #'
 #' @examples
 #' # Create a GDS file from a sample VCF file.
@@ -2029,29 +2034,38 @@ setGeneric("setInfoFilter", function(object,
 #' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 #' gds <- loadGDS(gds_fn)
 #'
-#' # Set dominant markers.
-#' id <- sample(getMarID(gds), 10) # Assume 10 markers are dominant markers.
-#' gds <- setDominantMarkers(gds, id = id)
+#' # Set fixed allele rad biases.
+#' # Initialize the bias vector to be assinged.
+#' bias <- rep(nmar(gds), NA)
+#'
+#' # As an example, select 20 markers randomly and assign 0 or 1 to them.
+#' # Since the bias set by setFixedBias() function is the reference allele read
+#' # bias. Thus, the values 0 and 1 means that the marker only gives alternative
+#' # and reference allele reads, respectively.
+#' # Set these fixed biases if some of your markers are dominant markers.
+#' bias[sample(seq_along(bias), 20)] <- sample(c(0, 1), 20)
+#'
+#' gds <- setFixedBias(gds, id = id)
 #'
 #' # Close the connection to the GDS file
 #' closeGDS(gds)
 #'
 #' @export
 #'
-setGeneric("setDominantMarkers", function(object, id, ...)
-    standardGeneric("setDominantMarkers"))
+setGeneric("setFixedBias", function(object, id, ...)
+    standardGeneric("setFixedBias"))
 
 
-#' Get dominant markers
+#' Get fixed allele read biases
 #'
-#' Get identifiers for dominant markers
+#' Get fixed allele read biases of markers
 #'
 #' @param object A [GbsrGenotypeData] object.
 #' @param valid A logical value. See details.
 #' @param chr A integer or string to specify chromosome to get information.
 #' @param ... Unused.
 #'
-#' @return A logical vector indicating the dominant markers.
+#' @return A numeric vector of fixed allele read biases.
 #'
 #' @details
 #' If `valid = TRUE`, A logical vector for the markers which are labeled `TRUE` in
@@ -2061,6 +2075,8 @@ setGeneric("setDominantMarkers", function(object, id, ...)
 #'
 #' @return A [GbsrGenotypeData] object after adding dominant marker information
 #'
+#' @seealso [setFixedBias()]
+#'
 #' @examples
 #' # Create a GDS file from a sample VCF file.
 #' vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
@@ -2074,15 +2090,15 @@ setGeneric("setDominantMarkers", function(object, id, ...)
 #' id <- sample(getMarID(gds), 10) # Assume 10 markers are dominant markers.
 #' gds <- setDominantMarkers(gds, id = id)
 #'
-#' dominant_mar <- getDominantMarkers(gds)
+#' fixed_bias <- getFixedBias(gds)
 #'
 #' # Close the connection to the GDS file
 #' closeGDS(gds)
 #'
 #' @export
 #'
-setGeneric("getDominantMarkers", function(object, valid = TRUE, chr = NULL, ...)
-    standardGeneric("getDominantMarkers"))
+setGeneric("getFixedBias", function(object, valid = TRUE, chr = NULL, ...)
+    standardGeneric("getFixedBias"))
 
 #' Reset the filter made by [setSamFilter()]
 #'
@@ -2508,8 +2524,6 @@ setGeneric("estGeno", function(object,
                                iter = 2,
                                n_threads = 1,
                                dummy_reads = 5,
-                               fix_bias = NULL,
-                               fix_mismap = NULL,
                                ...)
            standardGeneric("estGeno"))
 

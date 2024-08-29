@@ -1,3 +1,6 @@
+Changes in version 2.0.13 (2024-8-29)
++ Replace set/getDominantMarkers() to set/getFixedBias().
+
 Changes in version 2.0.12 (2024-8-28)
 + Minor bug fix in getGenotype().
 + Modify getRead() and getGenotype() to make them work with the modified .filtData().
