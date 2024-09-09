@@ -1,3 +1,6 @@
+Changes in version 2.0.14 (2024-9-9)
++ Update in the vignette.
+
 Changes in version 2.0.13 (2024-8-29)
 + Replace set/getDominantMarkers() to set/getFixedBias().
 
