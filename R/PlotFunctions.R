@@ -918,8 +918,9 @@ plotDosage <- function(x,
     chr <- getChromosome(x)[chr]
     max_pos <- tapply(pos, chr, max)
     min_pos <- tapply(pos, chr, min)
-    dummy <- rbind(data.frame(chr = unique(chr), pos = max_pos, ad = 0, dp = 0),
-                   data.frame(chr = unique(chr), pos = min_pos, ad = 0, dp = 0))
+    uniq_chr <- sort(unique(chr))
+    dummy <- rbind(data.frame(chr = uniq_chr, pos = max_pos, ad = 0, dp = 0),
+                   data.frame(chr = uniq_chr, pos = min_pos, ad = 0, dp = 0))
 
     df <- data.frame(chr = chr, pos = pos, geno = geno, ad = ad, dp = dp)
     df <- df[!is.na(df$geno), ]
@@ -1027,8 +1028,9 @@ plotReadRatio <- function(x,
     chr <- getChromosome(x)[chr]
     max_pos <- tapply(pos, chr, max)
     min_pos <- tapply(pos, chr, min)
-    dummy <- rbind(data.frame(chr = unique(chr), pos = max_pos, ad = 0, dp = 0),
-                   data.frame(chr = unique(chr), pos = min_pos, ad = 0, dp = 0))
+    uniq_chr <- sort(unique(chr))
+    dummy <- rbind(data.frame(chr = uniq_chr, pos = max_pos, ad = 0, dp = 0),
+                   data.frame(chr = uniq_chr, pos = min_pos, ad = 0, dp = 0))
 
     df <- data.frame(chr = chr, pos = pos, ad = ad, dp = dp)
 
