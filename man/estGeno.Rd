@@ -15,8 +15,6 @@ estGeno(
   iter = 2,
   n_threads = 1,
   dummy_reads = 5,
-  fix_bias = NULL,
-  fix_mismap = NULL,
   ...
 )
 
@@ -29,9 +27,7 @@ estGeno(
   optim,
   iter,
   n_threads,
-  dummy_reads,
-  fix_bias,
-  fix_mismap
+  dummy_reads
 )
 }
 \arguments{
@@ -63,11 +59,11 @@ automatically set half the number of available threads on the computer.}
 \item{dummy_reads}{An integer to specify the number of dummy reads to assign
 to dummy parental samples for genotype estimation. See details.}
 
+\item{...}{Unused.}
+
 \item{fix_bias}{If not NULL, use a fixed bias value for genotype estimation.}
 
 \item{fix_mismap}{If not NULL, use a fixed mismapping rate for genotype estimation.}
-
-\item{...}{Unused.}
 }
 \value{
 A \link{GbsrGenotypeData} object in which the "estimated.haplotype",
