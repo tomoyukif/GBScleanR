@@ -1,5 +1,6 @@
-Changes in version 2.0.15 (2024-9-12)
+Changes in version 2.0.16 (2024-9-12)
 + Update in the manuals and NAMESPACE.
++ Minor bug fix in plotDosage() and plotReadRatio().
 
 Changes in version 2.0.14 (2024-9-9)
 + Update in the vignette.
