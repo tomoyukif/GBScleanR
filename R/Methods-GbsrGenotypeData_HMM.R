@@ -43,6 +43,8 @@ setMethod("estGeno",
               n_samples <- length(unique(getReplicates(object = object)))
               n_alleles <- 2
               n_ploidy <- attributes(slot(object = object, name = "sample"))$ploidy
+
+              message("Preparing genotype and haplotype pattern table...")
               pat <- .makePattern(n_parents = n_parents, n_ploidy = n_ploidy,
                                   n_alleles = n_alleles, n_samples = n_samples,
                                   het_parent = het_parent,
@@ -837,17 +839,24 @@ setMethod("estGeno",
                       }
                       rf <- mar_dist * 1e-6 * recomb_rate
                       prob <- vapply(X = rf,
-                                     FUN = function(x) expm.Higham08(q_mat * x),
-                                     FUN.VALUE = numeric(length(q_mat)))
-                      prob_dim <- c(pat$n_hap_pat[i], pat$n_hap_pat[i], length(mar_dist))
-                      prob <- array(data = prob, dim = prob_dim)
-                      return(prob)
+                                     FUN = function(x) {
+                                         out <- expm(q_mat * x, "Higham08")
+                                         out <- out[q_mat != 0]
+                                         return(out)
+                                     },
+                                     FUN.VALUE = numeric(length(q_mat[q_mat != 0])))
+                      non_zero <- q_mat != 0
+                      return(list(prob = prob,
+                                  non_zero = non_zero,
+                                  n_hap_pat = pat$n_hap_pat))
                   })
     return(out)
 }
 
 .getInitProb <- function(prob, n_samples) {
-    ev1 <- eigen(t(prob[, , 1]))$vectors[, 1]
+    full_mat <- matrix(data = 0, nrow = prob$n_hap_pat, ncol = prob$n_hap_pat)
+    full_mat[prob$non_zero] <- prob$prob[, 1]
+    ev1 <- eigen(t(full_mat))$vectors[, 1]
     init <- ev1 / sum(ev1)
     return(init)
 }
@@ -913,8 +922,8 @@ setMethod("estGeno",
                 bias = bias,
                 mismap = mismap,
                 fixed_bias = fixed_bias,
-                trans_prob = lapply(X = trans_prob, FUN = log10),
-                init_prob = lapply(X = init_prob, FUN = log10),
+                trans_prob = trans_prob,
+                init_prob = init_prob,
                 count = 0,
                 p_geno_fix = -1,
                 flip = FALSE))
@@ -924,8 +933,18 @@ setMethod("estGeno",
 ################################################################################
 # Execute the Viterbi algorithm
 .getBestSeq <- function(param_list, outprob) {
-    trans_prob <- unlist(param_list$trans_prob)
-    init_prob <- unlist(param_list$init_prob)
+    trans_prob <- lapply(param_list$trans_prob, function(x){
+        return(as.vector(x$prob))
+    })
+    trans_prob <- log10(unlist(trans_prob))
+    init_prob <- log10(unlist(param_list$init_prob))
+    nonzero_prob <- lapply(param_list$trans_prob, function(x){
+        return(x$non_zero)
+    })
+    nonzero_prob <- unlist(nonzero_prob)
+    n_nonzero_prob <- sapply(param_list$trans_prob, function(x){
+        return(sum(x$non_zero))
+    })
     possiblehap <- unlist(param_list$pat$possiblehap)
     pedigree <- match(x = param_list$pedigree,
                       table = names(param_list$pat$hap_progeny))
@@ -939,11 +958,13 @@ setMethod("estGeno",
                             mismap = param_list$mismap,
                             trans_prob = trans_prob,
                             init_prob = init_prob,
+                            nonzero_prob = nonzero_prob,
                             n_pgeno = param_list$pat$n_p_pat,
                             n_hap = param_list$pat$n_hap_pat,
                             n_offspring = param_list$n_samples,
                             n_founder = param_list$n_parents,
                             n_marker = param_list$n_mar,
+                            n_nonzero_prob = n_nonzero_prob,
                             het = param_list$het_parent,
                             pedigree = pedigree - 1,
                             possiblehap = possiblehap - 1,
@@ -960,10 +981,12 @@ setMethod("estGeno",
                        possiblehap = possiblehap - 1,
                        trans_prob = trans_prob,
                        init_prob = init_prob,
+                       nonzero_prob = nonzero_prob,
                        n_pgeno = param_list$pat$n_p_pat,
                        n_hap = param_list$pat$n_hap_pat,
                        n_offspring = param_list$n_samples,
                        n_marker = param_list$n_mar,
+                       n_nonzero_prob = n_nonzero_prob,
                        pedigree = pedigree - 1,
                        p_geno = out_list$p_geno,
                        ploidy = param_list$n_ploidy)
@@ -1090,8 +1113,13 @@ setMethod("estGeno",
     hap2 <- which(colSums(i_hap_progeny == best_hap[, i, half + 1]) == param_list$n_ploidy)
     re <- rev(seq_along(best_hap[, i, half + 1]))
     hap3 <- which(colSums(i_hap_progeny == best_hap[re, i, half + 1]) == param_list$n_ploidy)
-    prob1 <- param_list$trans_prob[[i_pedigree]][hap1, hap2, half]
-    prob2 <- param_list$trans_prob[[i_pedigree]][hap1, hap3, half]
+    n_hap_pat <- param_list$trans_prob[[i_pedigree]]$n_hap_pat
+    prob <- matrix(data = 0, nrow = n_hap_pat, ncol = n_hap_pat)
+    non_zero <- param_list$trans_prob[[i_pedigree]]$non_zero
+    prob_half <- param_list$trans_prob[[i_pedigree]]$prob[, half]
+    prob[non_zero] <- prob_half
+    prob1 <- prob[hap1, hap2]
+    prob2 <- prob[hap1, hap3]
     if(prob1 < prob2){
         out <- TRUE
 
@@ -1276,7 +1304,8 @@ setMethod("estGeno",
     n_mar <- param_list$n_mar
     param_list$trans_prob <- lapply(X = param_list$trans_prob,
                                     FUN = function(x){
-                                        return(x[, , (n_mar - 1):1])
+                                        x$prob <- x$prob[, (n_mar - 1):1]
+                                        return(x)
                                     })
     param_list$reads$p_ref <- param_list$reads$p_ref[, n_mar:1]
     param_list$reads$p_alt <- param_list$reads$p_alt[, n_mar:1]

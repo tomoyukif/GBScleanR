@@ -2455,7 +2455,7 @@ setGeneric("gbsrGDS2CSV", function(object,
 #' "parents.genotype" nodes were added.
 #'
 #' @importFrom RcppParallel setThreadOptions defaultNumThreads
-#' @importFrom expm expm.Higham08
+#' @importFrom expm expm
 #' @importFrom stats cor
 #'
 #' @details If you have not set parental samples by [setParents()] and
