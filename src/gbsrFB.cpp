@@ -24,9 +24,11 @@ struct ParFB : public Worker {
     const RVector<int> possiblehap;
     const RVector<double> init_prob;
     const RVector<double> trans_prob;
+    const RVector<int> nonzero_prob;
     const RVector<int> n_hap;
     const RVector<int> n_offspring;
     const RVector<int> n_marker;
+    const RVector<int> n_nonzero_prob;
     const RVector<int> pedigree;
     const RVector<int> hap_offset;
     const RVector<int> init_offset;
@@ -45,9 +47,11 @@ struct ParFB : public Worker {
           const IntegerVector possiblehap,
           const NumericVector init_prob,
           const NumericVector trans_prob,
+          const LogicalVector nonzero_prob,
           const IntegerVector n_hap,
           const IntegerVector n_offspring,
           const IntegerVector n_marker,
+          const IntegerVector n_nonzero_prob,
           const IntegerVector pedigree,
           const IntegerVector hap_offset,
           const IntegerVector init_offset,
@@ -65,9 +69,11 @@ struct ParFB : public Worker {
           possiblehap(possiblehap),
           init_prob(init_prob),
           trans_prob(trans_prob),
+          nonzero_prob(nonzero_prob),
           n_hap(n_hap),
           n_offspring(n_offspring),
           n_marker(n_marker),
+          n_nonzero_prob(n_nonzero_prob),
           pedigree(pedigree),
           hap_offset(hap_offset),
           init_offset(init_offset),
@@ -82,7 +88,7 @@ struct ParFB : public Worker {
             int sample_i = distance(iter_sample.begin(), i);
             int pedigree_i = pedigree[sample_i];
             int n_hap_i = n_hap[pedigree_i];
-            int n_hap_i2 = n_hap_i * n_hap_i;
+            int n_nonzero_prob_i = n_nonzero_prob[pedigree_i];
 
             RMatrix<double>::Row gamma_i = gamma.row(sample_i);
 
@@ -105,6 +111,17 @@ struct ParFB : public Worker {
             int trans_offset_i = trans_offset[pedigree_i];
             int trans_offset_im;
             double neg_inf = -numeric_limits<double>::infinity();
+
+            int nonzero_prob_offset = 0;
+            double n_jap_j;
+            for(int j = 0; j < pedigree_i; ++j){
+                n_jap_j = n_hap[j];
+                nonzero_prob_offset += n_jap_j * n_jap_j;
+            }
+            int nonzero_prob_offset_kk;
+            bool nonzero_prob_kk;
+            int nonzero_prob_k1;
+            int nonzero_prob_k2;
 
             for(int m = 0; m < n_marker[0]; ++m){
                 vector<double> prob_i = calcEmit(ref,
@@ -129,12 +146,22 @@ struct ParFB : public Worker {
                 } else {
                     j = p_geno[m];
                     hap_offset_ij = hap_offset_i + j * n_hap_i;
-                    trans_offset_im = trans_offset_i + n_hap_i2 * (m - 1);
+                    trans_offset_im = trans_offset_i + n_nonzero_prob_i * (m - 1);
                     for(int k2 = 0; k2 < n_hap_i; ++k2){
-                        target_ik2 = n_hap_i * k2;
+                        target_ik2 = n_nonzero_prob_i * k2;
+                        nonzero_prob_k1 = 0;
                         for(int k1 = 0; k1 < n_hap_i; ++k1){
-                            trans_prob_target = trans_offset_im + target_ik2 + k1;
-                            trans_kk = trans_prob[trans_prob_target];
+                            nonzero_prob_offset_kk = nonzero_prob_offset + n_hap_i * k2 + k1;
+                            nonzero_prob_kk = nonzero_prob[nonzero_prob_offset_kk];
+                            if(nonzero_prob_kk){
+                                trans_prob_target = trans_offset_im + target_ik2 + nonzero_prob_k1;
+                                trans_kk = trans_prob[trans_prob_target];
+                                nonzero_prob_k1 += 1;
+
+                            } else {
+                                trans_kk = neg_inf;
+
+                            }
                             score_k.at(k1) = alpha[m - 1][k1] + trans_kk;
                         }
                         sum_k = logsum(score_k);
@@ -170,13 +197,25 @@ struct ParFB : public Worker {
                 double gamma_tmp;
                 int target_hap;
                 vector<double> gamma_i_sum(n_levels, neg_inf);
-                trans_offset_im = trans_offset_i + n_hap_i2 * (m - 1);
+                trans_offset_im = trans_offset_i + n_nonzero_prob_i * (m - 1);
 
                 for(int k1 = 0; k1 < n_hap_i; ++k1){
                     trans_offset_imk1 = trans_offset_im + k1;
+                    nonzero_prob_k2 = 0;
                     for(int k2 = 0; k2 < n_hap_i; ++k2){
-                        trans_prob_target = trans_offset_imk1 + n_hap_i * k2;
-                        trans_kk = trans_prob[trans_prob_target];
+
+                        nonzero_prob_offset_kk = nonzero_prob_offset + n_hap_i * k2 + k1;
+                        nonzero_prob_kk = nonzero_prob[nonzero_prob_offset_kk];
+                        if(nonzero_prob_kk){
+                            trans_prob_target = trans_offset_imk1 + n_nonzero_prob_i * nonzero_prob_k2;
+                            trans_kk = trans_prob[trans_prob_target];
+                            nonzero_prob_k1 += 1;
+
+                        } else {
+                            trans_kk = neg_inf;
+
+                        }
+
                         score_k[k2] = emit[m][k2] + beta[k2] + trans_kk;
                     }
                     sum_k = logsum(score_k);
@@ -209,10 +248,12 @@ NumericMatrix run_fb(NumericMatrix ref,
                      IntegerVector possiblehap,
                      NumericVector trans_prob,
                      NumericVector init_prob,
+                     LogicalVector nonzero_prob,
                      IntegerVector n_pgeno,
                      IntegerVector n_hap,
                      IntegerVector n_offspring,
                      IntegerVector n_marker,
+                     IntegerVector n_nonzero_prob,
                      IntegerVector pedigree,
                      IntegerVector p_geno,
                      IntegerVector ploidy
@@ -239,7 +280,7 @@ NumericMatrix run_fb(NumericMatrix ref,
         hap_offset[i] = hap_offset[i - 1] + n_pgeno[0] * n_hap[i - 1];
         init_offset[i] = init_offset[i - 1] + n_hap[i - 1];
         trans_offset[i] = trans_offset[i - 1] +
-            n_hap[i - 1] * n_hap[i - 1] * (n_marker[0] - 1);
+            n_nonzero_prob[i - 1] * n_nonzero_prob[i - 1] * (n_marker[0] - 1);
     }
 
     LogicalVector iter_sample(n_offspring[0]);
@@ -255,9 +296,11 @@ NumericMatrix run_fb(NumericMatrix ref,
                   possiblehap,
                   init_prob,
                   trans_prob,
+                  nonzero_prob,
                   n_hap,
                   n_offspring,
                   n_marker,
+                  n_nonzero_prob,
                   pedigree,
                   hap_offset,
                   init_offset,

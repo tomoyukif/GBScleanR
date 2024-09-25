@@ -122,6 +122,8 @@ struct ParCalcVitFounder : public Worker {
     const RVector<double> trans_prob;
     const int & m;
     const RVector<int> n_hap;
+    const RVector<int> n_nonzero_prob;
+    const RVector<int> nonzero_prob;
     const RVector<int> pedigree;
     const RVector<int> trans_offset;
     const RVector<int> valid_p_indices;
@@ -131,6 +133,8 @@ struct ParCalcVitFounder : public Worker {
                       const NumericVector trans_prob,
                       const int & m,
                       const IntegerVector n_hap,
+                      const IntegerVector n_nonzero_prob,
+                      const LogicalVector nonzero_prob,
                       const IntegerVector pedigree,
                       const IntegerVector trans_offset,
                       const IntegerVector valid_p_indices)
@@ -139,6 +143,8 @@ struct ParCalcVitFounder : public Worker {
           trans_prob(trans_prob),
           m(m),
           n_hap(n_hap),
+          n_nonzero_prob(n_nonzero_prob),
+          nonzero_prob(nonzero_prob),
           pedigree(pedigree),
           trans_offset(trans_offset),
           valid_p_indices(valid_p_indices) {}
@@ -151,7 +157,9 @@ struct ParCalcVitFounder : public Worker {
             int pedigree_i = pedigree[sample_i];
             RMatrix<double>::Row in_i = in_score.row(sample_i);
 
+            double neg_inf = -numeric_limits<double>::infinity();
             int n_hap_i = n_hap[pedigree_i];
+            int n_nonzero_prob_i = n_nonzero_prob[pedigree_i];
             int target_ij;
             int target_ijk1;
             int target_ijk2;
@@ -160,16 +168,35 @@ struct ParCalcVitFounder : public Worker {
             vector<double> score_jkk(n_hap_i);
             vector<double> max_scores_jk(n_hap_i);
             int trans_prob_target;
-            int trans_offset_im = trans_offset[pedigree_i] + n_hap_i * n_hap_i * (m - 1);
+            int trans_offset_im = trans_offset[pedigree_i] + n_nonzero_prob_i * (m - 1);
             int trans_offset_ik2;
+            int nonzero_prob_offset = 0;
+            double n_jap_j;
+            for(int j = 0; j < pedigree_i; ++j){
+                n_jap_j = n_hap[j];
+                nonzero_prob_offset += n_jap_j * n_jap_j;
+            }
+            int nonzero_prob_offset_kk;
+            bool nonzero_prob_kk;
+            int nonzero_prob_k1;
 
             for(int j = 0; j < (int)valid_p_indices.size(); ++j){
                 target_ij = j * n_hap_i;
                 for(int k2 = 0; k2 < n_hap_i; ++k2){
-                    trans_offset_ik2 = n_hap_i * k2;
+                    trans_offset_ik2 = n_nonzero_prob_i * k2;
+                    nonzero_prob_k1 = 0;
                     for(int k1 = 0; k1 < n_hap_i; ++k1){
-                        trans_prob_target = trans_offset_im + trans_offset_ik2 + k1;
-                        trans_kk = trans_prob[trans_prob_target];
+                        nonzero_prob_offset_kk = nonzero_prob_offset + n_hap_i * k2 + k1;
+                        nonzero_prob_kk = nonzero_prob[nonzero_prob_offset_kk];
+                        if(nonzero_prob_kk){
+                            trans_prob_target = trans_offset_im + trans_offset_ik2 + nonzero_prob_k1;
+                            trans_kk = trans_prob[trans_prob_target];
+                            nonzero_prob_k1 += 1;
+
+                        } else {
+                            trans_kk = neg_inf;
+
+                        }
                         target_ijk1 = target_ij + k1;
                         score_jkk[k1] = in_i[target_ijk1] + trans_kk;
                     }
@@ -467,6 +494,8 @@ struct ParVitOffspring : public Worker {
     const RVector<double> trans_prob;
     const RVector<int> n_marker;
     const RVector<int> n_hap;
+    const RVector<int> n_nonzero_prob;
+    const RVector<int> nonzero_prob;
     const RVector<int> pedigree;
     const RVector<int> hap_offset;
     const RVector<int> init_offset;
@@ -487,6 +516,8 @@ struct ParVitOffspring : public Worker {
                     const NumericVector trans_prob,
                     const IntegerVector n_marker,
                     const IntegerVector n_hap,
+                    const IntegerVector n_nonzero_prob,
+                    const LogicalVector nonzero_prob,
                     const IntegerVector pedigree,
                     const IntegerVector hap_offset,
                     const IntegerVector init_offset,
@@ -506,6 +537,8 @@ struct ParVitOffspring : public Worker {
           trans_prob(trans_prob),
           n_marker(n_marker),
           n_hap(n_hap),
+          n_nonzero_prob(n_nonzero_prob),
+          nonzero_prob(nonzero_prob),
           pedigree(pedigree),
           hap_offset(hap_offset),
           init_offset(init_offset),
@@ -520,19 +553,31 @@ struct ParVitOffspring : public Worker {
             int sample_i = distance(iter_sample.begin(), i);
             int pedigree_i = pedigree[sample_i];
             int n_hap_i = n_hap[pedigree_i];
+            int n_nonzero_prob_i = n_nonzero_prob[pedigree_i];
             int hap_offset_i = hap_offset[pedigree_i];
             int trans_offset_i = trans_offset[pedigree_i];
 
+            double neg_inf = -numeric_limits<double>::infinity();
+            int nonzero_prob_offset = 0;
+            double n_jap_j;
+            for(int j = 0; j < pedigree_i; ++j){
+                n_jap_j = n_hap[j];
+                nonzero_prob_offset += n_jap_j * n_jap_j;
+            }
+            int nonzero_prob_offset_kk;
+            bool nonzero_prob_kk;
+            int nonzero_prob_k1;
+
             RMatrix<int>::Column o_seq_i = o_seq.column(sample_i);
             vector<vector<unsigned short>> o_path(n_marker[0],
-                                                  vector<unsigned short>(n_hap[0]));
+                                                  vector<unsigned short>(n_hap_i));
             int target_i;
             double hap_prob = 0.0;
-            vector<double> vit(n_hap[0]);
+            vector<double> vit(n_hap_i);
             double trans_kk;
             int max_i;
-            vector<double> score_jkk(n_hap[0]);
-            vector<double> max_scores_jk(n_hap[0]);
+            vector<double> score_jkk(n_hap_i);
+            vector<double> max_scores_jk(n_hap_i);
             int o_prev;
 
             // Viterbi path
@@ -552,7 +597,7 @@ struct ParVitOffspring : public Worker {
                 int f_geno = f_seq[m];
                 int trans_prob_target;
                 int target_fi = hap_offset_i + f_geno * n_hap_i;
-                int target_im = trans_offset_i + n_hap_i * n_hap_i * (m - 1);
+                int target_im = trans_offset_i + n_nonzero_prob_i * (m - 1);
                 int target_ik2;
 
                 if(m == 0){
@@ -564,10 +609,21 @@ struct ParVitOffspring : public Worker {
                 } else {
 
                     for(int k2 = 0; k2 < n_hap_i; ++k2){
-                        target_ik2 = n_hap_i * k2;
+                        target_ik2 = n_nonzero_prob_i * k2;
+                        nonzero_prob_k1 = 0;
                         for(int k1 = 0; k1 < n_hap_i; ++k1){
-                            trans_prob_target = target_im + target_ik2 + k1;
-                            trans_kk = trans_prob[trans_prob_target];
+                            nonzero_prob_offset_kk = nonzero_prob_offset + n_hap_i * k2 + k1;
+                            nonzero_prob_kk = nonzero_prob[nonzero_prob_offset_kk];
+
+                            if(nonzero_prob_kk){
+                                trans_prob_target = target_im + target_ik2 + nonzero_prob_k1;
+                                trans_kk = trans_prob[trans_prob_target];
+                                nonzero_prob_k1 += 1;
+
+                            } else {
+                                trans_kk = neg_inf;
+
+                            }
                             score_jkk[k1] = vit[k1] + trans_kk;
                         }
                         max_i = get_max_int(score_jkk);
@@ -606,11 +662,13 @@ List run_viterbi(NumericMatrix p_ref,
                  NumericMatrix mismap,
                  NumericVector trans_prob,
                  NumericVector init_prob,
+                 LogicalVector nonzero_prob,
                  IntegerVector n_pgeno,
                  IntegerVector n_hap,
                  IntegerVector n_offspring,
                  IntegerVector n_founder,
                  IntegerVector n_marker,
+                 IntegerVector n_nonzero_prob,
                  LogicalVector het,
                  IntegerVector pedigree,
                  IntegerVector possiblehap,
@@ -641,7 +699,7 @@ List run_viterbi(NumericMatrix p_ref,
         hap_offset[i] = hap_offset[i - 1] + n_pgeno[0] * n_hap[i - 1];
         init_offset[i] = init_offset[i - 1] + n_hap[i - 1];
         trans_offset[i] = trans_offset[i - 1] +
-            n_hap[i - 1] * n_hap[i - 1] * (n_marker[0] - 1);
+            n_nonzero_prob[i - 1] * n_nonzero_prob[i - 1] * (n_marker[0] - 1);
     }
 
     LogicalVector iter_sample(n_offspring[0]);
@@ -726,6 +784,8 @@ List run_viterbi(NumericMatrix p_ref,
                                    trans_prob,
                                    m,
                                    n_hap,
+                                   n_nonzero_prob,
+                                   nonzero_prob,
                                    pedigree,
                                    trans_offset,
                                    valid_p_indices1);
@@ -828,6 +888,8 @@ List run_viterbi(NumericMatrix p_ref,
                                   trans_prob,
                                   n_marker,
                                   n_hap,
+                                  n_nonzero_prob,
+                                  nonzero_prob,
                                   pedigree,
                                   hap_offset,
                                   init_offset,
