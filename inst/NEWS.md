@@ -1,3 +1,9 @@
+Changes in version 2.0.17 (2024-9-25)
++ Modify the transition probability data structure (sparse matrix) to reduce 
++ the data size.
++ Modify the offset setting to take a transition probability from the sparse 
++ transition probability matrix.
+
 Changes in version 2.0.16 (2024-9-12)
 + Update in the manuals and NAMESPACE.
 + Minor bug fix in plotDosage() and plotReadRatio().

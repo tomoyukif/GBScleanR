@@ -840,7 +840,7 @@ setMethod("estGeno",
                       rf <- mar_dist * 1e-6 * recomb_rate
                       prob <- vapply(X = rf,
                                      FUN = function(x) {
-                                         out <- expm(q_mat * x, "Higham08.b")
+                                         out <- expm(q_mat * x, "Higham08")
                                          out <- out[q_mat != 0]
                                          return(out)
                                      },
