@@ -1004,7 +1004,7 @@ setMethod("setParents",
               .create_gdsn(root_node = object$root,
                            target_node = "",
                            new_node = "parents",
-                           val = rep(0, nsam(object = object)),
+                           val = p_vec,
                            storage = "int",
                            valdim = nmar(object = object, valid = TRUE),
                            replace = TRUE, attr = NULL)

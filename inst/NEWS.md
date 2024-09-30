@@ -1,3 +1,9 @@
+Changes in version 2.0.18 (2024-9-30)
++ Minor modifications in gbsrCalcProb.cpp and gbsrViterbi.cpp for a better 
++ calculation speed.
++ Minor modification in setParents() to store parent sample information in the
++ GDS file.
+
 Changes in version 2.0.17 (2024-9-25)
 + Modify the transition probability data structure (sparse matrix) to reduce 
 + the data size.
