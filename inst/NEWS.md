@@ -1,4 +1,4 @@
-Changes in version 1.99.18 (2024-9-30)
+Changes in version 1.99.19 (2024-9-30)
 + Minor modifications in gbsrCalcProb.cpp and gbsrViterbi.cpp for a better 
 + calculation speed.
 + Minor modification in setParents() to store parent sample information in the

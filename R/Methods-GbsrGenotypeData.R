@@ -1006,7 +1006,7 @@ setMethod("setParents",
                            new_node = "parents",
                            val = p_vec,
                            storage = "int",
-                           valdim = nmar(object = object, valid = TRUE),
+                           valdim = nsam(object = object, valid = FALSE),
                            replace = TRUE, attr = NULL)
 
               # Parental genotype based marker filtering
