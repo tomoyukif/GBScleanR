@@ -1,4 +1,4 @@
-Changes in version 1.99.19 (2024-9-30)
+Changes in version 1.99.20 (2024-9-30)
 + Minor modifications in gbsrCalcProb.cpp and gbsrViterbi.cpp for a better 
 + calculation speed.
 + Minor modification in setParents() to store parent sample information in the
@@ -31,7 +31,7 @@ Changes in version 1.99.12 (2024-8-28)
 Changes in version 1.99.3 (2024-8-27)
 + Fix bugs in the functions that have been modified to support polyploids.
 + Fix a minor bug in counting up chromosomes in .sumUpBias().
-+ Release of GBScleanR version 2.
++ Release of the developmental version of GBScleanR version 2.
 + GBScleanR version 2 supports polyploid populations.
 
 Changes in version 1.9.22 (2024-8-27)
