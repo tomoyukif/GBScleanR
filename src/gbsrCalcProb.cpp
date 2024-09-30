@@ -169,6 +169,8 @@ NumericVector calcPemit(NumericMatrix p_ref,
     vector<double> prob;
     double p_prob;
     int col_i;
+    double max_prob;
+    double threshold;
     double neg_inf = -numeric_limits<double>::infinity();
     NumericVector p_emit(n_p[0]);
 
@@ -180,6 +182,7 @@ NumericVector calcPemit(NumericMatrix p_ref,
                             eseq[0], eseq[1],
                                          w1[m], het[0], ploidy);
         calcMissmap(prob, mismap1[m], mismap2[m], het[0], ploidy);
+
         for(int j = 0; j < n_p[0]; ++j){
             col_i = j * n_f[0] + i;
             p_prob = prob[possiblegeno[col_i]];
@@ -196,6 +199,19 @@ NumericVector calcPemit(NumericMatrix p_ref,
     }
 
     p_emit = lognorm(p_emit);
+
+    max_prob = p_emit[0];
+    for(int j = 0; j < p_emit.size(); ++j){
+        if(max_prob < p_emit[j]){
+            max_prob = p_emit[j];
+        }
+    }
+    threshold = max_prob -2;
+    for(int j = 0; j < p_emit.size(); ++j){
+        if(p_emit[j] <= threshold){
+            p_emit[j] = neg_inf;
+        }
+    }
 
     return p_emit;
 }

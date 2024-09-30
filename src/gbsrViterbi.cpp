@@ -305,7 +305,7 @@ struct ParCalcPathFounder : public Worker {
                     RMatrix<double>::Row in_i = in_score.row(sample_i);
                     int pedigree_i = pedigree[sample_i];
                     int n_hap_i = n_hap[pedigree_i];
-                    int hap_offset_ij2 = hap_offset[pedigree_i] + + j2 * n_hap_i;
+                    int hap_offset_ij2 = hap_offset[pedigree_i] + j2 * n_hap_i;
 
                     // Calculate genotype probabilies
                     vector<double> prob_i = calcEmit(ref,
