@@ -466,8 +466,16 @@ setMethod("estGeno",
                        FUN = function(x) length(unique(x)) > 1)
     out <- as.matrix(out[valid_pat,])
     if (!het_parent) {
-        valid <- out[, c(TRUE, FALSE)] == out[, c(FALSE, TRUE)]
-        valid <- apply(X = valid, MARGIN = 1, FUN = all)
+        valid <- tapply(X = seq_len(ncol(out)),
+                        INDEX = rep(seq_len(n_parents), each = n_ploidy),
+                        FUN = function(i){
+                            mono <- apply(out[, i], 1, function(x){
+                                return(length(unique(x)) == 1)
+                            })
+                            return(mono)
+                        })
+        valid <- do.call("rbind", valid)
+        valid <- apply(valid, 2, all)
         out <- out[valid, ]
     }
     attributes(out) <- list(dim = dim(out))
