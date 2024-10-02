@@ -60,10 +60,6 @@ automatically set half the number of available threads on the computer.}
 to dummy parental samples for genotype estimation. See details.}
 
 \item{...}{Unused.}
-
-\item{fix_bias}{If not NULL, use a fixed bias value for genotype estimation.}
-
-\item{fix_mismap}{If not NULL, use a fixed mismapping rate for genotype estimation.}
 }
 \value{
 A \link{GbsrGenotypeData} object in which the "estimated.haplotype",

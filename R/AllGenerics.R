@@ -2045,14 +2045,14 @@ setGeneric("setInfoFilter", function(object,
 #' # Set these fixed biases if some of your markers are dominant markers.
 #' bias[sample(seq_along(bias), 20)] <- sample(c(0, 1), 20)
 #'
-#' gds <- setFixedBias(gds, id = id)
+#' gds <- setFixedBias(gds, bias = bias)
 #'
 #' # Close the connection to the GDS file
 #' closeGDS(gds)
 #'
 #' @export
 #'
-setGeneric("setFixedBias", function(object, id, ...)
+setGeneric("setFixedBias", function(object, bias, ...)
     standardGeneric("setFixedBias"))
 
 
@@ -2446,8 +2446,6 @@ setGeneric("gbsrGDS2CSV", function(object,
 #' automatically set half the number of available threads on the computer.
 #' @param dummy_reads An integer to specify the number of dummy reads to assign
 #' to dummy parental samples for genotype estimation. See details.
-#' @param fix_bias If not NULL, use a fixed bias value for genotype estimation.
-#' @param fix_mismap If not NULL, use a fixed mismapping rate for genotype estimation.
 #' @param ... Unused.
 #'
 #' @return A [GbsrGenotypeData] object in which the "estimated.haplotype",
