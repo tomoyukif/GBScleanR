@@ -1,8 +1,9 @@
-Changes in version 1.99.20 (2024-9-30)
+Changes in version 1.99.21 (2024-10-2)
 + Minor modifications in gbsrCalcProb.cpp and gbsrViterbi.cpp for a better 
 + calculation speed.
 + Minor modification in setParents() to store parent sample information in the
 + GDS file.
++ Minor bug fix in estGeno().
 
 Changes in version 1.99.17 (2024-9-25)
 + Modify the transition probability data structure (sparse matrix) to reduce 

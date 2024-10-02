@@ -27,12 +27,7 @@ setMethod("estGeno",
 
               message("Start cleaning...")
 
-              # initialize the output nodes
-              .initGDS(object = object,
-                       het_parent = het_parent,
-                       n_parents = n_parents)
-
-              # Generate genotype pattern list
+              # Validate parents information
               if(parentless){
                   n_parents <- 2
 
@@ -44,6 +39,12 @@ setMethod("estGeno",
               n_alleles <- 2
               n_ploidy <- attributes(slot(object = object, name = "sample"))$ploidy
 
+              # initialize the output nodes
+              .initGDS(object = object,
+                       het_parent = het_parent,
+                       n_parents = n_parents)
+
+              # Generate genotype pattern list
               message("Preparing genotype and haplotype pattern table...")
               pat <- .makePattern(n_parents = n_parents, n_ploidy = n_ploidy,
                                   n_alleles = n_alleles, n_samples = n_samples,
