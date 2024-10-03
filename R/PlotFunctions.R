@@ -927,7 +927,7 @@ plotDosage <- function(x,
     ploidy <- attributes(slot(x, "sample"))[["ploidy"]]
     p <- ggplot(df) +
         geom_point(data = dummy, mapping = aes(x = pos * 10^-6, y = ad),
-                   size = 0)
+                   size = 0, color = NA)
 
     if(showratio){
         p <- p + geom_point(mapping = aes(x = pos * 10^-6, y = ad, colour = dp),
@@ -1036,7 +1036,7 @@ plotReadRatio <- function(x,
 
     p <- ggplot(df, aes(x = pos * 10^-6, y = ad, colour = dp)) +
         geom_point(data = dummy, mapping = aes(x = pos * 10^-6, y = ad),
-                   size = 0) +
+                   size = 0, color = NA) +
         geom_point(size = size, alpha = alpha, stroke = 0) +
         scale_colour_gradient(low = dot_fill[1], high = dot_fill[2]) +
         labs(title=paste0("Alternative allele read ratio: ", id)) +
