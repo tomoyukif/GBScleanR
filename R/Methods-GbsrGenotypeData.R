@@ -2553,9 +2553,13 @@ setMethod("gbsrGDS2CSV",
               if(is.null(parents)){
                   incl_parents <- FALSE
               }
+              n_parents <- length(unique(parents$memberID))
+              if(n_parents != 2){
+                  format <- ""
+              }
 
               node <- match.arg(arg = node,
-                                choices = c("raw", "filt", "cor", "hap"))
+                                choices = c("raw", "filt", "cor", "hap", "dosage"))
 
               # Prepare output genotype/haplotype data
               if(node == "hap"){

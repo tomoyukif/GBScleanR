@@ -1,8 +1,9 @@
-Changes in version 1.99.24 (2024-10-3)
+Changes in version 1.99.25 (2024-10-3)
 + Minor modifications in gbsrCalcProb.cpp and gbsrViterbi.cpp for a better 
 + calculation speed.
 + Minor modification in setParents() to store parent sample information in the
 + GDS file.
++ Minor modification in gbsrGDS2CSV() to output estimated dosage data.
 + Minor bug fix in estGeno() including .makeGenoParents() and getGenotype().
 
 Changes in version 1.99.17 (2024-9-25)
