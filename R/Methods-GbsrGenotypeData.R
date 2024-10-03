@@ -422,7 +422,7 @@ setMethod("getGenotype",
 
               # Set numerically expressed missing values to NA
               if(grepl(pattern = "EDS", x = node)){
-                  out[out == 64] <- NA
+                  out[out == 63] <- NA
 
               } else {
                   out[out == 3] <- NA

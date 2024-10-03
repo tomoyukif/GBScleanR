@@ -293,7 +293,7 @@ setMethod("estGeno",
 
     output[output == 0] <- NA
     output <- apply(X = output - 1, MARGIN = c(2, 3), FUN = sum)
-    output[is.na(output)] <- 64
+    output[is.na(output)] <- 63
 
     eds_gdsn <- index.gdsn(node = object, path = "annotation/format/EDS/data")
     gdsn_dim <- objdesp.gdsn(node = eds_gdsn)$dim
@@ -818,7 +818,7 @@ setMethod("estGeno",
 
                                                        } else {
                                                            if(length(joint_pat) > 1){
-                                                               out <- jrate$r11/length(joint_pat)
+                                                               out <- jrate$r11^(1/length(joint_pat))
 
                                                            } else {
                                                                check1 <- max(table(x))
