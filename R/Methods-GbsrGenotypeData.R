@@ -289,10 +289,10 @@ setMethod("getMarID",
 #' @rdname getSamID
 setMethod("getSamID",
           "GbsrGenotypeData",
-          function(object, valid){
+          function(object, valid, parents){
               filters <- .makeFilter(object = object,
                                      valid = valid,
-                                     parents = FALSE)
+                                     parents = parents)
               out <- .filtData(object = object,
                                node = "sample.id",
                                filters = filters)

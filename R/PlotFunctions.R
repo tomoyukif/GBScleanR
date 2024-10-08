@@ -886,17 +886,11 @@ plotDosage <- function(x,
     }
 
     if(is.character(ind)){
-        parents <- TRUE
-        ind <- which(getSamID(x, valid = FALSE) %in% ind)
-        id <- getSamID(x, valid = FALSE)[ind]
+        ind <- which(getSamID(x, parents = TRUE) %in% ind)
+        id <- getSamID(x, parents = TRUE)[ind]
 
     } else {
-        if(is.null(slot(x, "sample")[["parents"]])){
-            parents <- FALSE
-        } else {
-            parents <- TRUE
-        }
-        id <- getSamID(x, valid = FALSE)[validSam(x, parents = parents)][ind]
+        id <- getSamID(x, parents = TRUE)[ind]
     }
 
     if(showratio){
@@ -998,22 +992,15 @@ plotReadRatio <- function(x,
         chr <- getChromosome(x) %in% chr
     }
 
-
     if(is.character(ind)){
-        parents <- TRUE
-        ind <- which(getSamID(x, valid = FALSE) %in% ind)
-        id <- getSamID(x, valid = FALSE)[ind]
+        ind <- which(getSamID(x, parents = TRUE) %in% ind)
+        id <- getSamID(x, parents = TRUE)[ind]
 
     } else {
-        if(is.null(slot(x, "sample")[["parents"]])){
-            parents <- FALSE
-        } else {
-            parents <- TRUE
-        }
-        id <- getSamID(x)[ind]
+        id <- getSamID(x, parents = TRUE)[ind]
     }
 
-    read <- getRead(x, node = node, valid = TRUE, parents = parents)
+    read <- getRead(x, node = node, valid = TRUE, parents = TRUE)
     ref <- read$ref[ind, chr]
     alt <- read$alt[ind, chr]
     dp <- ref + alt

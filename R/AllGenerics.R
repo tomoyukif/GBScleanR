@@ -271,6 +271,7 @@ setGeneric("getMarID", function(object, valid = TRUE, chr = NULL, ...)
 #'
 #' @param object A [GbsrGenotypeData] object.
 #' @param valid A logical value. See details.
+#' @param parents A logical value whether to include data for parents or not.
 #' @param ... Unused.
 #'
 #' @return A character vector of sample IDs.
@@ -293,7 +294,7 @@ setGeneric("getMarID", function(object, valid = TRUE, chr = NULL, ...)
 #'
 #' @export
 #'
-setGeneric("getSamID", function(object, valid = TRUE, ...)
+setGeneric("getSamID", function(object, valid = TRUE, parents = FALSE, ...)
     standardGeneric("getSamID"))
 
 

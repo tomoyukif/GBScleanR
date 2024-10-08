@@ -1,3 +1,7 @@
+Changes in version 1.99.27 (2024-10-8)
++ Minor update in plotReadRatio(), plotDosage(), and getSamID() to include
++ parents in the plots as default.
+
 Changes in version 1.99.26 (2024-10-3)
 + Minor modifications in gbsrCalcProb.cpp and gbsrViterbi.cpp for a better 
 + calculation speed.
