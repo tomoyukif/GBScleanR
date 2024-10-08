@@ -139,10 +139,15 @@
 }
 
 # Compress GDS nodes
-.compressNodes <- function(object, node){
+.compressNodes <- function(object, node, decomp = FALSE){
     for(i in seq_along(node)){
         node_index <- index.gdsn(node = object$root, path = node[i])
-        compression.gdsn(node = node_index, compress = "ZIP_RA")
+        if(decomp){
+            compress <- ""
+        } else {
+            compress <- "ZIP_RA"
+        }
+        compression.gdsn(node = node_index, compress = compress)
         readmode.gdsn(node = node_index)
     }
 }
@@ -230,8 +235,8 @@ setMethod("nmar",
 #' @rdname nsam
 setMethod("nsam",
           "GbsrGenotypeData",
-          function(object, valid){
-              out <- validSam(object = object)
+          function(object, valid, parents){
+              out <- validSam(object = object, parents = parents)
               out <- ifelse(test = valid, yes = sum(out), no = length(out))
               return(out)
           })
@@ -433,8 +438,8 @@ setMethod("getGenotype",
                                      node = "sample.id",
                                      filters = filters)
               variant_id <- .filtData(object = object,
-                                     node = "variant.id",
-                                     filters = filters)
+                                      node = "variant.id",
+                                      filters = filters)
 
               if(length(dim(out)) == 2){
                   rownames(out) <- sample_id
@@ -2323,11 +2328,42 @@ setMethod("gbsrGDS2VCF",
               check <- .checkNodes(object = object)
               tmp_gds <- tempfile(pattern = "tmp", fileext = ".gds")
               tmpgds <- createfn.gds(filename = tmp_gds, allow.duplicate = TRUE)
+
+              # Check data type because VL_Int causes a fatal error.
+              gdsn_ls <- ls.gdsn(node = object$root, include.hidden = TRUE,
+                                 recursive = TRUE, include.dirs = FALSE)
+              rm_gdsn <- NULL
+              for(i in gdsn_ls){
+                  input_node <- index.gdsn(node = object$root,
+                                           path = i)
+                  objdesp <- objdesp.gdsn(node = input_node)
+                  if(objdesp$trait == "VL_Int"){
+                      rm_gdsn <- c(rm_gdsn, i)
+                  }
+              }
+
+              if(!is.null(rm_gdsn)){
+                  rm_gdsn <- unique(dirname(rm_gdsn))
+                  message("VL_Int type data causes a fatal error while",
+                          "writing out a VCF file from a GDS in the ",
+                          "current implementation.",
+                          "\nThus, the following data will be removed ",
+                          "from the GDS files.\n",
+                          paste(rm_gdsn, collapse = "\n"))
+                  for(i in rm_gdsn){
+                      input_node <- index.gdsn(node = object$root,
+                                               path = i)
+                      objdesp <- objdesp.gdsn(node = input_node)
+                      delete.gdsn(node = input_node, force = TRUE)
+                  }
+              }
+
               gdsn_ls <- ls.gdsn(node = object$root, include.hidden = TRUE)
               for(i in gdsn_ls){
                   copyto.gdsn(node = tmpgds,
                               source = index.gdsn(object$root, i))
               }
+
               closefn.gds(tmpgds)
               tmpgds <- seqOpen(gds.fn = tmp_gds, readonly = FALSE)
 

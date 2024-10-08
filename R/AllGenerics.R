@@ -107,6 +107,7 @@ setGeneric("nmar", function(object, valid = TRUE, chr = NULL, ...)
 #'
 #' @param object A [GbsrGenotypeData] object.
 #' @param valid A logical value. See details.
+#' @param parents A logical value whether to include to parental samples or not.
 #' @param ... Unused.
 #'
 #' @details
@@ -131,7 +132,7 @@ setGeneric("nmar", function(object, valid = TRUE, chr = NULL, ...)
 #'
 #'@export
 #'
-setGeneric("nsam", function(object, valid = TRUE, ...)
+setGeneric("nsam", function(object, valid = TRUE, parents = FALSE, ...)
     standardGeneric("nsam"))
 
 

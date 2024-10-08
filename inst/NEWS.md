@@ -1,6 +1,10 @@
 Changes in version 1.99.27 (2024-10-8)
 + Minor update in plotReadRatio(), plotDosage(), and getSamID() to include
 + parents in the plots as default.
++ Minor update in gbsrGDS2VCF() in which data nodes stored as "VL_Int" were 
++ error prone and thus the code to remove VL_Int-type data was added.
++ A code to set data type to int64 for typical data that is converted to 
++ VL_Int as default was added to gbsrVCF2GDS().
 
 Changes in version 1.99.26 (2024-10-3)
 + Minor modifications in gbsrCalcProb.cpp and gbsrViterbi.cpp for a better 

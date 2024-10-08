@@ -895,14 +895,14 @@ plotDosage <- function(x,
 
     if(showratio){
         ploidy <- attributes(slot(x, "sample"))[["ploidy"]]
-        read <- getRead(x, node = node, valid = TRUE, parents = parents)
+        read <- getRead(x, node = node, valid = TRUE, parents = TRUE)
         ref <- read$ref[ind, chr]
         alt <- read$alt[ind, chr]
         dp <- ref + alt
         ad <- alt / dp * ploidy
     }
 
-    geno <- getGenotype(x, node = "dosage", valid = TRUE, parents = parents)[ind, chr]
+    geno <- getGenotype(x, node = "dosage", valid = TRUE, parents = TRUE)[ind, chr]
     if(all(is.na(geno))){
         warning("Missing values at all markers./n",
                 "This sample might have no read at all markers.")

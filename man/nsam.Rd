@@ -5,14 +5,16 @@
 \alias{nsam,GbsrGenotypeData-method}
 \title{Return the number of samples.}
 \usage{
-nsam(object, valid = TRUE, ...)
+nsam(object, valid = TRUE, parents = FALSE, ...)
 
-\S4method{nsam}{GbsrGenotypeData}(object, valid)
+\S4method{nsam}{GbsrGenotypeData}(object, valid, parents)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{valid}{A logical value. See details.}
+
+\item{parents}{A logical value whether to include to parental samples or not.}
 
 \item{...}{Unused.}
 }

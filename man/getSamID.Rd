@@ -5,14 +5,16 @@
 \alias{getSamID,GbsrGenotypeData-method}
 \title{Obtain the sample IDs}
 \usage{
-getSamID(object, valid = TRUE, ...)
+getSamID(object, valid = TRUE, parents = FALSE, ...)
 
-\S4method{getSamID}{GbsrGenotypeData}(object, valid)
+\S4method{getSamID}{GbsrGenotypeData}(object, valid, parents)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{valid}{A logical value. See details.}
+
+\item{parents}{A logical value whether to include data for parents or not.}
 
 \item{...}{Unused.}
 }

@@ -23,9 +23,9 @@ gbsrGDS2CSV(
 
 \item{out_fn}{A string to specify the path to an output VCF file.}
 
-\item{node}{Either one of "raw", "filt", "cor", and "hap" to output raw
+\item{node}{Either one of "raw", "filt", "cor", "hap", "dosage to output raw
 genotype data, filtered genotype data, corrected genotype data, estimated
-haplotype data, respectively.}
+haplotype data, and estimated allele dosage data, respectively.}
 
 \item{incl_parents}{A logical value to specify whether parental
 samples should be included in an output VCF file or not.}
@@ -53,10 +53,21 @@ stored in a GDS file.
 \details{
 Create a CSV file at location specified by out_fn. The setting
 \code{format = "qtl"} makes the function export the data in the r/qtl format
-that can be loaded using read.cross as
-\verb{format = "csvs} with a phenotype data. The output CSV file has the rows
-indicating chromosome ID and positions of markers followed by the rows
-indicating genotype or haplotype data of samples.
+that can be loaded using read.cross as \code{format = "csvs"} with a phenotype
+data. If you have executed \code{\link[=estGeno]{estGeno()}} and your population is a biparental
+population, set 'node = "dosage"' to export a r/qtl format CSV in which
+homozygoutes of the alleles of Parent 1 and 2, which have been specified by
+\code{\link[=setParents]{setParents()}}, are represented by A and B, respectively. If 'node = "raw"',
+'node = "fill"', and 'node = "cor"', A and B in the r/qtl format CSV indicate
+homozygoutes of reference and alternative alleles shown in a given VCF file.
+This means that if Parent 1 has the alternative allele homozygoute at
+Marker 1 and Offspring 1 has the same genotype with Parent 1, the genotype of
+Offspring 1 at Marker 1 will be B in the r/qtl format CSV. On the other hand,
+if you set 'node = "dosage"', the genotype of Offspring 1 at Marker 1 will be
+A in the r/qtl format CSV.
+The output CSV file has the rows indicating chromosome ID and positions
+of markers followed by the rows indicating genotype or haplotype data of
+samples.
 If \code{read = TRUE}, the output of each genotype call would be in
 the form of \verb{GT:ADR,ADA} where GT, ADR, and ADA represent genotype,
 referenece read count, and alternative read count, respectively.
