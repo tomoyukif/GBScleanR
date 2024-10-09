@@ -154,22 +154,21 @@ void calcMissmap(vector<double> & prob,
 }
 
 void offsetProb(vector<double> & prob,
-                double & eseq1,
                 const bool & het,
                 const int & ploidy){
-    double offset = 1e-10;
-    log10_safe_d(offset);
+    double threshold = -100;
+    double offset = -3;
 
     bool do_offset = false;
     for(size_t g = 0; g < prob.size(); ++g){
         if(het){
-            if(prob[g] <= offset){
+            if(prob[g] <= threshold){
                 do_offset = true;
             }
 
         } else {
             if(g == 0 & g == ploidy){
-                if(prob[g] <= offset){
+                if(prob[g] <= threshold){
                     do_offset = true;
                 }
             }
@@ -178,6 +177,7 @@ void offsetProb(vector<double> & prob,
 
     if(do_offset){
         for(size_t g = 0; g < prob.size(); ++g){
+            std::cout << prob[g] << ", ";
             if(het){
                 logsum2(prob[g], offset);
 
@@ -186,8 +186,9 @@ void offsetProb(vector<double> & prob,
                     logsum2(prob[g], offset);
                 }
             }
+            std::cout << prob[g] << ", ";
         }
-
+        std::cout << "\n";
     }
     lognorm_vec(prob);
 }
@@ -221,7 +222,7 @@ NumericVector calcPemit(NumericMatrix p_ref,
                             eseq[0], eseq[1],
                                          w1[m], het[0], ploidy);
         calcMissmap(prob, mismap1[m], mismap2[m], het[0], ploidy);
-        offsetProb(prob, eseq[1], het[0], ploidy);
+        offsetProb(prob, het[0], ploidy);
 
         for(int j = 0; j < n_p[0]; ++j){
             col_i = j * n_f[0] + i;
@@ -273,7 +274,7 @@ vector<double> calcEmit(RMatrix<double> ref,
 
     prob = calcGenoprob(ref_i[m], alt_i[m], eseq[0], eseq[1], w1[m], het, ploidy);
     calcMissmap(prob, mismap1[m], mismap2[m], het, ploidy);
-    offsetProb(prob, eseq[1], het, ploidy);
+    offsetProb(prob, het, ploidy);
 
     return prob;
 }
