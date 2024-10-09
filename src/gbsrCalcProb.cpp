@@ -154,11 +154,40 @@ void calcMissmap(vector<double> & prob,
 }
 
 void offsetProb(vector<double> & prob,
-                double & eseq1){
-    double offset = eseq1;
+                double & eseq1,
+                const bool & het,
+                const int & ploidy){
+    double offset = 1e-10;
+    log10_safe_d(offset);
 
+    bool do_offset = false;
     for(size_t g = 0; g < prob.size(); ++g){
-        prob[g] += offset;
+        if(het){
+            if(prob[g] <= offset){
+                do_offset = true;
+            }
+
+        } else {
+            if(g == 0 & g == ploidy){
+                if(prob[g] <= offset){
+                    do_offset = true;
+                }
+            }
+        }
+    }
+
+    if(do_offset){
+        for(size_t g = 0; g < prob.size(); ++g){
+            if(het){
+                logsum2(prob[g], offset);
+
+            } else {
+                if(g == 0 & g == ploidy){
+                    logsum2(prob[g], offset);
+                }
+            }
+        }
+
     }
     lognorm_vec(prob);
 }
@@ -192,7 +221,7 @@ NumericVector calcPemit(NumericMatrix p_ref,
                             eseq[0], eseq[1],
                                          w1[m], het[0], ploidy);
         calcMissmap(prob, mismap1[m], mismap2[m], het[0], ploidy);
-        offsetProb(prob, eseq[1]);
+        offsetProb(prob, eseq[1], het[0], ploidy);
 
         for(int j = 0; j < n_p[0]; ++j){
             col_i = j * n_f[0] + i;
@@ -244,7 +273,7 @@ vector<double> calcEmit(RMatrix<double> ref,
 
     prob = calcGenoprob(ref_i[m], alt_i[m], eseq[0], eseq[1], w1[m], het, ploidy);
     calcMissmap(prob, mismap1[m], mismap2[m], het, ploidy);
-    offsetProb(prob, eseq[1]);
+    offsetProb(prob, eseq[1], het, ploidy);
 
     return prob;
 }

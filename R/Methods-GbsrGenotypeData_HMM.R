@@ -419,13 +419,28 @@ setMethod("estGeno",
         p_reads <- .pileupAD(ad = p_reads, rep_id = rep_id)
         p_reads <- .orderParents(object = object, p_reads = p_reads)
     }
-
-
+    # p_reads <- .bumpOverRepReads(reads = p_reads)
+    # reads <- .bumpOverRepReads(reads = reads)
     return(list(p_ref = p_reads$ref,
                 p_alt = p_reads$alt,
                 ref = reads$ref,
                 alt = reads$alt))
 }
+#
+# .bumpOverRepReads <- function(reads){
+#     r_homo <- reads$ref > 0 & reads$alt == 0
+#     a_homo <- reads$ref == 0 & reads$alt > 0
+#     het <- reads$ref > 0 & reads$alt > 0
+#     r_homo_over <- reads$ref[r_homo] > 50
+#     reads$ref[r_homo][r_homo_over] <- 50
+#     a_homo_over <- reads$alt[a_homo] > 50
+#     reads$alt[a_homo][a_homo_over] <- 50
+#     het_dp <- reads$ref[het] + reads$alt[het]
+#     het_dp_over <- het_dp > 50
+#     reads$ref[het][het_dp_over] <- round(reads$ref[het][het_dp_over] / het_dp[het_dp_over] * 50)
+#     reads$alt[het][het_dp_over] <- round(reads$alt[het][het_dp_over] / het_dp[het_dp_over] * 50)
+#     return(reads)
+# }
 
 #' @importFrom stats na.omit
 .orderParents <- function(object, p_reads){
