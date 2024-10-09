@@ -17,6 +17,9 @@ void calcMissmap(std::vector<double> & prob,
                  const double & mismap2,
                  const bool & het);
 
+void offsetProb(std::vector<double> & prob,
+                const double & eseq1);
+
 Rcpp::NumericVector calcPemit(Rcpp::NumericMatrix p_ref,
                               Rcpp::NumericMatrix p_alt,
                               Rcpp::NumericVector eseq,

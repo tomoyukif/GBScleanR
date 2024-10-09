@@ -1,4 +1,4 @@
-Changes in version 1.99.28 (2024-10-9)
+Changes in version 1.99.29 (2024-10-9)
 + Minor update in gbsrCalcProb() to offset too small genotype probability.
 
 Changes in version 1.99.27 (2024-10-8)
