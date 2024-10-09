@@ -1,3 +1,6 @@
+Changes in version 1.99.28 (2024-10-9)
++ Minor update in gbsrCalcProb() to offset too small genotype probability.
+
 Changes in version 1.99.27 (2024-10-8)
 + Minor update in plotReadRatio(), plotDosage(), and getSamID() to include
 + parents in the plots as default.
