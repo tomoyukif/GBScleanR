@@ -35,6 +35,9 @@ You can use any other functions in the `r Biocpkg("GBScleanR")` package for your
 In addition, the `setDominantMarkers()` function enables you to force `r Biocpkg("GBScleanR")` to treat some markers as dominant markers. In the iterative parameter optimization of the genotype estimation step, `r Biocpkg("GBScleanR")` calculates the marker-wise reference-read-bias. We can assume that reads of either reference or alternative allele only can be observed at dominant markers and the marker-wise reference-read-bias must be 1 or 0 for dominant markers that give only reference or alternative allele reads, respectively.
 \  
 
+As another important change in estGeno() since version 2, the function now requires the node argument to explicitly specify whether raw or filtered read counts should be used for genotype estimation. If setCallFilter() has not been executed, the user-specified node argument will be ignored, and the "raw" node will be used by default.
+\  
+
 The data visualization by `r Biocpkg("GBScleanR")` was also enhanced by new plot functions: `plotReadRatio()` and `plotDosage()`. See the "[Plot Read Ratio and Dosage](#plot_dosage)" section for the details.
 
 
@@ -816,9 +819,12 @@ gds <- assignScheme(object = gds, id = id)
 The following codes suppose that you built the scheme object for the example data that is a biparental F2 population derived from a cross between inbred parents, not for the 8-way RILs explained above.
 Now we can execute genotype estimation for error correction. `r Biocpkg("GBScleanR")` estimates error pattern via iterative optimization of parameters for genotype estimation. We could not guess the best number of iterations, but our simulation tests showed `iter = 4` usually saturates the improvement of estimation accuracy.
 ```{r message=FALSE, results=FALSE}
-gds <- estGeno(gds, iter = 4)
+gds <- estGeno(gds, node = "filt", iter = 4)
 ```
-\ 
+\  
+*As an important change in estGeno() since version 2, the function now requires the node argument to explicitly specify whether raw or filtered read counts should be used for genotype estimation. If setCallFilter() has not been executed, the user-specified node argument will be ignored, and the "raw" node will be used by default.*
+
+\  
 
 If your population derived from outbred parents, please set `het_parents = TRUE`.
 ```{r eval=FALSE}

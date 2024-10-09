@@ -7,6 +7,7 @@
 \usage{
 estGeno(
   object,
+  node = "raw",
   recomb_rate = 0.04,
   error_rate = 0.0025,
   call_threshold = 0.9,
@@ -20,6 +21,7 @@ estGeno(
 
 \S4method{estGeno}{GbsrGenotypeData}(
   object,
+  node,
   recomb_rate,
   error_rate,
   call_threshold,
@@ -32,6 +34,10 @@ estGeno(
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
+
+\item{node}{Either "raw" or "filt" to indicate whether raw or filtered read
+counts are used for genotype estimation. See \code{\link[=setCallFilrer]{setCallFilrer()}} for the
+details of filtered read counts.}
 
 \item{recomb_rate}{A numeric value to indicate the expected
 recombination frequency per chromosome per megabase pairs.}

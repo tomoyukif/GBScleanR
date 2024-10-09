@@ -1,5 +1,7 @@
-Changes in version 1.99.32 (2024-10-9)
+Changes in version 1.99.33 (2024-10-9)
 + Minor update in gbsrCalcProb() to offset too small genotype probability.
++ Minor update in estGeno() to allow users to explicitly specify whether to use
++ raw or filtered read counts for genotype estimation.
 
 Changes in version 1.99.27 (2024-10-8)
 + Minor update in plotReadRatio(), plotDosage(), and getSamID() to include

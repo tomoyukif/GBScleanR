@@ -4,6 +4,7 @@
 setMethod("estGeno",
           "GbsrGenotypeData",
           function(object,
+                   node,
                    recomb_rate,
                    error_rate,
                    call_threshold,
@@ -69,6 +70,7 @@ setMethod("estGeno",
                       message("\nNow cleaning chr ", chr_i, "...")
                       clean_out <- .cleanEachChr(object = object,
                                                  chr_i = chr_i,
+                                                 node = node,
                                                  error_rate = error_rate,
                                                  recomb_rate = recomb_rate,
                                                  call_threshold = call_threshold,
@@ -390,12 +392,12 @@ setMethod("estGeno",
 ################################################################################
 ################################################################################
 # Prepare read count data
-.loadReadCounts <- function(object, chr_i, parentless, dummy_reads) {
+.loadReadCounts <- function(object, chr_i, node, parentless, dummy_reads) {
+    ad_node <- "raw"
     if (exist.gdsn(node = object, path = "annotation/format/FAD")) {
-        ad_node <- "filt"
-
-    } else {
-        ad_node <- "raw"
+        if(node == "filt"){
+            ad_node <- "filt"
+        }
     }
 
     reads <- getRead(object = object, node = ad_node,
@@ -894,10 +896,10 @@ setMethod("estGeno",
     return(out)
 }
 
-.getParams <- function(object, chr_i, error_rate, recomb_rate,
+.getParams <- function(object, chr_i, node, error_rate, recomb_rate,
                        call_threshold, het_parent,
                        parentless, dummy_reads, pat) {
-    reads <- .loadReadCounts(object = object, chr_i = chr_i,
+    reads <- .loadReadCounts(object = object, chr_i = chr_i, node = node,
                              parentless = parentless,
                              dummy_reads = dummy_reads)
 
@@ -1480,6 +1482,7 @@ setMethod("estGeno",
 # Run genotype estimation per chromosome
 .cleanEachChr <- function(object,
                           chr_i,
+                          node,
                           error_rate,
                           recomb_rate,
                           call_threshold,
@@ -1491,6 +1494,7 @@ setMethod("estGeno",
                           pat) {
     param_list <- .getParams(object = object,
                              chr_i = chr_i,
+                             node = node,
                              error_rate = error_rate,
                              recomb_rate = recomb_rate,
                              call_threshold = call_threshold,

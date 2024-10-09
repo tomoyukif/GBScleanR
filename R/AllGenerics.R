@@ -2441,6 +2441,9 @@ setGeneric("gbsrGDS2CSV", function(object,
 #' genotype estimation using a hidden Markov model.
 #'
 #' @param object A [GbsrGenotypeData] object.
+#' @param node Either "raw" or "filt" to indicate whether raw or filtered read
+#' counts are used for genotype estimation. See [setCallFilrer()] for the
+#' details of filtered read counts.
 #' @param recomb_rate A numeric value to indicate the expected
 #' recombination frequency per chromosome per megabase pairs.
 #' @param error_rate A numeric value of the expected sequence error rate.
@@ -2527,6 +2530,7 @@ setGeneric("gbsrGDS2CSV", function(object,
 #' @export
 #'
 setGeneric("estGeno", function(object,
+                               node = "raw",
                                recomb_rate = 0.04,
                                error_rate = 0.0025,
                                call_threshold = 0.9,
