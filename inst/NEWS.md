@@ -1,3 +1,7 @@
+Changes in version 1.99.34 (2024-10-19)
++ Minor fix in the coding in gbsrCalcProb.cpp in which a single ampersand was 
++ replaced with double ampersands.
+
 Changes in version 1.99.33 (2024-10-9)
 + Minor update in gbsrCalcProb() to offset too small genotype probability.
 + Minor update in estGeno() to allow users to explicitly specify whether to use

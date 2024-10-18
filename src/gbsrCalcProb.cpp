@@ -35,7 +35,7 @@ vector<double> calcGenoprob(const double & ref,
 
     if(!het){
         for(int g = 0; g < prob.size(); ++g){
-            if(g != 0 & g != ploidy){
+            if(g != 0 && g != ploidy){
                 prob[g] = -numeric_limits<double>::infinity();
             }
         }
@@ -167,7 +167,7 @@ void offsetProb(vector<double> & prob,
             }
 
         } else {
-            if(g == 0 & g == ploidy){
+            if(g == 0 && g == ploidy){
                 if(prob[g] <= threshold){
                     do_offset = true;
                 }
@@ -182,7 +182,7 @@ void offsetProb(vector<double> & prob,
                 logsum2(prob[g], offset);
 
             } else {
-                if(g == 0 & g == ploidy){
+                if(g == 0 && g == ploidy){
                     logsum2(prob[g], offset);
                 }
             }
