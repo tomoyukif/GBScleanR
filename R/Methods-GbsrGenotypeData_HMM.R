@@ -1215,7 +1215,7 @@ setMethod("estGeno",
 # Marker specific error rate estimation
 .getBias <- function(best_seq, type, ref, alt, n_ploidy) {
     if (type == 1) {
-        est_het <- !(best_seq == 0 | best_seq == n_ploidy)
+        est_het <- best_seq == (n_ploidy / 2)
         ref[!est_het] <- NA
         ref <- colSums(ref, na.rm = TRUE)
         best_seq[!est_het] <- NA
@@ -1234,7 +1234,7 @@ setMethod("estGeno",
         n_ref <- colSums(est_ref, na.rm = TRUE) * n_ploidy
         ref_prop <- ref / n_ref
 
-        est_alt <- best_seq == 2
+        est_alt <- best_seq == n_ploidy
         alt[!est_alt] <- NA
         alt <- colSums(alt, na.rm = TRUE)
         n_alt <- colSums(est_alt, na.rm = TRUE) * n_ploidy
