@@ -516,6 +516,7 @@ setMethod("estGeno",
     return(out)
 }
 
+#' @importFrom utils combn
 .mateGametes <- function(index, zygotes, mate, n_ploidy, gamete_ploidy, rev_index){
     i_mate <- mate[, index]
     zygote1 <- zygotes[[i_mate[1]]]

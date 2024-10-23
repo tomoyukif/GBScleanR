@@ -1,3 +1,6 @@
+Changes in version 1.99.35 (2024-10-23)
++ Update in manuals.
+
 Changes in version 1.99.34 (2024-10-19)
 + Minor fix in the coding in gbsrCalcProb.cpp in which a single ampersand was 
 + replaced with double ampersands.
