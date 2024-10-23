@@ -1,5 +1,6 @@
-Changes in version 1.99.35 (2024-10-23)
+Changes in version 1.99.36 (2024-10-23)
 + Update in manuals.
++ Bug fix in .halfJoint() in estGeno().
 
 Changes in version 1.99.34 (2024-10-19)
 + Minor fix in the coding in gbsrCalcProb.cpp in which a single ampersand was 

@@ -1107,7 +1107,7 @@ setMethod("estGeno",
               best_pat_f$prob[, , latter])
     prob <- array(data = prob, dim = dim(best_pat_f$prob))
     prob <- apply(X = prob, MARGIN = 2, FUN = function(x) return(x))
-    prob <- array(data = prob, dim = c(param_list$n_ploidy, n_mar, n_sample))
+    prob <- array(data = prob, dim = c(param_list$n_ploidy + 1, n_mar, n_sample))
     out_list <- list(best_seq = best_seq,
                      p_geno = p_geno,
                      prob = prob)
@@ -1433,6 +1433,7 @@ setMethod("estGeno",
                                   best_geno = best_geno,
                                   pat_prob = best_pat$prob,
                                   param_list = param_list)
+        out_list$pat_prob <- best_pat$prob
         out_list$p_geno <- p_geno
         out_list$bias <- param_list$bias
         out_list$mismap <- param_list$mismap
