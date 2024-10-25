@@ -2036,7 +2036,7 @@ setGeneric("setInfoFilter", function(object,
 #' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 #' gds <- loadGDS(gds_fn)
 #'
-#' # Set fixed allele rad biases.
+#' # Set fixed allele read biases.
 #' # Initialize the bias vector to be assinged.
 #' bias <- rep(nmar(gds), NA)
 #'
@@ -2088,9 +2088,18 @@ setGeneric("setFixedBias", function(object, bias, ...)
 #' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 #' gds <- loadGDS(gds_fn)
 #'
-#' # Set dominant markers.
-#' id <- sample(getMarID(gds), 10) # Assume 10 markers are dominant markers.
-#' gds <- setDominantMarkers(gds, id = id)
+#' # Set fixed allele read biases.
+#' # Initialize the bias vector to be assinged.
+#' bias <- rep(nmar(gds), NA)
+#'
+#' # As an example, select 20 markers randomly and assign 0 or 1 to them.
+#' # Since the bias set by setFixedBias() function is the reference allele read
+#' # bias. Thus, the values 0 and 1 means that the marker only gives alternative
+#' # and reference allele reads, respectively.
+#' # Set these fixed biases if some of your markers are dominant markers.
+#' bias[sample(seq_along(bias), 20)] <- sample(c(0, 1), 20)
+#'
+#' gds <- setFixedBias(gds, bias = bias)
 #'
 #' fixed_bias <- getFixedBias(gds)
 #'

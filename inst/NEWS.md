@@ -1,4 +1,4 @@
-Changes in version 1.99.37 (2024-10-23)
+Changes in version 1.99.38 (2024-10-25)
 + Update in manuals.
 + Bug fix in .halfJoint() in estGeno().
 

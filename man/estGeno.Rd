@@ -36,7 +36,7 @@ estGeno(
 \item{object}{A \link{GbsrGenotypeData} object.}
 
 \item{node}{Either "raw" or "filt" to indicate whether raw or filtered read
-counts are used for genotype estimation. See \code{\link[=setCallFilrer]{setCallFilrer()}} for the
+counts are used for genotype estimation. See \code{\link[=setCallFilter]{setCallFilter()}} for the
 details of filtered read counts.}
 
 \item{recomb_rate}{A numeric value to indicate the expected

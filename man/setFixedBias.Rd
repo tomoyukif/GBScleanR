@@ -40,7 +40,7 @@ gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds <- loadGDS(gds_fn)
 
-# Set fixed allele rad biases.
+# Set fixed allele read biases.
 # Initialize the bias vector to be assinged.
 bias <- rep(nmar(gds), NA)
 
