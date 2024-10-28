@@ -2038,7 +2038,7 @@ setGeneric("setInfoFilter", function(object,
 #'
 #' # Set fixed allele read biases.
 #' # Initialize the bias vector to be assinged.
-#' bias <- rep(nmar(gds), NA)
+#' bias <- rep(NA, nmar(gds))
 #'
 #' # As an example, select 20 markers randomly and assign 0 or 1 to them.
 #' # Since the bias set by setFixedBias() function is the reference allele read
@@ -2090,7 +2090,7 @@ setGeneric("setFixedBias", function(object, bias, ...)
 #'
 #' # Set fixed allele read biases.
 #' # Initialize the bias vector to be assinged.
-#' bias <- rep(nmar(gds), NA)
+#' bias <- rep(NA, nmar(gds))
 #'
 #' # As an example, select 20 markers randomly and assign 0 or 1 to them.
 #' # Since the bias set by setFixedBias() function is the reference allele read
