@@ -2045,7 +2045,7 @@ setGeneric("setInfoFilter", function(object,
 #' # bias. Thus, the values 0 and 1 means that the marker only gives alternative
 #' # and reference allele reads, respectively.
 #' # Set these fixed biases if some of your markers are dominant markers.
-#' bias[sample(seq_along(bias), 20)] <- sample(c(0, 1), 20)
+#' bias[sample(seq_along(bias), 20)] <- sample(c(0, 1), 20, replace = TRUE)
 #'
 #' gds <- setFixedBias(gds, bias = bias)
 #'
@@ -2097,7 +2097,7 @@ setGeneric("setFixedBias", function(object, bias, ...)
 #' # bias. Thus, the values 0 and 1 means that the marker only gives alternative
 #' # and reference allele reads, respectively.
 #' # Set these fixed biases if some of your markers are dominant markers.
-#' bias[sample(seq_along(bias), 20)] <- sample(c(0, 1), 20)
+#' bias[sample(seq_along(bias), 20)] <- sample(c(0, 1), 20, replace = TRUE)
 #'
 #' gds <- setFixedBias(gds, bias = bias)
 #'
