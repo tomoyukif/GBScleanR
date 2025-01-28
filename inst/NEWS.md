@@ -1,3 +1,6 @@
+Changes in version 2.1.2 (2025-01-28)
++ Minor bug fix in getGenotype().
+
 Changes in version 1.99.39 (2024-10-28)
 + Update in manuals.
 + Bug fix in .halfJoint() in estGeno().
