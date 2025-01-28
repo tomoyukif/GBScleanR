@@ -35,7 +35,8 @@
         }
         # Reduce the dimensions of the output array
         out[out == 3] <- NA
-        out <- apply(out, 3, colSums)
+        command <- paste0("out <- ", paste(paste0("out[", seq_len(dim(out)[1]), ",,]"), collapse = " + "))
+        eval(expr = parse(text = command))
     }
 
     return(out)
@@ -430,7 +431,9 @@ setMethod("getGenotype",
                   out[out == 63] <- NA
 
               } else {
-                  out[out == 3] <- NA
+                  if(!reduce){
+                      out[out == 3] <- NA
+                  }
               }
 
               # Set row and col names of the output
