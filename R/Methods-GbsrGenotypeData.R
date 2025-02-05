@@ -352,6 +352,9 @@ setMethod("getRead",
               at_data <- unlist(at_data)
               filters$mar <- filters$mar[at_data]
               out <- .filtData(object = object, node = node, filters = filters)
+              if(!is.matrix(out)){
+                  out <- matrix(out, nrow = 1)
+              }
               ref <- subset(out, select = c(TRUE, FALSE))
               alt <- subset(out, select = c(FALSE, TRUE))
               rownames(ref) <- rownames(alt) <- sample_id
@@ -380,6 +383,9 @@ setMethod("getGenotype",
                   out <- .getParentGenotype(object = object,
                                             valid = valid,
                                             chr = chr)
+                  if(!is.matrix(out) & !is.array(out)){
+                      out <- matrix(out, nrow = 1)
+                  }
                   return(out)
 
               }
@@ -425,7 +431,9 @@ setMethod("getGenotype",
                                      valid = valid, chr = chr)
               out <- .filtData(object = object, node = node,
                                filters = filters, reduce = reduce)
-
+              if(!is.matrix(out) & !is.array(out)){
+                  out <- matrix(out, nrow = 1)
+              }
               # Set numerically expressed missing values to NA
               if(grepl(pattern = "EDS", x = node)){
                   out[out == 63] <- NA

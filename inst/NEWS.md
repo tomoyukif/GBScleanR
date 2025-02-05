@@ -1,3 +1,7 @@
+Changes in version 2.1.3 (2025-02-05)
++ Minor bug fix in getGenotype() and getRead() where make out to be a matrix if 
++ the output from .filtData() was a vector.
+
 Changes in version 2.1.2 (2025-01-28)
 + Minor bug fix in getGenotype().
 
