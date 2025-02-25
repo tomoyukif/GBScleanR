@@ -1,3 +1,6 @@
+Changes in version 2.1.4 (2025-02-25)
++ Minor bug fix in loadGDS() when a ploidy was set > 2.
+
 Changes in version 2.1.3 (2025-02-05)
 + Minor bug fix in getGenotype() and getRead() where make out to be a matrix if 
 + the output from .filtData() was a vector.

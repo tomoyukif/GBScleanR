@@ -180,7 +180,7 @@ loadGDS <- function(x, load_filter = FALSE, ploidy = 2, verbose = TRUE) {
   }
 
   # Parse the GBSR output formats in VCF
-  .parseGBSRformat(gds = gds)
+  .parseGBSRformat(gds = gds, ploidy = ploidy)
 
   # Optimize gds nodes
   opt <- exist.gdsn(node = gds, path = "genotype/~data") &
@@ -213,7 +213,7 @@ loadGDS <- function(x, load_filter = FALSE, ploidy = 2, verbose = TRUE) {
   return(gds)
 }
 
-.parseGBSRformat <- function(gds){
+.parseGBSRformat <- function(gds, ploidy){
   for(node in c("FGT", "CGT", "HAP")){
     gdsn <- paste0("annotation/format/", node)
     if(exist.gdsn(gds, gdsn)){
@@ -237,13 +237,13 @@ loadGDS <- function(x, load_filter = FALSE, ploidy = 2, verbose = TRUE) {
                    },
                    as.is = "gdsnode",
                    target.node = tmp_gdsn)
-        setdim.gdsn(tmp_gdsn, c(2, gdsn_dim$dim[2], gdsn_dim$dim[1]))
+        setdim.gdsn(tmp_gdsn, c(ploidy, gdsn_dim$dim[2], gdsn_dim$dim[1]))
         i_gdsn <- add.gdsn(index.gdsn(gds, gdsn),
                            "data", NULL, storage, NULL,
                            replace = TRUE)
         apply.gdsn(tmp_gdsn, margin = 2, c, as.is = "gdsnode",
                    target.node = i_gdsn)
-        setdim.gdsn(i_gdsn, c(2, gdsn_dim$dim[1], gdsn_dim$dim[2]))
+        setdim.gdsn(i_gdsn, c(ploidy, gdsn_dim$dim[1], gdsn_dim$dim[2]))
         delete.gdsn(tmp_gdsn)
       }
     }
