@@ -1,3 +1,7 @@
+Changes in version 2.1.5 (2025-03-14)
++ Enable estGeno() handle aneuploidy, e.g. estting ploidy = 3 for loadGDS() and 
++ get estimation for the specified ploidy.
+
 Changes in version 2.1.4 (2025-02-25)
 + Minor bug fix in loadGDS() when a ploidy was set > 2.
 

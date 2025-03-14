@@ -484,7 +484,6 @@ setMethod("getGenotype",
 
     # Get the ploidy information
     sample_ann <- slot(object = object, name = "sample")
-    ploidy <- attributes(sample_ann)$ploidy
 
     # Make filters
     if(valid){
@@ -506,16 +505,22 @@ setMethod("getGenotype",
 
     # Prepare the output
     pgt_index <- index.gdsn(node = object, path = node)
-    sel <- list(rep(x = TRUE, times = length(unique(member_id)) * ploidy),
-                filt_mar)
+    objdesp <- objdesp.gdsn(pgt_index)
+    sel <- list(rep(x = TRUE, times = objdesp$dim[1]), filt_mar)
     out <- readex.gdsn(node = pgt_index, sel = sel)
     p_info <- getParents(object = object)
-    p_indices <- rbind(p_info$memberID * 2 - 1, p_info$memberID * 2)
-    out <- out[as.vector(p_indices), ]
+    if(!is.null(p_info)){
+        p_indices <- rbind(p_info$memberID * 2 - 1, p_info$memberID * 2)
+        out <- out[as.vector(p_indices), ]
+        n_ploidy <- nrow(out) / length(p_info$sampleID)
+        rownames(out) <- paste(rep(p_info$sampleID, each = n_ploidy),
+                               seq_len(n_ploidy), sep = "_")
+
+    } else {
+        rownames(out) <- NULL
+    }
 
     # Set row and col names
-    rownames(out) <- paste(rep(p_info$sampleID, each = ploidy),
-                           seq_len(ploidy), sep = "_")
     filters <- .makeFilter(object = object, parents = TRUE,
                            valid = valid, chr = chr)
     colnames(out) <- .filtData(object = object,
@@ -2224,35 +2229,85 @@ setMethod("setInfoFilter",
 }
 
 ###############################################################################
-## Set dominant markers
-#' @rdname setFixedBias
+## Set fixed bias markers
+#' @rdname setFixedParameter
 #' @importFrom methods slot<-
-setMethod("setFixedBias",
+setMethod("setFixedParameter",
           "GbsrGenotypeData",
-          function(object, bias){
+          function(object, bias, mismap, parent_geno){
               valid_marker <- validMar(object = object)
-              out <- rep(NA, length(valid_marker))
-              out[valid_marker] <- bias
-              slot(object = object, name = "marker")[["dominant"]] <- out
+
+              if(!is.null(bias)){
+                  out <- rep(NA, length(valid_marker))
+                  out[valid_marker] <- bias
+                  slot(object = object, name = "marker")[["bias"]] <- out
+              }
+
+              if(!is.null(mismap)){
+                  out <- rep(NA, length(valid_marker))
+                  out[valid_marker] <- mismap[, 1]
+                  slot(object = object, name = "marker")[["mismap_ref"]] <- out
+                  out <- rep(NA, length(valid_marker))
+                  out[valid_marker] <- mismap[, 2]
+                  slot(object = object, name = "marker")[["mismap_alt"]] <- out
+              }
+
+              if(parent_geno){
+                  out <- t(getGenotype(object, node = "parents", valid = FALSE))
+                  for(i in seq_len(ncol(out))){
+                      colname <- paste0("parent", i)
+                      slot(object = object, name = "marker")[[colname]] <- out[, i]
+                  }
+              }
               return(object)
           })
 
-#' @rdname getFixedBias
-setMethod("getFixedBias",
+#' @rdname getFixedParameter
+setMethod("getFixedParameter",
           "GbsrGenotypeData",
           function(object, valid, chr){
-              out <- slot(object = object, name = "marker")[["dominant"]]
-              if(is.null(out)){
-                  out <- rep(NA, nmar(object = object, valid = valid, chr = chr))
-                  return(out)
-              }
+              mslot <- slot(object = object, name = "marker")
+              hit <- grepl("bias|mismap|parent[0-9]", names(mslot))
+              out <- mslot[, hit]
               if(valid){
-                  out <- out[validMar(object = object)]
+                  out <- out[validMar(object = object), ]
               }
               if(!is.null(chr)){
-                  out <- out[getChromosome(object = object, valid = valid) %in% chr]
+                  out <- out[getChromosome(object = object, valid = valid) %in% chr, ]
+              }
+              if(ncol(out) == 0){
+                  return(NULL)
               }
               return(out)
+          })
+
+#' @rdname getErrorRate
+setMethod("getErrorRate",
+          "GbsrGenotypeData",
+          function(object, valid, chr){
+              node <- "annotation/info/ADB"
+
+              if(!exist.gdsn(node = object, path = node)){
+                  stop("No record of marker wise error rates in the input GDS file.\n",
+                       "Run estGeno() to obtain them.")
+              }
+
+              filters <- .makeFilter(object = object, parents = TRUE,
+                                     valid = valid, chr = chr)
+
+              variant_id <- .filtData(object = object,
+                                      node = "variant.id",
+                                      filters = filters)
+
+              bias <- .filtData(object = object,
+                                node = "annotation/info/ADB",
+                                filters = filters)
+              filters$sam <- c(TRUE, TRUE)
+              mismap <- .filtData(object = object,
+                                  node = "annotation/info/MR",
+                                  filters = filters)
+
+              return(list(bias = bias, mismap = t(mismap)))
           })
 
 ###############################################################################
