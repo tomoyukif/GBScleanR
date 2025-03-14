@@ -13,7 +13,7 @@ estGeno(
   call_threshold = 0.9,
   het_parent = FALSE,
   optim = TRUE,
-  iter = 2,
+  iter = 4,
   n_threads = 1,
   dummy_reads = 5,
   ...

@@ -547,6 +547,18 @@ setMethod("estGeno",
     mt <- slot(object = scheme, name = "mating")
     xtype <- slot(object = scheme, name = "crosstype")
     pg <- slot(object = scheme, name = "progenies")
+    even_ploidy <- n_ploidy %% 2 != 0
+    if(even_ploidy){
+        n_ploidy_minus <- n_ploidy - 1
+        possible_zygotes_ids <- lapply(seq_len(n_parents), function(i){
+            n <- seq(n_ploidy_minus * (i - 1) + 1, length.out = n_ploidy_minus)
+            if(!het_parent){
+                n <- rep(n[1], n_ploidy_minus)
+            }
+            return(t(n))
+        })
+        n_ploidy <- n_ploidy + 1
+    }
 
     # Simulate possible zygotes and gametes
     # Founder zygotes
@@ -567,7 +579,19 @@ setMethod("estGeno",
     }
 
     out <- zygotes[as.numeric(target_pedigree)]
+    if(even_ploidy){
+        id_table <- lapply(seq_along(possible_zygotes_ids), function(i){
+            return(cbind(as.vector(zygotes[[i]]), as.vector(possible_zygotes_ids[[i]])))
+        })
+        id_table <- do.call("rbind", id_table)
+        out <- lapply(out, function(x){
+            hit <- match(x, id_table[, 1])
+            x <- matrix(id_table[hit, 2], nrow = nrow(x))
+            x <- unique(x[, -1])
+        })
+    }
     names(out) <- target_pedigree
+
     return(out)
 }
 
@@ -598,7 +622,7 @@ setMethod("estGeno",
     derived_geno <- as.vector(derived_geno)
     out <- rep(derived_geno, n_ploidy + 1)
     out <- matrix(out, nrow = n_ploidy + 1, byrow = TRUE)
-    out <- out == geno_pat
+    out <- out == geno_pat[seq_len(n_ploidy + 1)]
     out <- apply(X = out, MARGIN = 2, FUN = which)
     return(out)
 }
@@ -612,10 +636,23 @@ setMethod("estGeno",
     alleles <- seq(0, length.out = n_alleles)
 
     geno_pat <- .makeGenoPat(n_ploidy = n_ploidy, alleles = alleles)
+
+    even_ploidy <- n_ploidy %% 2 != 0
+    if(even_ploidy){
+        n_ploidy <- n_ploidy - 1
+    }
     geno_parents <- .makeGenoParents(n_parents = n_parents,
                                      n_ploidy = n_ploidy,
                                      alleles = alleles,
                                      het_parent = het_parent)
+
+    possiblegeno <- .getPossibleGeno(geno_parents = geno_parents,
+                                     geno_pat = geno_pat,
+                                     n_ploidy = n_ploidy)
+
+    if(even_ploidy){
+        n_ploidy <- n_ploidy + 1
+    }
     hap_progeny <- .getValidPat(scheme = scheme,
                                 het_parent = het_parent,
                                 n_parents = n_parents,
@@ -626,10 +663,6 @@ setMethod("estGeno",
                           geno_parents = geno_parents,
                           geno_pat = geno_pat,
                           n_ploidy = n_ploidy)
-
-    possiblegeno <- .getPossibleGeno(geno_parents = geno_parents,
-                                     geno_pat = geno_pat,
-                                     n_ploidy = n_ploidy)
 
     n_p_pat <- nrow(geno_parents)
     n_hap_pat <- vapply(X = seq_along(hap_progeny),
@@ -926,10 +959,31 @@ setMethod("estGeno",
                         FUN = .getInitProb,
                         n_samples = n_samples)
 
-    mismap <-  matrix(data = 0.005, nrow = n_mar, ncol = 2)
-    bias <- rep(x = 0.5, times = n_mar)
-    fixed_bias <- getFixedBias(object = object, chr = chr_i)
-    bias[!is.na(fixed_bias)] <- na.omit(fixed_bias)
+    fixed_param <- getFixedParameter(object = object)
+    if(!is.null(fixed_param$bias)){
+        bias <- fixed_param$bias
+
+    } else {
+        bias <- rep(x = 0.5, times = n_mar)
+    }
+
+    if(!is.null(fixed_param$mismap_ref)){
+        mismap <- cbind(fixed_param$mismap_ref, fixed_param$mismap_alt)
+
+    } else {
+        mismap <-  matrix(data = 0.005, nrow = n_mar, ncol = 2)
+    }
+
+    if(!is.null(fixed_param$parent1)){
+        p_geno_fix <- apply(fixed_param[, grepl("parent[0-9]", names(fixed_param))],
+                            1,
+                            function(x){
+                                return(which(colSums(t(pat$geno_parents) == x) == length(x)))
+                            })
+    } else {
+        p_geno_fix <- -1
+    }
+
 
     return(list(n_parents = n_parents,
                 n_samples = n_samples,
@@ -948,11 +1002,11 @@ setMethod("estGeno",
                 pat = pat,
                 bias = bias,
                 mismap = mismap,
-                fixed_bias = fixed_bias,
+                fixed_param = fixed_param,
                 trans_prob = trans_prob,
                 init_prob = init_prob,
                 count = 0,
-                p_geno_fix = -1,
+                p_geno_fix = p_geno_fix,
                 flip = FALSE))
 }
 
@@ -1199,7 +1253,12 @@ setMethod("estGeno",
         best_geno[i, i_sample, ][geno_prob] <- 3
     }
     if (!param_list$het_parent) {
-        new_num <- ceiling(best_hap[best_hap != 1] / param_list$n_ploidy)
+        if(param_list$n_ploidy %% 2 == 0){
+            new_num <- ceiling(best_hap[best_hap != 1] / param_list$n_ploidy)
+
+        } else {
+            new_num <- ceiling(best_hap[best_hap != 1] / (param_list$n_ploidy - 1))
+        }
         best_hap[best_hap != 1] <- new_num
     }
 
@@ -1215,7 +1274,7 @@ setMethod("estGeno",
 # Marker specific error rate estimation
 .getBias <- function(best_seq, type, ref, alt, n_ploidy) {
     if (type == 1) {
-        est_het <- best_seq == (n_ploidy / 2)
+        est_het <- !best_seq %in% c(0, n_ploidy)
         ref[!est_het] <- NA
         ref <- colSums(ref, na.rm = TRUE)
         best_seq[!est_het] <- NA
@@ -1340,6 +1399,7 @@ setMethod("estGeno",
     param_list$reads$alt <- param_list$reads$alt[, n_mar:1]
     param_list$bias <- param_list$bias[n_mar:1]
     param_list$mismap <- param_list$mismap[n_mar:1,]
+    param_list$p_geno_fix <- param_list$p_geno_fix[length(param_list$p_geno_fix):1]
     return(param_list)
 }
 
@@ -1353,6 +1413,11 @@ setMethod("estGeno",
     message("\r", cycle)
     message("\r", "Forward round of genotype estimation ...")
 
+    if(!is.null(param_list$fixed_param$parent1)){
+        message("\r",
+                "Use fixed parental genotypes ...")
+    }
+
     if (param_list$flip) {
         best_pat_r <- .getBestSeq(param_list = .flipParam(param_list),
                                   outprob = outprob)
@@ -1362,7 +1427,9 @@ setMethod("estGeno",
                                  p_geno = p_geno_r,
                                  param_list = param_list)
         last_half <- (round(param_list$n_mar / 2) + 1):param_list$n_mar
-        param_list$p_geno_fix <- rev(best_pat_r$p_geno[last_half])
+        if(is.null(param_list$fixed_param$parent1)){
+            param_list$p_geno_fix <- best_pat_r$p_geno[last_half]
+        }
 
     } else {
         best_pat_f <- .getBestSeq(param_list = param_list, outprob = outprob)
@@ -1372,7 +1439,9 @@ setMethod("estGeno",
                                  p_geno = p_geno_f,
                                  param_list = param_list)
         last_half <- (round(param_list$n_mar / 2) + 1):param_list$n_mar
-        param_list$p_geno_fix <- rev(best_pat_f$p_geno[last_half])
+        if(is.null(param_list$fixed_param$parent1)){
+            param_list$p_geno_fix <- rev(best_pat_f$p_geno[last_half])
+        }
     }
 
     message("\r", "Backward round of genotype estimation  ...")
@@ -1383,7 +1452,9 @@ setMethod("estGeno",
         best_geno_f <- .hap2geno(hap = best_hap_f,
                                  p_geno = p_geno_f,
                                  param_list = param_list)
-        param_list$p_geno_fix <- -1
+        if(is.null(param_list$fixed_param$parent1)){
+            param_list$p_geno_fix <- -1
+        }
 
     } else {
         best_pat_r <- .getBestSeq(param_list = .flipParam(param_list = param_list),
@@ -1393,7 +1464,9 @@ setMethod("estGeno",
         best_geno_r <- .hap2geno(hap = best_hap_r,
                                  p_geno = p_geno_r,
                                  param_list = param_list)
-        param_list$p_geno_fix <- -1
+        if(is.null(param_list$fixed_param$parent1)){
+            param_list$p_geno_fix <- -1
+        }
     }
 
     # ### Debug
@@ -1401,19 +1474,37 @@ setMethod("estGeno",
     # ###
 
     if (!outprob) {
-        message("\r",
-                "Paramter optimization ...")
-        error_f <- .calcErrors(best_seq = best_geno_f, param_list = param_list)
-        error_r <- .calcErrors(best_seq = best_geno_r[,,param_list$n_mar:1],
-                               param_list = param_list)
-        error <- .bindErrors(error_f = error_f, error_r = error_r)
-        error$bias[!is.na(param_list$fixed_bias)] <- na.omit(param_list$fixed_bias)
-        check <- error$bias > param_list$error_rate[1]
-        error$bias[check] <- param_list$error_rate[1]
-        check <- error$bias < param_list$error_rate[2]
-        error$bias[check] <- param_list$error_rate[2]
-        param_list$bias <- error$bias
-        param_list$mismap <- error$mismap
+        if(!is.null(param_list$fixed_param$bias) & !is.null(param_list$fixed_param$mismap_ref)){
+            message("\r",
+                    "Skip paramter optimization and use fixed parameters ...")
+
+        } else {
+            message("\r",
+                    "Paramter optimization ...")
+            error_f <- .calcErrors(best_seq = best_geno_f, param_list = param_list)
+            error_r <- .calcErrors(best_seq = best_geno_r[,,param_list$n_mar:1],
+                                   param_list = param_list)
+            error <- .bindErrors(error_f = error_f, error_r = error_r)
+
+            if(!is.null(param_list$fixed_param$bias)){
+                message("\r",
+                        "Use fixed bias values ...")
+
+            } else {
+                check <- error$bias > param_list$error_rate[1]
+                error$bias[check] <- param_list$error_rate[1]
+                check <- error$bias < param_list$error_rate[2]
+                error$bias[check] <- param_list$error_rate[2]
+                param_list$bias <- error$bias
+            }
+
+            if(!is.null(param_list$fixed_param$mismap_ref)){
+                message("\r", "Use fixed mismapping rates ...")
+
+            } else {
+                param_list$mismap <- error$mismap
+            }
+        }
     }
 
     if (outgeno) {

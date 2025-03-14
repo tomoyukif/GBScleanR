@@ -2008,7 +2008,7 @@ setGeneric("setInfoFilter", function(object,
     standardGeneric("setInfoFilter"))
 
 
-#' Set fixed allele read biases
+#' Set fixed allele read biases and mismapping rate
 #'
 #' Set fixed allele read biases of valid markers
 #'
@@ -2017,12 +2017,15 @@ setGeneric("setInfoFilter", function(object,
 #' valid markers. The length of `bias` vector should match the number of valid
 #' markers. The values in the `bias` vector are assigned to the valid markers
 #' according to their order. NAs in the `bias` vector indicates non-fixed biases.
+#' @param mismap A numeric vector of fixed mismapping rates to be assigned to
+#' valid markers.
+#' @param parent_geno A matrix of genotypes of parental samples
 #' @param ... Unused.
 #'
 #' @return A [GbsrGenotypeData] object after adding dominant marker information
 #'
 #' @details
-#' Since the bias set by [setFixedBias()] function is the reference allele read
+#' Since the bias set by [setFixedParameter()] function is the reference allele read
 #' bias. Thus, the values 0 and 1 mean that the marker only gives alternative
 #' and reference allele reads, respectively.
 #' Set these fixed biases if some of your markers are dominant markers.
@@ -2041,21 +2044,21 @@ setGeneric("setInfoFilter", function(object,
 #' bias <- rep(NA, nmar(gds))
 #'
 #' # As an example, select 20 markers randomly and assign 0 or 1 to them.
-#' # Since the bias set by setFixedBias() function is the reference allele read
+#' # Since the bias set by setFixedParameter() function is the reference allele read
 #' # bias. Thus, the values 0 and 1 means that the marker only gives alternative
 #' # and reference allele reads, respectively.
 #' # Set these fixed biases if some of your markers are dominant markers.
 #' bias[sample(seq_along(bias), 20)] <- sample(c(0, 1), 20, replace = TRUE)
 #'
-#' gds <- setFixedBias(gds, bias = bias)
+#' gds <- setFixedParameter(gds, bias = bias)
 #'
 #' # Close the connection to the GDS file
 #' closeGDS(gds)
 #'
 #' @export
 #'
-setGeneric("setFixedBias", function(object, bias, ...)
-    standardGeneric("setFixedBias"))
+setGeneric("setFixedParameter", function(object, bias = NULL, mismap = NULL, parent_geno = FALSE, ...)
+    standardGeneric("setFixedParameter"))
 
 
 #' Get fixed allele read biases
@@ -2077,7 +2080,7 @@ setGeneric("setFixedBias", function(object, bias, ...)
 #'
 #' @return A [GbsrGenotypeData] object after adding dominant marker information
 #'
-#' @seealso [setFixedBias()]
+#' @seealso [setFixedParameter()]
 #'
 #' @examples
 #' # Create a GDS file from a sample VCF file.
@@ -2093,23 +2096,75 @@ setGeneric("setFixedBias", function(object, bias, ...)
 #' bias <- rep(NA, nmar(gds))
 #'
 #' # As an example, select 20 markers randomly and assign 0 or 1 to them.
-#' # Since the bias set by setFixedBias() function is the reference allele read
+#' # Since the bias set by setFixedParameter() function is the reference allele read
 #' # bias. Thus, the values 0 and 1 means that the marker only gives alternative
 #' # and reference allele reads, respectively.
 #' # Set these fixed biases if some of your markers are dominant markers.
 #' bias[sample(seq_along(bias), 20)] <- sample(c(0, 1), 20, replace = TRUE)
 #'
-#' gds <- setFixedBias(gds, bias = bias)
+#' gds <- setFixedParameter(gds, bias = bias)
 #'
-#' fixed_bias <- getFixedBias(gds)
+#' fixed_bias <- getFixedParameter(gds)
 #'
 #' # Close the connection to the GDS file
 #' closeGDS(gds)
 #'
 #' @export
 #'
-setGeneric("getFixedBias", function(object, valid = TRUE, chr = NULL, ...)
-    standardGeneric("getFixedBias"))
+setGeneric("getFixedParameter", function(object, valid = TRUE, chr = NULL, ...)
+    standardGeneric("getFixedParameter"))
+
+
+#' Get allele read biases
+#'
+#' Get fixed allele read biases of markers
+#'
+#' @param object A [GbsrGenotypeData] object.
+#' @param valid A logical value. See details.
+#' @param chr A integer or string to specify chromosome to get information.
+#' @param ... Unused.
+#'
+#' @return A numeric vector of fixed allele read biases.
+#'
+#' @details
+#' If `valid = TRUE`, A logical vector for the markers which are labeled `TRUE` in
+#' the "valid" column of the "marker" slot will be returned. If you need check
+#' the dominant markers in all markers, set `valid = FALSE`. [validMar()] tells you
+#' which markers are valid.
+#'
+#' @return A [GbsrGenotypeData] object after adding dominant marker information
+#'
+#' @seealso [setFixedParameter()]
+#'
+#' @examples
+#' # Create a GDS file from a sample VCF file.
+#' vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
+#' gds_fn <- tempfile("sample", fileext = ".gds")
+#' gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
+#'
+#' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
+#' gds <- loadGDS(gds_fn)
+#'
+#' # Set fixed allele read biases.
+#' # Initialize the bias vector to be assinged.
+#' bias <- rep(NA, nmar(gds))
+#'
+#' # As an example, select 20 markers randomly and assign 0 or 1 to them.
+#' # Since the bias set by setFixedParameter() function is the reference allele read
+#' # bias. Thus, the values 0 and 1 means that the marker only gives alternative
+#' # and reference allele reads, respectively.
+#' # Set these fixed biases if some of your markers are dominant markers.
+#' bias[sample(seq_along(bias), 20)] <- sample(c(0, 1), 20, replace = TRUE)
+#'
+#' fixed_bias <- getErrorRate(gds)
+#'
+#' # Close the connection to the GDS file
+#' closeGDS(gds)
+#'
+#' @export
+#'
+setGeneric("getErrorRate", function(object, valid = TRUE, chr = NULL, ...)
+    standardGeneric("getErrorRate"))
 
 #' Reset the filter made by [setSamFilter()]
 #'
@@ -2545,7 +2600,7 @@ setGeneric("estGeno", function(object,
                                call_threshold = 0.9,
                                het_parent = FALSE,
                                optim = TRUE,
-                               iter = 2,
+                               iter = 4,
                                n_threads = 1,
                                dummy_reads = 5,
                                ...)
