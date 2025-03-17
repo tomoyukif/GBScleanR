@@ -1,3 +1,6 @@
+Changes in version 2.1.6 (2025-03-17)
++ Update .transitionProb() to accept aneuploidy.
+
 Changes in version 2.1.5 (2025-03-14)
 + Enable estGeno() handle aneuploidy, e.g. estting ploidy = 3 for loadGDS() and 
 + get estimation for the specified ploidy.
