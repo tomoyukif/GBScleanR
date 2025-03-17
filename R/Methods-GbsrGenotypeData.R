@@ -2230,6 +2230,29 @@ setMethod("setInfoFilter",
 
 ###############################################################################
 ## Set fixed bias markers
+#' @rdname setPloidy
+#' @importFrom methods slot<-
+setMethod("setPloidy",
+          "GbsrGenotypeData",
+          function(object, ploidy = 2){
+              attributes(slot(object, "sample"))$ploidy <- ploidy
+              return(object)
+          }
+)
+
+###############################################################################
+## Set fixed bias markers
+#' @rdname getPloidy
+#' @importFrom methods slot
+setMethod("getPloidy",
+          "GbsrGenotypeData",
+          function(object){
+              return(attributes(slot(object, "sample"))$ploidy)
+          }
+)
+
+###############################################################################
+## Set fixed bias markers
 #' @rdname setFixedParameter
 #' @importFrom methods slot<-
 setMethod("setFixedParameter",
@@ -2237,13 +2260,20 @@ setMethod("setFixedParameter",
           function(object, bias, mismap, parent_geno){
               valid_marker <- validMar(object = object)
 
-              if(!is.null(bias)){
+              if(is.null(bias)){
+                  slot(object = object, name = "marker")[["bias"]] <- NULL
+
+              } else {
                   out <- rep(NA, length(valid_marker))
                   out[valid_marker] <- bias
                   slot(object = object, name = "marker")[["bias"]] <- out
               }
 
-              if(!is.null(mismap)){
+              if(is.null(mismap)){
+                  slot(object = object, name = "marker")[["mismap_ref"]] <- NULL
+                  slot(object = object, name = "marker")[["mismap_alt"]] <- NULL
+
+              } else {
                   out <- rep(NA, length(valid_marker))
                   out[valid_marker] <- mismap[, 1]
                   slot(object = object, name = "marker")[["mismap_ref"]] <- out
@@ -2258,6 +2288,10 @@ setMethod("setFixedParameter",
                       colname <- paste0("parent", i)
                       slot(object = object, name = "marker")[[colname]] <- out[, i]
                   }
+              } else {
+                  marker_df <- slot(object = object, name = "marker")
+                  hit <- grep("parent[0-9]", names(marker_df))
+                  slot(object = object, name = "marker")[hit] <- NULL
               }
               return(object)
           })

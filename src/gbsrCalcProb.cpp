@@ -214,6 +214,10 @@ NumericVector calcPemit(NumericMatrix p_ref,
     double neg_inf = -numeric_limits<double>::infinity();
     NumericVector p_emit(n_p[0]);
 
+    if(ploidy % 2 != 0){
+        ploidy = ploidy - 1;
+    }
+
     for(int i = 0; i < n_f[0]; ++i){
         NumericMatrix::Row ref_i = p_ref.row(i);
         NumericMatrix::Row alt_i = p_alt.row(i);

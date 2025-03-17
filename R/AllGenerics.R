@@ -2007,6 +2007,15 @@ setGeneric("setInfoFilter", function(object,
                                      ...)
     standardGeneric("setInfoFilter"))
 
+#' @export
+#'
+setGeneric("setPloidy", function(object, ploidy = 2, ...)
+    standardGeneric("setPloidy"))
+
+#' @export
+#'
+setGeneric("getPloidy", function(object, ...)
+    standardGeneric("getPloidy"))
 
 #' Set fixed allele read biases and mismapping rate
 #'

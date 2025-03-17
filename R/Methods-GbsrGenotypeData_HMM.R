@@ -841,6 +841,13 @@ setMethod("estGeno",
 
 .transitionProb <- function(pat, pos, recomb_rate,
                             scheme, het_parent, n_ploidy){
+    if(n_ploidy %% 2 != 0){
+        even_ploidy <- TRUE
+
+    } else {
+        even_ploidy <- FALSE
+    }
+
     out <- lapply(X = seq_along(pat$hap_progeny),
                   FUN = function(i){
                       hap_progeny_i <- pat$hap_progeny[[i]]
@@ -857,26 +864,45 @@ setMethod("estGeno",
                                          apply(X = hap_progeny_i,
                                                MARGIN = 1,
                                                FUN = function(y) {
+
+                                                   # If no change in adjacent genotypes, set NA.
+                                                   # These NAs will be replaced with negated rowSums() values of each row of q_mat.
                                                    no_change <- x == y
                                                    if(sum(no_change) == n_ploidy){
                                                        out <- NA
 
                                                    } else {
+                                                       # If more than two patterns of crossing overs were observed, set zero.
+                                                       # We do not assume multiple crossing overs at one joint.
                                                        joint_pat <- paste(x, y, sep = "_")
                                                        joint_pat <- joint_pat[!no_change]
                                                        if(length(unique(joint_pat)) > 1){
                                                            out <- 0
 
                                                        } else {
+                                                           # If only one pattern of crossing over in multiple chromosomes were found,
+                                                           # set the r11 value to the power of the inverse of the number of crossing over chromosomes.
                                                            if(length(joint_pat) > 1){
                                                                out <- jrate$r11^(1/length(joint_pat))
 
                                                            } else {
+
+                                                               # Check the number of the major haplotype before and after the joint
                                                                check1 <- max(table(x))
                                                                check2 <- max(table(y))
+                                                               if(even_ploidy){
+                                                                   if(check1 == check2){
+                                                                       if(check1 != n_ploidy){
+                                                                           check2 <- check2 - 1
+                                                                       }
+                                                                   }
+                                                               }
+
+                                                               # If the major joint decreased, set r01 that is the rate to get an additional non-ibd state.
                                                                if(check1 > check2){
                                                                    out <- jrate$r01
 
+                                                               # If the major joint increased, set r10 that is the rate to get an additional non-ibd state.
                                                                } else if(check1 < check2){
                                                                    out <- jrate$r10
 
