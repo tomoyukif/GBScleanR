@@ -1,4 +1,4 @@
-Changes in version 2.1.6 (2025-03-17)
+Changes in version 2.1.7 (2025-03-18)
 + Update .transitionProb() to accept aneuploidy.
 
 Changes in version 2.1.5 (2025-03-14)
