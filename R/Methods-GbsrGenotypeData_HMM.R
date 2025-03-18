@@ -985,7 +985,7 @@ setMethod("estGeno",
                         FUN = .getInitProb,
                         n_samples = n_samples)
 
-    fixed_param <- getFixedParameter(object = object)
+    fixed_param <- getFixedParameter(object = object, valid = TRUE, chr = chr_i)
     if(!is.null(fixed_param$bias)){
         bias <- fixed_param$bias
 
