@@ -2007,11 +2007,19 @@ setGeneric("setInfoFilter", function(object,
                                      ...)
     standardGeneric("setInfoFilter"))
 
+#' Set ploidy
+#'
+#' Set the ploidy of a given population in an input GDS class object.
+#'
 #' @export
 #'
 setGeneric("setPloidy", function(object, ploidy = 2, ...)
     standardGeneric("setPloidy"))
 
+#' Get ploidy
+#'
+#' Get the ploidy of a given population in an input GDS class object.
+#'
 #' @export
 #'
 setGeneric("getPloidy", function(object, ...)
