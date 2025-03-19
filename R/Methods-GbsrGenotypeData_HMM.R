@@ -581,13 +581,19 @@ setMethod("estGeno",
     out <- zygotes[as.numeric(target_pedigree)]
     if(even_ploidy){
         id_table <- lapply(seq_along(possible_zygotes_ids), function(i){
-            return(cbind(as.vector(zygotes[[i]]), as.vector(possible_zygotes_ids[[i]])))
+            possible_zygotes_ids_i <- as.vector(possible_zygotes_ids[[i]])
+            possible_zygotes_ids_i <- c(possible_zygotes_ids_i,
+                                        possible_zygotes_ids_i)
+            possible_zygotes_ids_i <- possible_zygotes_ids_i[seq_along(zygotes[[i]])]
+            return(cbind(as.vector(zygotes[[i]]), possible_zygotes_ids_i))
         })
         id_table <- do.call("rbind", id_table)
         out <- lapply(out, function(x){
             hit <- match(x, id_table[, 1])
             x <- matrix(id_table[hit, 2], nrow = nrow(x))
-            x <- unique(x[, -1])
+            x <- x[, -1]
+            x <- rbind(x, t(apply(x, 1, rev)))
+            return(unique(x))
         })
     }
     names(out) <- target_pedigree
@@ -1226,10 +1232,14 @@ setMethod("estGeno",
     prob_half <- param_list$trans_prob[[i_pedigree]]$prob[, half]
     prob[non_zero] <- prob_half
     prob1 <- prob[hap1, hap2]
-    prob2 <- prob[hap1, hap3]
-    if(prob1 < prob2){
-        out <- TRUE
+    if(length(hap3) != 0){
+        prob2 <- prob[hap1, hap3]
+        if(prob1 < prob2){
+            out <- TRUE
 
+        } else {
+            out <- FALSE
+        }
     } else {
         out <- FALSE
     }
