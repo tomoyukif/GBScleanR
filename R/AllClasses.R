@@ -54,7 +54,7 @@ setClass(Class = "GbsrScheme",
 #'
 #' @details
 #' The `GbsrGenotypeData` class is an extention of `SeqVarGDSClass` in the
-#' [SeqArray] package to store summary data of genotypes and reads and a
+#' [SeqArray::SeqVarGDSClass-class]{SeqArray} package to store summary data of genotypes and reads and a
 #' [GbsrScheme] object that contains mating scheme information of the given
 #' population..
 #' The slots `marker` and `sample` store a [data.frame] object for variant-wise

@@ -3,7 +3,7 @@
 \name{getFixedParameter}
 \alias{getFixedParameter}
 \alias{getFixedParameter,GbsrGenotypeData-method}
-\title{Get fixed allele read biases}
+\title{Get fixed allele read biases and mismapping rate}
 \usage{
 getFixedParameter(object, valid = TRUE, chr = NULL, ...)
 
@@ -24,7 +24,7 @@ A numeric vector of fixed allele read biases.
 A \link{GbsrGenotypeData} object after adding dominant marker information
 }
 \description{
-Get fixed allele read biases of markers
+Get fixed allele read biases and mismapping rates of markers
 }
 \details{
 If \code{valid = TRUE}, A logical vector for the markers which are labeled \code{TRUE} in
@@ -33,7 +33,6 @@ the dominant markers in all markers, set \code{valid = FALSE}. \code{\link[=vali
 which markers are valid.
 }
 \examples{
-# Create a GDS file from a sample VCF file.
 vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
 gds_fn <- tempfile("sample", fileext = ".gds")
 gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
@@ -41,20 +40,15 @@ gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
 # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds <- loadGDS(gds_fn)
 
-# Set fixed allele read biases.
-# Initialize the bias vector to be assinged.
-bias <- rep(NA, nmar(gds))
-
-# As an example, select 20 markers randomly and assign 0 or 1 to them.
-# Since the bias set by setFixedParameter() function is the reference allele read
-# bias. Thus, the values 0 and 1 means that the marker only gives alternative
-# and reference allele reads, respectively.
-# Set these fixed biases if some of your markers are dominant markers.
-bias[sample(seq_along(bias), 20)] <- sample(c(0, 1), 20, replace = TRUE)
-
-gds <- setFixedParameter(gds, bias = bias)
-
-fixed_bias <- getFixedParameter(gds)
+# Not run.
+# Run estGeno() and reuse the estimated parameters in the second run.
+# gds <- makeScheme(gds, generation = 2, crosstype = "self")
+# gds <- estGeno(gds)
+# fixed_param <- getFixedParameter(gds)
+# gds <- setFixedParameter(gds,
+                           bias = fixed_param$bias,
+                           mismap = fixed_param$mismap)
+# gds <- estGeno(gds, optim = FALSE, call_threshold = 0.5)
 
 # Close the connection to the GDS file
 closeGDS(gds)

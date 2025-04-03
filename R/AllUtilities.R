@@ -139,8 +139,7 @@ gbsrVCF2GDS <- function(vcf_fn,
 #' @details
 #' The first time to load a newly produced GDS file will take long time due to
 #' data reformatting for quick access. The `GbsrGenotypeData` object returned
-#' from `loadGDS()` can be also handled as `SeqVarGDSClass` of the [SeqArray]
-#' package.
+#' from `loadGDS()` can be also handled as `SeqVarGDSClass` of the [SeqArray::SeqVarGDSClass-class]{SeqArray} package.
 #'
 #' @examples
 #' # Create a GDS file from a sample VCF file.

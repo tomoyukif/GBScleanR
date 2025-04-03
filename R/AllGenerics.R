@@ -2009,7 +2009,33 @@ setGeneric("setInfoFilter", function(object,
 
 #' Set ploidy
 #'
-#' Set the ploidy of a given population in an input GDS class object.
+#' Set the ploidy of a given population in the input [GbsrGenotypeData] object.
+#'
+#' @param object A [GbsrGenotypeData] object.
+#' @param ploidy A integer value to specify the ploidy of the given population.
+#' @param ... Unused.
+#'
+#' @details
+#' The genotype estimation by [estGeno()] would be performed with the assumption
+#' of the ploidy specified through this function or the `ploidy` argument of
+#' [loadGDS()].
+#' When an odd number was specified as `ploidy`, the ploidy of intermediate
+#' generations would be treated as `ploidy` + 1 to properly list up possible
+#' descendent haplotype patterns in the process by [estGeno()].
+#'
+#' @return A [GbsrGenotypeData] object with filters on markers.
+#'
+#' @seealso [getPloidy()]
+#'
+#' @examples
+#' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+#' gds <- loadGDS(gds_fn)
+#'
+#' gds <- setPloidy(gds, ploidy = 4)
+#'
+#' # Close the connection to the GDS file.
+#' closeGDS(gds)
 #'
 #' @export
 #'
@@ -2018,7 +2044,24 @@ setGeneric("setPloidy", function(object, ploidy = 2, ...)
 
 #' Get ploidy
 #'
-#' Get the ploidy of a given population in an input GDS class object.
+#' Get the ploidy of a given population in the input [GbsrGenotypeData] object.
+#'
+#' @param object A [GbsrGenotypeData] object.
+#'
+#' @return An integer value.
+#'
+#' @seealso [setPloidy()]
+#'
+#' @examples
+#' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
+#' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
+#' gds <- loadGDS(gds_fn)
+#'
+#' ploidy <- getPloidy(gds)
+#' print(ploidy)
+#'
+#' # Close the connection to the GDS file.
+#' closeGDS(gds)
 #'
 #' @export
 #'
@@ -2027,25 +2070,43 @@ setGeneric("getPloidy", function(object, ...)
 
 #' Set fixed allele read biases and mismapping rate
 #'
-#' Set fixed allele read biases of valid markers
+#' Set fixed allele read biases and mismapping rates of markers
 #'
 #' @param object A [GbsrGenotypeData] object.
 #' @param bias A numeric vector of fixed allele read biases to be assigned to
 #' valid markers. The length of `bias` vector should match the number of valid
-#' markers. The values in the `bias` vector are assigned to the valid markers
-#' according to their order. NAs in the `bias` vector indicates non-fixed biases.
-#' @param mismap A numeric vector of fixed mismapping rates to be assigned to
-#' valid markers.
-#' @param parent_geno A matrix of genotypes of parental samples
+#' markers.
+#' @param mismap A numeric matrix of fixed reference and alternative read
+#'  mismapping rates to be assigned to valid markers. The number of rows of the
+#'  given matrix should match the number of valid markers and should have two
+#'  columns that are for reference and alternative read mismapping rates,
+#'  respectively.
+#' @param parent_geno A logical value indicating whether to use fixed parental
+#' genotypes in the genoype estimation by [estGeno()]. This mode requires the
+#' estimated genotypes for parental samples that were estimated by [estGeno()]
+#' and stored in the GDS file linked to the input [GbsrGenotypeData] object.
 #' @param ... Unused.
 #'
 #' @return A [GbsrGenotypeData] object after adding dominant marker information
 #'
+#' @export
+#'
 #' @details
+#' If you have already executed genotype estimation and want to reuse the
+#' marker-wise allele read biases and mismapping rates estimated in the
+#' completed run of estGeno(), you can use them in the next genotype estimation
+#' run.
+#' For example, if you want to estimate genotypes with different argument
+#' settings of setGeno(), it is worth to set fixed parameters and run
+#' estGeno() with setting `optim = FALSE` to skip time-consuming iterative
+#' parameter optimization steps but use the estimated parameters from the first
+#' run to incorporate the marker-wise error parameters.
 #' Since the bias set by [setFixedParameter()] function is the reference allele read
-#' bias. Thus, the values 0 and 1 mean that the marker only gives alternative
+#' bias, the values 0 and 1 mean that the marker only gives alternative
 #' and reference allele reads, respectively.
-#' Set these fixed biases if some of your markers are dominant markers.
+#' The values in the `bias` vector are assigned to the valid markers.
+#' Similarly, the values in the `mismap` matrix are
+#' assigned to the valid markers in the order they appear in the rows.
 #'
 #' @examples
 #' # Create a GDS file from a sample VCF file.
@@ -2056,31 +2117,33 @@ setGeneric("getPloidy", function(object, ...)
 #' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 #' gds <- loadGDS(gds_fn)
 #'
-#' # Set fixed allele read biases.
-#' # Initialize the bias vector to be assinged.
-#' bias <- rep(NA, nmar(gds))
+#' # Not run.
+#' # Run estGeno() and reuse the estimated parameters in the second run.
+#' # gds <- makeScheme(gds, generation = 2, crosstype = "self")
+#' # gds <- estGeno(gds)
+#' # fixed_param <- getFixedParameter(gds)
+#' # gds <- setFixedParameter(gds,
+#'                            bias = fixed_param$bias,
+#'                            mismap = fixed_param$mismap)
+#' # gds <- estGeno(gds, optim = FALSE, call_threshold = 0.5)
 #'
-#' # As an example, select 20 markers randomly and assign 0 or 1 to them.
-#' # Since the bias set by setFixedParameter() function is the reference allele read
-#' # bias. Thus, the values 0 and 1 means that the marker only gives alternative
-#' # and reference allele reads, respectively.
-#' # Set these fixed biases if some of your markers are dominant markers.
-#' bias[sample(seq_along(bias), 20)] <- sample(c(0, 1), 20, replace = TRUE)
-#'
-#' gds <- setFixedParameter(gds, bias = bias)
+#' # You can also set arbitrary values.
+#' bias <- sample(seq(0, 1, 0.01), nmar(gds), replace = TRUE)
+#' mismap <- cbind(sample(seq(0, 0.2, 0.01), nmar(gds), replace = TRUE),
+#'                 sample(seq(0, 0.2, 0.01), nmar(gds), replace = TRUE))
+#' gds <- setFixedParameter(gds, bias = bias, mismap = mismap)
 #'
 #' # Close the connection to the GDS file
 #' closeGDS(gds)
 #'
-#' @export
 #'
 setGeneric("setFixedParameter", function(object, bias = NULL, mismap = NULL, parent_geno = FALSE, ...)
     standardGeneric("setFixedParameter"))
 
 
-#' Get fixed allele read biases
+#' Get fixed allele read biases and mismapping rate
 #'
-#' Get fixed allele read biases of markers
+#' Get fixed allele read biases and mismapping rates of markers
 #'
 #' @param object A [GbsrGenotypeData] object.
 #' @param valid A logical value. See details.
@@ -2099,8 +2162,10 @@ setGeneric("setFixedParameter", function(object, bias = NULL, mismap = NULL, par
 #'
 #' @seealso [setFixedParameter()]
 #'
+#' @export
+#'
 #' @examples
-#' # Create a GDS file from a sample VCF file.
+# # Create a GDS file from a sample VCF file.
 #' vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
 #' gds_fn <- tempfile("sample", fileext = ".gds")
 #' gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
@@ -2108,80 +2173,21 @@ setGeneric("setFixedParameter", function(object, bias = NULL, mismap = NULL, par
 #' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 #' gds <- loadGDS(gds_fn)
 #'
-#' # Set fixed allele read biases.
-#' # Initialize the bias vector to be assinged.
-#' bias <- rep(NA, nmar(gds))
-#'
-#' # As an example, select 20 markers randomly and assign 0 or 1 to them.
-#' # Since the bias set by setFixedParameter() function is the reference allele read
-#' # bias. Thus, the values 0 and 1 means that the marker only gives alternative
-#' # and reference allele reads, respectively.
-#' # Set these fixed biases if some of your markers are dominant markers.
-#' bias[sample(seq_along(bias), 20)] <- sample(c(0, 1), 20, replace = TRUE)
-#'
-#' gds <- setFixedParameter(gds, bias = bias)
-#'
-#' fixed_bias <- getFixedParameter(gds)
+#' # Not run.
+#' # Run estGeno() and reuse the estimated parameters in the second run.
+#' # gds <- makeScheme(gds, generation = 2, crosstype = "self")
+#' # gds <- estGeno(gds)
+#' # fixed_param <- getFixedParameter(gds)
+#' # gds <- setFixedParameter(gds,
+#'                            bias = fixed_param$bias,
+#'                            mismap = fixed_param$mismap)
+#' # gds <- estGeno(gds, optim = FALSE, call_threshold = 0.5)
 #'
 #' # Close the connection to the GDS file
 #' closeGDS(gds)
-#'
-#' @export
 #'
 setGeneric("getFixedParameter", function(object, valid = TRUE, chr = NULL, ...)
     standardGeneric("getFixedParameter"))
-
-
-#' Get allele read biases
-#'
-#' Get fixed allele read biases of markers
-#'
-#' @param object A [GbsrGenotypeData] object.
-#' @param valid A logical value. See details.
-#' @param chr A integer or string to specify chromosome to get information.
-#' @param ... Unused.
-#'
-#' @return A numeric vector of fixed allele read biases.
-#'
-#' @details
-#' If `valid = TRUE`, A logical vector for the markers which are labeled `TRUE` in
-#' the "valid" column of the "marker" slot will be returned. If you need check
-#' the dominant markers in all markers, set `valid = FALSE`. [validMar()] tells you
-#' which markers are valid.
-#'
-#' @return A [GbsrGenotypeData] object after adding dominant marker information
-#'
-#' @seealso [setFixedParameter()]
-#'
-#' @examples
-#' # Create a GDS file from a sample VCF file.
-#' vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
-#' gds_fn <- tempfile("sample", fileext = ".gds")
-#' gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
-#'
-#' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
-#' gds <- loadGDS(gds_fn)
-#'
-#' # Set fixed allele read biases.
-#' # Initialize the bias vector to be assinged.
-#' bias <- rep(NA, nmar(gds))
-#'
-#' # As an example, select 20 markers randomly and assign 0 or 1 to them.
-#' # Since the bias set by setFixedParameter() function is the reference allele read
-#' # bias. Thus, the values 0 and 1 means that the marker only gives alternative
-#' # and reference allele reads, respectively.
-#' # Set these fixed biases if some of your markers are dominant markers.
-#' bias[sample(seq_along(bias), 20)] <- sample(c(0, 1), 20, replace = TRUE)
-#'
-#' fixed_bias <- getErrorRate(gds)
-#'
-#' # Close the connection to the GDS file
-#' closeGDS(gds)
-#'
-#' @export
-#'
-setGeneric("getErrorRate", function(object, valid = TRUE, chr = NULL, ...)
-    standardGeneric("getErrorRate"))
 
 #' Reset the filter made by [setSamFilter()]
 #'

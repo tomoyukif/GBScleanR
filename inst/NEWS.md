@@ -1,3 +1,7 @@
+Changes in version 2.1.8 (2025-04-3)
++ Update manuals of setPloidy(), getPloidy(), setFixedParamter(), and 
++ getFixedParameter(), and deleted unnecessary descriptions in AllGenerics.R.
+
 Changes in version 2.1.7 (2025-03-18)
 + Update .transitionProb() to accept aneuploidy.
 
