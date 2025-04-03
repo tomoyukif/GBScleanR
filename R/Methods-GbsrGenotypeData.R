@@ -2315,35 +2315,6 @@ setMethod("getFixedParameter",
               return(out)
           })
 
-#' @rdname getErrorRate
-setMethod("getErrorRate",
-          "GbsrGenotypeData",
-          function(object, valid, chr){
-              node <- "annotation/info/ADB"
-
-              if(!exist.gdsn(node = object, path = node)){
-                  stop("No record of marker wise error rates in the input GDS file.\n",
-                       "Run estGeno() to obtain them.")
-              }
-
-              filters <- .makeFilter(object = object, parents = TRUE,
-                                     valid = valid, chr = chr)
-
-              variant_id <- .filtData(object = object,
-                                      node = "variant.id",
-                                      filters = filters)
-
-              bias <- .filtData(object = object,
-                                node = "annotation/info/ADB",
-                                filters = filters)
-              filters$sam <- c(TRUE, TRUE)
-              mismap <- .filtData(object = object,
-                                  node = "annotation/info/MR",
-                                  filters = filters)
-
-              return(list(bias = bias, mismap = t(mismap)))
-          })
-
 ###############################################################################
 ## Functions to reset filters.
 
