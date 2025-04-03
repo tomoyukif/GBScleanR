@@ -1055,7 +1055,9 @@ setMethod("estGeno",
         return(x$non_zero)
     })
     nonzero_prob <- unlist(nonzero_prob)
-    n_nonzero_prob <- sapply(param_list$trans_prob, function(x){
+    n_nonzero_prob <- vapply(X = param_list$trans_prob,
+                             FUN.VALUE = integer(length = 1L),
+                             FUN = function(x){
         return(sum(x$non_zero))
     })
     possiblehap <- unlist(param_list$pat$possiblehap)

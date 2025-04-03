@@ -46,8 +46,8 @@ gds <- loadGDS(gds_fn)
 # gds <- estGeno(gds)
 # fixed_param <- getFixedParameter(gds)
 # gds <- setFixedParameter(gds,
-                           bias = fixed_param$bias,
-                           mismap = fixed_param$mismap)
+#                          bias = fixed_param$bias,
+#                          mismap = fixed_param$mismap)
 # gds <- estGeno(gds, optim = FALSE, call_threshold = 0.5)
 
 # Close the connection to the GDS file

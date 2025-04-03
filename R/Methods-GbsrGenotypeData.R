@@ -2415,8 +2415,8 @@ setMethod("gbsrGDS2VCF",
 
               if(!is.null(rm_gdsn)){
                   rm_gdsn <- unique(dirname(rm_gdsn))
-                  message("VL_Int type data causes a fatal error while",
-                          "writing out a VCF file from a GDS in the ",
+                  message("VL_Int type data causes a corruption of the GDS file",
+                          "while writing out a VCF file from a GDS in the ",
                           "current implementation.",
                           "\nThus, the following data will be removed ",
                           "from the GDS files.\n",
@@ -2801,10 +2801,12 @@ setMethod("makeScheme",
           function(object, generation, crosstype){
               parents <- getParents(object = object)
               if(is.null(parents)){
-                  stop("Parents have not been set.\n Run setParents().")
+                  stop("Parents have not been set.\n Run setParents().",
+                       call. = FALSE)
               }
-              if(!length(unique(parents$memberID)) %in% 2^(1:10)){
-                  stop("The number of parents should be the Nth power of 2.")
+              if(!length(unique(parents$memberID)) %in% 2^(seq_len(10))){
+                  stop("The number of parents should be the Nth power of 2.",
+                       call. = FALSE)
               }
               mating <- matrix(data = seq_along(unique(parents$memberID)),
                                nrow = 2,

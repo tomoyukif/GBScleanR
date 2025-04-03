@@ -1,4 +1,4 @@
-Changes in version 2.1.9 (2025-04-3)
+Changes in version 2.1.10 (2025-04-03)
 + Update manuals of setPloidy(), getPloidy(), setFixedParamter(), and 
 + getFixedParameter(), and deleted unnecessary descriptions in AllGenerics.R.
 
