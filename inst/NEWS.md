@@ -1,3 +1,6 @@
+Changes in version 2.1.11 (2025-04-07)
++ Update manuals and minor bug fix in loadGDS().
+
 Changes in version 2.1.10 (2025-04-03)
 + Update manuals of setPloidy(), getPloidy(), setFixedParamter(), and 
 + getFixedParameter(), and deleted unnecessary descriptions in AllGenerics.R.
