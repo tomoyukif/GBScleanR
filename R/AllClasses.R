@@ -25,7 +25,7 @@
 #' @seealso [GbsrGenotypeData] dnd [loadGDS()].
 #'
 #' @examples
-#' # `loadGDS()` initialize a `GbsrScheme` object internally and
+#' # [loadGDS()] initialize a `GbsrScheme` object internally and
 #' # attache it to the shceme slot of a [GbsrGenotypeData] object.
 #'
 #' # Load data in the GDS file and instantiate
@@ -47,20 +47,20 @@ setClass(Class = "GbsrScheme",
                    samples = "numeric"))
 
 
-#' Class `GbsrGenotypeData`
+#' Class [GbsrGenotypeData]
 #'
-#' The `GbsrGenotypeData` class is the main class of [GBScleanR] and
+#' The [GbsrGenotypeData] class is the main class of [GBScleanR] and
 #' user work with this class object.
 #'
 #' @details
-#' The `GbsrGenotypeData` class is an extention of `SeqVarGDSClass` in the
-#' [SeqArray::SeqVarGDSClass-class]{SeqArray} package to store summary data of genotypes and reads and a
+#' The [GbsrGenotypeData] class is an extention of \code{\link[SeqArray]{SeqVarGDSClass-class}} in the
+#' [SeqArray] package to store summary data of genotypes and reads and a
 #' [GbsrScheme] object that contains mating scheme information of the given
 #' population..
 #' The slots `marker` and `sample` store a [data.frame] object for variant-wise
 #' and sample-wise summary information, respectively. The `scheme` slot holds a
 #' [GbsrScheme] object. The function [loadGDS()] initialize the
-#' `GbsrGenotypeData` class.
+#' [GbsrGenotypeData] class.
 #'
 #' @importClassesFrom SeqArray SeqVarGDSClass
 #' @aliases  GbsrGenotypeData-class GbsrGenotypeData
@@ -69,9 +69,9 @@ setClass(Class = "GbsrScheme",
 #' @slot scheme A [GbsrScheme] object.
 #'
 #' @examples
-#' # `loadGDS()` initialize the `GbsrGenotypeData` object.
+#' # [loadGDS()] initialize the [GbsrGenotypeData] object.
 #'
-#' # Load a GDS file and instantiate a `GbsrGenotypeData` object.
+#' # Load a GDS file and instantiate a [GbsrGenotypeData] object.
 #' gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 #' gds <- loadGDS(gds_fn)
 #'

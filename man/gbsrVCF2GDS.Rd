@@ -49,7 +49,7 @@ You may use "bcftools" or "vcftools" for filtering.
 \details{
 gbsrVCF2GDS converts a VCF file to a GDS file.
 The data structure of the GDS file created via this functions is same with
-those created by \code{seqVCF2GDS()} of \code{SeqArray}.
+those created by \code{\link[SeqArray]{seqVCF2GDS()}} of \link{SeqArray}.
 }
 \examples{
 # Create a GDS file from a sample VCF file.
@@ -57,7 +57,7 @@ vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
 gds_fn <- tempfile("sample", fileext = ".gds")
 gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
 
-# Load data in the GDS file and instantiate a `GbsrGenotypeData` object.
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds <- loadGDS(gds_fn)
 
 # Close the connection to the GDS file.

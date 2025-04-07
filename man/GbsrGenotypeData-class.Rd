@@ -4,20 +4,20 @@
 \name{GbsrGenotypeData-class}
 \alias{GbsrGenotypeData-class}
 \alias{GbsrGenotypeData}
-\title{Class \code{GbsrGenotypeData}}
+\title{Class \link{GbsrGenotypeData}}
 \description{
-The \code{GbsrGenotypeData} class is the main class of \link{GBScleanR} and
+The \link{GbsrGenotypeData} class is the main class of \link{GBScleanR} and
 user work with this class object.
 }
 \details{
-The \code{GbsrGenotypeData} class is an extention of \code{SeqVarGDSClass} in the
-[SeqArray::SeqVarGDSClass-class]{SeqArray} package to store summary data of genotypes and reads and a
+The \link{GbsrGenotypeData} class is an extention of \code{\link[SeqArray]{SeqVarGDSClass-class}} in the
+\link{SeqArray} package to store summary data of genotypes and reads and a
 \link{GbsrScheme} object that contains mating scheme information of the given
 population..
 The slots \code{marker} and \code{sample} store a \link{data.frame} object for variant-wise
 and sample-wise summary information, respectively. The \code{scheme} slot holds a
 \link{GbsrScheme} object. The function \code{\link[=loadGDS]{loadGDS()}} initialize the
-\code{GbsrGenotypeData} class.
+\link{GbsrGenotypeData} class.
 }
 \section{Slots}{
 
@@ -30,9 +30,9 @@ and sample-wise summary information, respectively. The \code{scheme} slot holds 
 }}
 
 \examples{
-# `loadGDS()` initialize the `GbsrGenotypeData` object.
+# [loadGDS()] initialize the [GbsrGenotypeData] object.
 
-# Load a GDS file and instantiate a `GbsrGenotypeData` object.
+# Load a GDS file and instantiate a [GbsrGenotypeData] object.
 gds_fn <- system.file("extdata", "sample.gds", package = "GBScleanR")
 gds <- loadGDS(gds_fn)
 

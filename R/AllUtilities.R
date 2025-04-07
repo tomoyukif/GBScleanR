@@ -29,7 +29,7 @@ print.GbsrGenotypeData <- function(x, ...) {
 #' @details
 #' gbsrVCF2GDS converts a VCF file to a GDS file.
 #' The data structure of the GDS file created via this functions is same with
-#' those created by `seqVCF2GDS()` of `SeqArray`.
+#' those created by \code{\link[SeqArray]{seqVCF2GDS()}} of [SeqArray].
 #'
 #' @return The output GDS file path.
 #'
@@ -39,7 +39,7 @@ print.GbsrGenotypeData <- function(x, ...) {
 #' gds_fn <- tempfile("sample", fileext = ".gds")
 #' gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
 #'
-#' # Load data in the GDS file and instantiate a `GbsrGenotypeData` object.
+#' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 #' gds <- loadGDS(gds_fn)
 #'
 #' # Close the connection to the GDS file.
@@ -113,22 +113,22 @@ gbsrVCF2GDS <- function(vcf_fn,
     return(out_fn)
 }
 
-#' Load a GDS file and construct a `GbsrGenotypeData` object.
+#' Load a GDS file and construct a [GbsrGenotypeData] object.
 #'
 #' Load data stored in an input GDS file to R environment and
-#' create a `GbsrGenotypeData` instance.
-#' GBScleanR handles only one class `GbsrGenotypeData` and
+#' create a [GbsrGenotypeData] instance.
+#' GBScleanR handles only one class [GbsrGenotypeData] and
 #' conducts all data manipulation via class methods for it.
 #'
 #' @param x A string of the path to an input GDS file or
-#' a `GbsrGenotypeData` object to reload.
+#' a [GbsrGenotypeData] object to reload.
 #' @param load_filter A logical whether to load the filtering information made
 #'  via [setSamFilter()] and [setMarFilter()] and saved in the GDS file via
 #'  [closeGDS()] with `save_filter = TRUE`.
 #' @param ploidy Set the ploidy of the population.
 #' @param verbose if TRUE, show information.
 #'
-#' @return A `GbsrGenotypeData` object.
+#' @return A [GbsrGenotypeData] object.
 #'
 #' @export
 #'
@@ -138,8 +138,8 @@ gbsrVCF2GDS <- function(vcf_fn,
 #'
 #' @details
 #' The first time to load a newly produced GDS file will take long time due to
-#' data reformatting for quick access. The `GbsrGenotypeData` object returned
-#' from `loadGDS()` can be also handled as `SeqVarGDSClass` of the [SeqArray::SeqVarGDSClass-class]{SeqArray} package.
+#' data reformatting for quick access. The [GbsrGenotypeData] object returned
+#' from [loadGDS()] can be also handled as \code{\link[SeqArray]{SeqVarGDSClass-class}} of the [SeqArray] package.
 #'
 #' @examples
 #' # Create a GDS file from a sample VCF file.
@@ -147,7 +147,7 @@ gbsrVCF2GDS <- function(vcf_fn,
 #' gds_fn <- tempfile("sample", fileext = ".gds")
 #' gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
 #'
-#' # Load data in the GDS file and instantiate a `GbsrGenotypeData` object.
+#' # Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 #' gds <- loadGDS(gds_fn)
 #'
 #' # Reload data from the GDS file.
@@ -202,8 +202,8 @@ loadGDS <- function(x, load_filter = FALSE, ploidy = 2, verbose = TRUE) {
   # Load filtering information if specified
   if(load_filter){
     if(exist.gdsn(gds, "sample.annotation/GFL")){
-      validSam(gds) <- read.gdsn(index.gdsn(gds, "sample.annotation/GFL"))
-      validMar(gds) <- read.gdsn(index.gdsn(gds, "annotation/info/GFL"))
+      validSam(gds) <- as.logical(read.gdsn(index.gdsn(gds, "sample.annotation/GFL")))
+      validMar(gds) <- as.logical(read.gdsn(index.gdsn(gds, "annotation/info/GFL")))
 
     } else {
       warnings("No filtering information stored in the GDS.")

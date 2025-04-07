@@ -2,13 +2,13 @@
 % Please edit documentation in R/AllUtilities.R
 \name{loadGDS}
 \alias{loadGDS}
-\title{Load a GDS file and construct a \code{GbsrGenotypeData} object.}
+\title{Load a GDS file and construct a \link{GbsrGenotypeData} object.}
 \usage{
 loadGDS(x, load_filter = FALSE, ploidy = 2, verbose = TRUE)
 }
 \arguments{
 \item{x}{A string of the path to an input GDS file or
-a \code{GbsrGenotypeData} object to reload.}
+a \link{GbsrGenotypeData} object to reload.}
 
 \item{load_filter}{A logical whether to load the filtering information made
 via \code{\link[=setSamFilter]{setSamFilter()}} and \code{\link[=setMarFilter]{setMarFilter()}} and saved in the GDS file via
@@ -19,18 +19,18 @@ via \code{\link[=setSamFilter]{setSamFilter()}} and \code{\link[=setMarFilter]{s
 \item{verbose}{if TRUE, show information.}
 }
 \value{
-A \code{GbsrGenotypeData} object.
+A \link{GbsrGenotypeData} object.
 }
 \description{
 Load data stored in an input GDS file to R environment and
-create a \code{GbsrGenotypeData} instance.
-GBScleanR handles only one class \code{GbsrGenotypeData} and
+create a \link{GbsrGenotypeData} instance.
+GBScleanR handles only one class \link{GbsrGenotypeData} and
 conducts all data manipulation via class methods for it.
 }
 \details{
 The first time to load a newly produced GDS file will take long time due to
-data reformatting for quick access. The \code{GbsrGenotypeData} object returned
-from \code{loadGDS()} can be also handled as \code{SeqVarGDSClass} of the [SeqArray::SeqVarGDSClass-class]{SeqArray} package.
+data reformatting for quick access. The \link{GbsrGenotypeData} object returned
+from \code{\link[=loadGDS]{loadGDS()}} can be also handled as \code{\link[SeqArray]{SeqVarGDSClass-class}} of the \link{SeqArray} package.
 }
 \examples{
 # Create a GDS file from a sample VCF file.
@@ -38,7 +38,7 @@ vcf_fn <- system.file("extdata", "sample.vcf", package = "GBScleanR")
 gds_fn <- tempfile("sample", fileext = ".gds")
 gbsrVCF2GDS(vcf_fn = vcf_fn, out_fn = gds_fn, force = TRUE)
 
-# Load data in the GDS file and instantiate a `GbsrGenotypeData` object.
+# Load data in the GDS file and instantiate a [GbsrGenotypeData] object.
 gds <- loadGDS(gds_fn)
 
 # Reload data from the GDS file.

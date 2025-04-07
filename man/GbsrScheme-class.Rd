@@ -33,7 +33,7 @@ derived from which pedigrees.}
 }}
 
 \examples{
-# `loadGDS()` initialize a `GbsrScheme` object internally and
+# [loadGDS()] initialize a `GbsrScheme` object internally and
 # attache it to the shceme slot of a [GbsrGenotypeData] object.
 
 # Load data in the GDS file and instantiate
