@@ -11,6 +11,8 @@ getPloidy(object, ...)
 }
 \arguments{
 \item{object}{A \link{GbsrGenotypeData} object.}
+
+\item{...}{Unused.}
 }
 \value{
 An integer value.

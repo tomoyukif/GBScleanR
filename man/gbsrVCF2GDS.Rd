@@ -49,7 +49,7 @@ You may use "bcftools" or "vcftools" for filtering.
 \details{
 gbsrVCF2GDS converts a VCF file to a GDS file.
 The data structure of the GDS file created via this functions is same with
-those created by \code{\link[SeqArray]{seqVCF2GDS()}} of \link{SeqArray}.
+those created by \code{\link[SeqArray]{seqVCF2GDS}} of \code{SeqArray}.
 }
 \examples{
 # Create a GDS file from a sample VCF file.

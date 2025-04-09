@@ -11,7 +11,7 @@ user work with this class object.
 }
 \details{
 The \link{GbsrGenotypeData} class is an extention of \code{\link[SeqArray]{SeqVarGDSClass-class}} in the
-\link{SeqArray} package to store summary data of genotypes and reads and a
+\code{SeqArray} package to store summary data of genotypes and reads and a
 \link{GbsrScheme} object that contains mating scheme information of the given
 population..
 The slots \code{marker} and \code{sample} store a \link{data.frame} object for variant-wise

@@ -29,7 +29,7 @@ print.GbsrGenotypeData <- function(x, ...) {
 #' @details
 #' gbsrVCF2GDS converts a VCF file to a GDS file.
 #' The data structure of the GDS file created via this functions is same with
-#' those created by \code{\link[SeqArray]{seqVCF2GDS()}} of [SeqArray].
+#' those created by \code{\link[SeqArray]{seqVCF2GDS}} of `SeqArray`.
 #'
 #' @return The output GDS file path.
 #'
@@ -139,7 +139,7 @@ gbsrVCF2GDS <- function(vcf_fn,
 #' @details
 #' The first time to load a newly produced GDS file will take long time due to
 #' data reformatting for quick access. The [GbsrGenotypeData] object returned
-#' from [loadGDS()] can be also handled as \code{\link[SeqArray]{SeqVarGDSClass-class}} of the [SeqArray] package.
+#' from [loadGDS()] can be also handled as \code{\link[SeqArray]{SeqVarGDSClass-class}} of the `SeqArray` package.
 #'
 #' @examples
 #' # Create a GDS file from a sample VCF file.

@@ -1,4 +1,4 @@
-Changes in version 2.1.11 (2025-04-07)
+Changes in version 2.1.12 (2025-04-09)
 + Update manuals and minor bug fix in loadGDS().
 
 Changes in version 2.1.10 (2025-04-03)

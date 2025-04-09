@@ -2047,6 +2047,7 @@ setGeneric("setPloidy", function(object, ploidy = 2, ...)
 #' Get the ploidy of a given population in the input [GbsrGenotypeData] object.
 #'
 #' @param object A [GbsrGenotypeData] object.
+#' @param ... Unused.
 #'
 #' @return An integer value.
 #'

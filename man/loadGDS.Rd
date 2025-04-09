@@ -30,7 +30,7 @@ conducts all data manipulation via class methods for it.
 \details{
 The first time to load a newly produced GDS file will take long time due to
 data reformatting for quick access. The \link{GbsrGenotypeData} object returned
-from \code{\link[=loadGDS]{loadGDS()}} can be also handled as \code{\link[SeqArray]{SeqVarGDSClass-class}} of the \link{SeqArray} package.
+from \code{\link[=loadGDS]{loadGDS()}} can be also handled as \code{\link[SeqArray]{SeqVarGDSClass-class}} of the \code{SeqArray} package.
 }
 \examples{
 # Create a GDS file from a sample VCF file.
