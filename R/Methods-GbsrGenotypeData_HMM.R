@@ -1286,7 +1286,7 @@ setMethod("estGeno",
     geno_prob <- matrix(data = pat_prob[sample_geno],
                         nrow = n_mar,
                         ncol = n_sample)
-    geno_prob <- t(geno_prob < log10_th)
+    geno_prob <- t(geno_prob <= log10_th)
     for(i in seq_len(param_list$n_ploidy)){
         best_geno[i, i_sample, ][geno_prob] <- 3
     }

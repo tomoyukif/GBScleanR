@@ -1,3 +1,7 @@
+Changes in version 2.3.1 (2025-04-21)
++ Minor update in estGeno() to allow completely zero probability for genotype
++ calling when call_threshold = 0.
+
 Changes in version 2.1.12 (2025-04-09)
 + Update manuals and minor bug fix in loadGDS().
 
