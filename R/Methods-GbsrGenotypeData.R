@@ -920,6 +920,15 @@ setMethod("getParents",
                   if(verbose){
                       warning("No parents specified.", call. = FALSE)
                   }
+                  if(exist.gdsn(object$root, "parents/data")){
+                      parents_node <- index.gdsn(object$root, "parents/data")
+                      parent_info <- read.gdsn(parents_node)
+                      sample_id <- getSamID(object, valid = FALSE)
+                      parents_id <- sample_id[parent_info != 0]
+                      out <- data.frame(sampleID = parents_id,
+                                        memberID = parent_info[parent_info != 0])
+                      return(out)
+                  }
                   return(NULL)
               }
 

@@ -1,3 +1,7 @@
+Changes in version 2.3.1 (2025-06-18)
++ Add a function in getParents() to extract parental sample information that has been stored in
++ a GDS file in a previous run of setParents().
+
 Changes in version 2.3.1 (2025-04-21)
 + Minor update in estGeno() to allow completely zero probability for genotype
 + calling when call_threshold = 0.
