@@ -1,3 +1,6 @@
+Changes in version 2.5.1 (2025-11-14)
++ Fix a minor bug in seqOptimize().
+
 Changes in version 2.3.1 (2025-06-18)
 + Add a function in getParents() to extract parental sample information that has been stored in
 + a GDS file in a previous run of setParents().

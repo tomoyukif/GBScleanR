@@ -186,7 +186,7 @@ loadGDS <- function(x, load_filter = FALSE, ploidy = 2, verbose = TRUE) {
     exist.gdsn(node = gds, path = "annotation/format/AD/~data")
   if(!opt){
     seqClose(object = gds)
-    seqOptimize(gdsfn = gds$filename, target = "by.sample",
+    seqOptimize(gdsfile = gds$filename, target = "by.sample",
                 format.var = c("AD", "FAD", "HAP", "CGT", "FGT"),
                 verbose = verbose)
     gds <- seqOpen(gds.fn = gds$filename, readonly = FALSE)
