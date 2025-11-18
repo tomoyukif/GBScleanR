@@ -1516,7 +1516,7 @@ setMethod("setCallFilter",
 
               # Optimize the nodes
               closeGDS(object = object, verbose = FALSE)
-              seqOptimize(gdsfn = object$filename, target = "by.sample",
+              seqOptimize(gdsfile = object$filename, target = "by.sample",
                           format.var = c("FAD", "FGT"),
                           verbose = FALSE)
               object <- reopenGDS(object = object)
