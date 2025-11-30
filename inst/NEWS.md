@@ -1,4 +1,4 @@
-Changes in version 2.4.3 (2025-11-18)
+Changes in version 2.4.4 (2025-11-30)
 + Fix a minor bug at a code to use seqOptimize().
 
 Changes in version 2.3.1 (2025-06-18)
