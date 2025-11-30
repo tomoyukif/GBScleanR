@@ -128,7 +128,7 @@ setMethod("estGeno",
               }
 
               closeGDS(object = object, verbose = FALSE)
-              seqOptimize(gdsfn = object$filename, target = "by.sample",
+              seqOptimize(gdsfile = object$filename, target = "by.sample",
                           format.var = opt_node, verbose = FALSE)
               object <- reopenGDS(object = object)
               .compressNodes(object = object,

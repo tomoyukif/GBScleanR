@@ -1,8 +1,8 @@
 Package: GBScleanR
 Type: Package
 Title: Error correction tool for noisy genotyping by sequencing (GBS) data
-Version: 2.5.3
-Date: 2025-11-18
+Version: 2.5.4
+Date: 2025-11-30
 Authors@R: person("Tomoyuki", "Furuta", 
            email = "f.tomoyuki@okayama-u.ac.jp",
            role = c("aut", "cre"),
