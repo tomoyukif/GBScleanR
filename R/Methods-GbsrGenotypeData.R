@@ -916,33 +916,27 @@ setMethod("getMAC",
 setMethod("getParents",
           "GbsrGenotypeData",
           function(object, bool, verbose = TRUE){
-              if(is.null(slot(object, "sample")[["parents"]])){
+              parents <- slot(object, "sample")[["parents"]]
+
+              if(is.null(parents)){
                   if(verbose){
                       warning("No parents specified.", call. = FALSE)
-                  }
-                  if(exist.gdsn(object$root, "parents/data")){
-                      parents_node <- index.gdsn(object$root, "parents/data")
-                      parent_info <- read.gdsn(parents_node)
-                      sample_id <- getSamID(object, valid = FALSE)
-                      parents_id <- sample_id[parent_info != 0]
-                      out <- data.frame(sampleID = parents_id,
-                                        memberID = parent_info[parent_info != 0])
-                      return(out)
                   }
                   return(NULL)
               }
 
-              parents <- slot(object, "sample")[["parents"]]
+              parents_node <- index.gdsn(object$root, "parents/data")
+              parent_info <- read.gdsn(parents_node)
               if(bool){
-                  return(parents != 0)
+                  return(parent_info != 0)
               }
 
-              p_index <- which(parents != 0)
-              p_id <- parents[p_index]
-              p_name <- getSamID(object = object, valid = FALSE)[p_index]
-              return(data.frame(sampleID = p_name,
-                                memberID = p_id,
-                                indexes = p_index))
+              sample_id <- getSamID(object, valid = FALSE)
+              parents_id <- sample_id[parent_info != 0]
+              out <- data.frame(sampleID = parents_id,
+                                memberID = parent_info[parent_info != 0],
+                                indexes = which(parent_info != 0))
+              return(out)
           })
 
 ###############################################################################
@@ -1152,8 +1146,8 @@ setMethod("setReplicates",
               slot(object = object, name = "sample") <- sample
 
               p_info <- getParents(object = object)
-              n_p <- length(unique(p_info$memberID))
               if(!is.null(p_info)){
+                  n_p <- length(unique(p_info$memberID))
                   object <- setParents(object = object,
                                        parents = p_info$sampleID)
                   p_info <- getParents(object = object)
@@ -1174,12 +1168,15 @@ setMethod("setReplicates",
 setMethod("getReplicates",
           "GbsrGenotypeData",
           function(object, parents){
-              if(is.null(slot(object = object, name = "sample")[["replicates"]])){
-                  out <- getSamID(object = object, valid = FALSE)
+              out <- slot(object = object, name = "sample")[["replicates"]]
+              sample_id <- getSamID(object = object, valid = FALSE)
+              if(is.null(out)){
+                  out <- seq_along(sample_id)
 
               } else {
                   out <- slot(object = object, name = "sample")[["replicates"]]
               }
+              names(out) <- sample_id
               out <- out[validSam(object = object, parents = parents)]
               return(out)
           })

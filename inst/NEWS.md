@@ -1,3 +1,6 @@
+Changes in version 2.4.5 (2026-02-13)
++ Minor update in getParents() and getReplicates().
+
 Changes in version 2.4.4 (2025-11-30)
 + Fix a minor bug at a code to use seqOptimize().
 
