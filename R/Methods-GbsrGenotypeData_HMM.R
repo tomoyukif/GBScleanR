@@ -475,13 +475,16 @@ setMethod("estGeno",
 
 .makeGenoParents <- function(n_parents, n_ploidy, alleles, het_parent){
     out <- NULL
-    for (i in seq_len(n_parents * n_ploidy)) {
+    for (i in seq_len(1 * n_ploidy)) {
         out <- c(out, list(alleles))
     }
     out <- expand.grid(out, KEEP.OUT.ATTRS = FALSE)
+    if(ncol(out) == 2){
+        out <- cbind(out, out)
+    }
     valid_pat <- apply(X = out, MARGIN = 1,
                        FUN = function(x) length(unique(x)) > 1)
-    out <- as.matrix(out[valid_pat,])
+    out <- as.matrix(out[valid_pat, ])
     if (!het_parent) {
         valid <- tapply(X = seq_len(ncol(out)),
                         INDEX = rep(seq_len(n_parents), each = n_ploidy),

@@ -971,6 +971,7 @@ setMethod("isOpenGDS",
 setMethod("setParents",
           "GbsrGenotypeData",
           function(object, parents, nonmiss, mono, bi){
+              parents <- unique(parents)
               if(length(parents) == 0 | any(is.na(parents))){
                   stop('Specify valid sample names as parents.', call. = FALSE)
               }
