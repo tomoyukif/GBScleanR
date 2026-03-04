@@ -1034,6 +1034,10 @@ setMethod("setParents",
                            valdim = nsam(object = object, valid = FALSE),
                            replace = TRUE, attr = NULL)
 
+              if(n_parents == 1){
+                  mono <- FALSE
+                  bi <- TRUE
+              }
               # Parental genotype based marker filtering
               if(mono | bi){
                   object <- .pGenoFilt(object = object,
@@ -1093,6 +1097,12 @@ setMethod("setParents",
 }
 
 .pileupAD <- function(ad, rep_id){
+    dup <- duplicated(rep_id)
+    if(sum(dup) == 0){
+        return(ad)
+    }
+    names2id <- data.frame(id = as.character(rep_id[!dup]),
+                           names = names(rep_id)[!dup])
     ad_ref <- tapply(X = seq_along(rep_id), INDEX = rep_id, FUN = function(i){
         if(length(i) == 1){
             return(ad$ref[i, ])
@@ -1101,7 +1111,10 @@ setMethod("setParents",
             return(colSums(ad$ref[i, ]))
         }
     })
+    row_names <- names(ad_ref)
     ad_ref <- do.call(what = "rbind", args = ad_ref)
+    hit <- match(row_names, names2id$id)
+    rownames(ad_ref) <- names2id$names[hit]
     ad_alt <- tapply(X = seq_along(rep_id), INDEX = rep_id, FUN = function(i){
         if(length(i) == 1){
             return(ad$alt[i, ])
@@ -1111,6 +1124,7 @@ setMethod("setParents",
         }
     })
     ad_alt <- do.call(what = "rbind", args = ad_alt)
+    rownames(ad_alt) <- names2id$names[hit]
     return(list(ref = ad_ref, alt = ad_alt))
 }
 

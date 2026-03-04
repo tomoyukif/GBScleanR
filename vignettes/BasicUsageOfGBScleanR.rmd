@@ -774,6 +774,7 @@ gds <- addScheme(gds, crosstype = "self")
 ```
 You can set `crosstype = "sibling"` or `crosstype = "random"`, if your population was developed through sibling crosses or random crosses, respectively.
 
+#### Update on April 4, 2023
 The update on April 4, 2023 introduced new function to GBScleanR.
 The genotype estimation algorithm in estGeno() supports populations that consist
 of samples belonging to different pedigree. For example, if you have a population
@@ -814,6 +815,23 @@ id[grepl("P1xP4", sample_id)] <- 7
 gds <- assignScheme(object = gds, id = id)
 ```
 
+
+#### Update on March 4, 2026
+The update on March 4, 2026 enabled GBScleanR to support a scheme with a single 
+parental line. You set a single parental line using `setParents()` and initialize 
+a scheme object for this design as following.
+```{r eval=FALSE}
+# Do not run.
+gds <- setParents(object = gds, parents = "Founder1")
+
+gds <- initScheme(object = gds, mating = rbind(1, 1))
+# The initScheme() function here automatically set 2 as member ID to
+# the progenies of the above maiting (selfing).
+
+```
+As an important note, `setParents()` automatically runs with the settings 
+`mono = FALSE` and `bi = TRUE` when a single parental line is assigned. Thus, 
+only markers where the parent is heterozygous are retained.
 
 ### Execute Genotype Estimation
 The following codes suppose that you built the scheme object for the example data that is a biparental F2 population derived from a cross between inbred parents, not for the 8-way RILs explained above.

@@ -21,6 +21,11 @@ setMethod("estGeno",
               parents <- slot(object = slot(object = object, name = "scheme"),
                               name = "parents")
               n_parents <- length(unique(parents))
+              if(n_parents == 1 & !het_parent){
+                  stop("het_parent must be TRUE when the given population has a single parental line.",
+                       call. = FALSE)
+              }
+
               parentless <- all(is.na(parents))
 
               # Set the number of threads
@@ -268,7 +273,14 @@ setMethod("estGeno",
 
     if(!no_valid_marker){
         rep_id <- getReplicates(object = object, parents = TRUE)
-        id_hit <- match(x = rep_id, table = clean_out$mapping_id)
+        rep_id_names <- names(rep_id)
+        id_hit <- match(x = rep_id_names, table = clean_out$mapping_id)
+        if(sum(is.na(id_hit)) > 0){
+            na_id_hit <- match(x = id_hit[is.na(id_hit)],
+                               table = id_hit[!is.na(id_hit)])
+            rep_id_names[is.na(id_hit)] <- rep_id_names[!is.na(id_hit)][na_id_hit]
+            id_hit <- match(x = rep_id_names, table = clean_out$mapping_id)
+        }
         output[, sel$sam, sel$mar] <- clean_out$best_hap[, id_hit,]
     }
 
@@ -315,7 +327,14 @@ setMethod("estGeno",
 
     if(!no_valid_marker){
         rep_id <- getReplicates(object = object, parents = TRUE)
-        id_hit <- match(x = rep_id, table = clean_out$mapping_id)
+        rep_id_names <- names(rep_id)
+        id_hit <- match(x = rep_id_names, table = clean_out$mapping_id)
+        if(sum(is.na(id_hit)) > 0){
+            na_id_hit <- match(x = id_hit[is.na(id_hit)],
+                               table = id_hit[!is.na(id_hit)])
+            rep_id_names[is.na(id_hit)] <- rep_id_names[!is.na(id_hit)][na_id_hit]
+            id_hit <- match(x = rep_id_names, table = clean_out$mapping_id)
+        }
         output[, sel$sam, sel$mar] <- clean_out$best_geno[, id_hit,]
     }
 
@@ -333,10 +352,13 @@ setMethod("estGeno",
 #' @importFrom gdsfmt append.gdsn
 .savePGeno <- function(object, clean_out, sel, no_valid_marker, n_parents) {
     n_row <- dim(clean_out$p_geno)[1]
+    if(n_parents == 1){
+        n_row <- n_row / 2
+    }
     output <- matrix(data = 3, nrow = n_row, length(sel$mar))
 
     if(!no_valid_marker){
-        output[, sel$mar] <- clean_out$p_geno
+        output[, sel$mar] <- clean_out$p_geno[seq_len(n_row), ]
     }
 
     out_gdsn <- index.gdsn(node = object, path = "annotation/info/PGT")
@@ -420,6 +442,10 @@ setMethod("estGeno",
         rep_id <- getReplicates(object = object, parents = "only")
         p_reads <- .pileupAD(ad = p_reads, rep_id = rep_id)
         p_reads <- .orderParents(object = object, p_reads = p_reads)
+        if(nrow(p_reads$ref) == 1){
+            p_reads$ref <- rbind(p_reads$ref, p_reads$ref)
+            p_reads$alt <- rbind(p_reads$alt, p_reads$alt)
+        }
     }
     # p_reads <- .bumpOverRepReads(reads = p_reads)
     # reads <- .bumpOverRepReads(reads = reads)
@@ -453,9 +479,9 @@ setMethod("estGeno",
     id_hit <- match(x = sam_id, table = p_id$sampleID)
     p_id$rep_id[na.omit(id_hit)] <- rep_id[!is.na(id_hit)]
     member_id <- p_id$memberID[match(x = rownames(p_reads$ref),
-                                     table = p_id$rep_id)]
-    p_reads$ref <- p_reads$ref[order(member_id), ]
-    p_reads$alt <- p_reads$alt[order(member_id), ]
+                                     table = p_id$sampleID)]
+    p_reads$ref <- p_reads$ref[order(member_id), , drop = FALSE]
+    p_reads$alt <- p_reads$alt[order(member_id), , drop = FALSE]
     return(p_reads)
 }
 
@@ -475,11 +501,11 @@ setMethod("estGeno",
 
 .makeGenoParents <- function(n_parents, n_ploidy, alleles, het_parent){
     out <- NULL
-    for (i in seq_len(1 * n_ploidy)) {
+    for (i in seq_len(n_parents * n_ploidy)) {
         out <- c(out, list(alleles))
     }
     out <- expand.grid(out, KEEP.OUT.ATTRS = FALSE)
-    if(ncol(out) == 2){
+    if(n_parents == 1){
         out <- cbind(out, out)
     }
     valid_pat <- apply(X = out, MARGIN = 1,
@@ -546,10 +572,17 @@ setMethod("estGeno",
 }
 
 .getValidPat <- function(scheme, het_parent, n_parents, n_ploidy) {
-    target_pedigree <- sort(unique(slot(object = scheme, name = "samples")))
+    target_pedigree <- mem_id <- sort(unique(slot(object = scheme, name = "samples")))
     mt <- slot(object = scheme, name = "mating")
     xtype <- slot(object = scheme, name = "crosstype")
     pg <- slot(object = scheme, name = "progenies")
+
+    if(n_parents == 1){
+        n_parents <- 2
+        mt <- list(rbind(1, 2))
+        target_pedigree <- target_pedigree + 1
+    }
+
     even_ploidy <- n_ploidy %% 2 != 0
     if(even_ploidy){
         n_ploidy_minus <- n_ploidy - 1
@@ -599,7 +632,7 @@ setMethod("estGeno",
             return(unique(x))
         })
     }
-    names(out) <- target_pedigree
+    names(out) <- mem_id
 
     return(out)
 }
@@ -911,7 +944,7 @@ setMethod("estGeno",
                                                                if(check1 > check2){
                                                                    out <- jrate$r01
 
-                                                               # If the major joint increased, set r10 that is the rate to get an additional non-ibd state.
+                                                                   # If the major joint increased, set r10 that is the rate to get an additional non-ibd state.
                                                                } else if(check1 < check2){
                                                                    out <- jrate$r10
 
@@ -978,6 +1011,9 @@ setMethod("estGeno",
     } else {
         parents <- getParents(object = object)
         n_parents <- length(unique(parents$memberID))
+        if(n_parents == 1){
+            n_parents <- 2
+        }
     }
     n_samples <- length(unique(getReplicates(object = object)))
     n_alleles <- 2
@@ -1061,8 +1097,8 @@ setMethod("estGeno",
     n_nonzero_prob <- vapply(X = param_list$trans_prob,
                              FUN.VALUE = integer(length = 1L),
                              FUN = function(x){
-        return(sum(x$non_zero))
-    })
+                                 return(sum(x$non_zero))
+                             })
     possiblehap <- unlist(param_list$pat$possiblehap)
     pedigree <- match(x = param_list$pedigree,
                       table = names(param_list$pat$hap_progeny))
