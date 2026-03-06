@@ -302,7 +302,14 @@ setMethod("estGeno",
 
     if(!no_valid_marker){
         rep_id <- getReplicates(object = object, parents = TRUE)
-        id_hit <- match(x = rep_id, table = clean_out$mapping_id)
+        rep_id_names <- names(rep_id)
+        id_hit <- match(x = rep_id_names, table = clean_out$mapping_id)
+        if(sum(is.na(id_hit)) > 0){
+            na_id_hit <- match(x = id_hit[is.na(id_hit)],
+                               table = id_hit[!is.na(id_hit)])
+            rep_id_names[is.na(id_hit)] <- rep_id_names[!is.na(id_hit)][na_id_hit]
+            id_hit <- match(x = rep_id_names, table = clean_out$mapping_id)
+        }
         output[, sel$sam, sel$mar] <- clean_out$best_hap[, id_hit,]
     }
 
