@@ -20,13 +20,14 @@ setMethod("estGeno",
               # Check if the parents have been specified
               parents <- slot(object = slot(object = object, name = "scheme"),
                               name = "parents")
-              n_parents <- length(unique(parents))
-              if(n_parents == 1 & !het_parent){
-                  stop("het_parent must be TRUE when the given population has a single parental line.",
-                       call. = FALSE)
-              }
-
               parentless <- all(is.na(parents))
+              n_parents <- length(unique(parents))
+              if(!parentless){
+                  if(n_parents == 1 & !het_parent){
+                      stop("het_parent must be TRUE when the given population has a single parental line.",
+                           call. = FALSE)
+                  }
+              }
 
               # Set the number of threads
               .setThreads(n_threads = n_threads)
