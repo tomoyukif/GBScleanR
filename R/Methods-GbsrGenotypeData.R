@@ -30,12 +30,16 @@
     out <- readex.gdsn(node = target_node, sel = sel)
 
     if(reduce){
-        if(length(dim(out)) == 2){
+        if(length(sel) == 2){
             stop("'reduce' is applicable when the data has 3 dimentions.")
         }
         # Reduce the dimensions of the output array
         out[out == 3] <- NA
-        command <- paste0("out <- ", paste(paste0("out[", seq_len(dim(out)[1]), ",,]"), collapse = " + "))
+        if(length(dim(out)) == 3){
+            command <- paste0("out <- ", paste(paste0("out[", seq_len(dim(out)[1]), ",,]"), collapse = " + "))
+        } else {
+            command <- paste0("out <- ", paste(paste0("out[", seq_len(dim(out)[1]), ",]"), collapse = " + "))
+        }
         eval(expr = parse(text = command))
     }
 

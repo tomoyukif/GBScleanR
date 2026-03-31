@@ -398,8 +398,8 @@ setGeneric("getRead", function(object, node = "raw", parents = FALSE,
 #' of samples, and number of markers.
 #' @param ... Unused.
 #'
-#' @return An integer matirix of genotype data which is represented
-#' by the number of reference alleles at each marker of each sample.
+#' @return An integer matrix of genotype data which is represented
+#' by the number of alternative alleles at each marker of each sample.
 #'
 #' @details
 #' When `node = "raw`, the raw genotype data stored in the "genotype/data" node
