@@ -35,12 +35,17 @@
         }
         # Reduce the dimensions of the output array
         out[out == 3] <- NA
-        if(length(dim(out)) == 3){
-            command <- paste0("out <- ", paste(paste0("out[", seq_len(dim(out)[1]), ",,]"), collapse = " + "))
+        dim_out <- dim(out)
+        if(length(dim_out) == 3){
+            command <- paste0("out <- ", paste(paste0("out[", seq_len(dim_out[1]), ",,]"), collapse = " + "))
+            eval(expr = parse(text = command))
+
         } else {
-            command <- paste0("out <- ", paste(paste0("out[", seq_len(dim(out)[1]), ",]"), collapse = " + "))
+
+            command <- paste0("out <- ", paste(paste0("out[", seq_len(dim_out[1]), ",]"), collapse = " + "))
+            eval(expr = parse(text = command))
+            dim(out) <- c(dim_out[2], 1)
         }
-        eval(expr = parse(text = command))
     }
 
     return(out)

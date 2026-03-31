@@ -1,4 +1,4 @@
-Changes in version 2.5.9 (2026-03-31)
+Changes in version 2.5.10 (2026-03-31)
 + Enable setParents() and estGeno() support a scheme with a single parental line.
 + Minor bug fix in getGenotype().
 
