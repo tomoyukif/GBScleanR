@@ -1,0 +1,12 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+src/*.o
+src/*.so
+src/*.dll
+inst/doc
+vignettes/*.pdf
+vignettes/*.R
+vignettes/*.gds
+GBScleanR.Rproj

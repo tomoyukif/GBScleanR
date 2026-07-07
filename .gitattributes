@@ -1,0 +1,4 @@
+R/Methods-GbsrGenotypeData_v2.R merge=ours
+src/GBSR_calc_ratio.cpp merge=ours
+src/GBSR_HMM.cpp merge=ours
+
