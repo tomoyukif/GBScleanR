@@ -1,3 +1,6 @@
+Changes in version 2.7.0 (2026-07-07)
++ Minor bug fix in loadGDS() to avoid vignette build failure on Bioconductor 3.23 (R 4.6.1).
+
 Changes in version 2.5.10 (2026-03-31)
 + Enable setParents() and estGeno() support a scheme with a single parental line.
 + Minor bug fix in getGenotype().
