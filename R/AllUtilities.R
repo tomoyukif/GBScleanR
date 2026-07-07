@@ -132,7 +132,7 @@ gbsrVCF2GDS <- function(vcf_fn,
 #'
 #' @export
 #'
-#' @importFrom methods new
+#' @importFrom methods new S3Part
 #' @importFrom SeqArray seqOpen seqSummary seqOptimize
 #' @importFrom gdsfmt exist.gdsn delete.gdsn objdesp.gdsn setdim.gdsn add.gdsn
 #'
@@ -197,6 +197,9 @@ loadGDS <- function(x, load_filter = FALSE, ploidy = 2, verbose = TRUE) {
   marker <- data.frame(valid = rep(TRUE, d$dim[3]))
   sample <- data.frame(valid = rep(TRUE, d$dim[2]))
   attributes(sample) <- c(attributes(sample), list(ploidy = ploidy))
+  if (inherits(gds, "SeqVarGDSClass")) {
+    gds <- S3Part(gds, S3Class = "gds.class")
+  }
   gds <- new(Class = "GbsrGenotypeData", gds, sample = sample, marker = marker)
 
   # Load filtering information if specified
