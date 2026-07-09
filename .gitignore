@@ -10,3 +10,4 @@ vignettes/*.pdf
 vignettes/*.R
 vignettes/*.gds
 GBScleanR.Rproj
+.apptainer/

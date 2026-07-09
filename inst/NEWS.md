@@ -1,3 +1,6 @@
+Changes in version 2.7.1 (2026-07-09)
++ Fix loadGDS() and reopenGDS() for R 4.6.1 by constructing GbsrGenotypeData without triggering SeqVarGDSClass validity on an S4 object.
+
 Changes in version 2.7.0 (2026-07-07)
 + Minor bug fix in loadGDS() to avoid vignette build failure on Bioconductor 3.23 (R 4.6.1).
 
