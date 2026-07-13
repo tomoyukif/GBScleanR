@@ -1265,11 +1265,11 @@ setMethod("reopenGDS",
               if(isOpenGDS(object = object)){
                   closeGDS(object = object, save_filter = FALSE)
               }
-              object <- .newGbsrGenotypeData(
-                gds = seqOpen(gds.fn = gds_fn, readonly = FALSE),
-                sample = slot(object = object, name = "sample"),
-                marker = slot(object = object, name = "marker"),
-                scheme = slot(object = object, name = "scheme"))
+              object <- new("GbsrGenotypeData",
+                            seqOpen(gds.fn = gds_fn, readonly = FALSE),
+                            marker = slot(object = object, name = "marker"),
+                            sample = slot(object = object, name = "sample"),
+                            scheme = slot(object = object, name = "scheme"))
               return(object)
           })
 

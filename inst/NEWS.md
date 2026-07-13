@@ -1,3 +1,6 @@
+Changes in version 2.7.2 (2026-07-13)
++ Restore original new() construction in loadGDS() and reopenGDS(); gdsfmt now supports $ slot access so the previous workaround is no longer needed.
+
 Changes in version 2.7.1 (2026-07-09)
 + Fix loadGDS() and reopenGDS() for R 4.6.1 by constructing GbsrGenotypeData without triggering SeqVarGDSClass validity on an S4 object.
 
