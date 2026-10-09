@@ -1,3 +1,13 @@
+Changes in version 2.7.5 (2026-10-09)
++ Restore .newGbsrGenotypeData() construction in loadGDS() and reopenGDS() for
++ R 4.6.1 compatibility with SeqArray/gdsfmt S4 validity checks.
++ Fix estGeno() so genotypes/haplotypes of replicate samples are correctly
++ expanded from the representative estimate after setReplicates().
++ Fix missing "Mapping quality" descriptions in histGBSR(), boxplotGBSR(), and
++ plotGBSR() stats catalogues.
++ Expand testthat coverage for GDS I/O, read stats, schemes, replicates,
++ INFO filters, CSV export, plotting, and estGeno() workflows.
+
 Changes in version 2.7.4 (2026-07-28)
 + Adjust package version for Bioconductor submission while keeping the v2.7.2 loadGDS()/reopenGDS() construction.
 

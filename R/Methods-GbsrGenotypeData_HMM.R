@@ -266,6 +266,24 @@ setMethod("estGeno",
             no_valid_marker = no_valid_marker)
 }
 
+# Map each sample to a column in clean_out by sample ID, expanding replicates
+# to the representative sample that was used during estimation.
+.mapReplicateHits <- function(object, mapping_id) {
+    rep_id <- getReplicates(object = object, parents = TRUE)
+    rep_id_names <- names(rep_id)
+    id_hit <- match(x = rep_id_names, table = mapping_id)
+    if (anyNA(id_hit)) {
+        rep_vals <- unname(rep_id)
+        for (i in which(is.na(id_hit))) {
+            same_rep <- which(rep_vals == rep_vals[i] & !is.na(id_hit))
+            if (length(same_rep) > 0) {
+                id_hit[i] <- id_hit[same_rep[1]]
+            }
+        }
+    }
+    id_hit
+}
+
 #' @importFrom gdsfmt append.gdsn
 .saveHap <- function(object, clean_out, sel, no_valid_marker) {
     n_ploidy <- dim(clean_out$best_hap)[1]
@@ -273,15 +291,8 @@ setMethod("estGeno",
                     dim = c(n_ploidy, length(sel$sam), length(sel$mar)))
 
     if(!no_valid_marker){
-        rep_id <- getReplicates(object = object, parents = TRUE)
-        rep_id_names <- names(rep_id)
-        id_hit <- match(x = rep_id_names, table = clean_out$mapping_id)
-        if(sum(is.na(id_hit)) > 0){
-            na_id_hit <- match(x = id_hit[is.na(id_hit)],
-                               table = id_hit[!is.na(id_hit)])
-            rep_id_names[is.na(id_hit)] <- rep_id_names[!is.na(id_hit)][na_id_hit]
-            id_hit <- match(x = rep_id_names, table = clean_out$mapping_id)
-        }
+        id_hit <- .mapReplicateHits(object = object,
+                                    mapping_id = clean_out$mapping_id)
         output[, sel$sam, sel$mar] <- clean_out$best_hap[, id_hit,]
     }
 
@@ -301,15 +312,8 @@ setMethod("estGeno",
     output <- array(data = NA, dim = c(n_ploidy, length(sel$sam), length(sel$mar)))
 
     if(!no_valid_marker){
-        rep_id <- getReplicates(object = object, parents = TRUE)
-        rep_id_names <- names(rep_id)
-        id_hit <- match(x = rep_id_names, table = clean_out$mapping_id)
-        if(sum(is.na(id_hit)) > 0){
-            na_id_hit <- match(x = id_hit[is.na(id_hit)],
-                               table = id_hit[!is.na(id_hit)])
-            rep_id_names[is.na(id_hit)] <- rep_id_names[!is.na(id_hit)][na_id_hit]
-            id_hit <- match(x = rep_id_names, table = clean_out$mapping_id)
-        }
+        id_hit <- .mapReplicateHits(object = object,
+                                    mapping_id = clean_out$mapping_id)
         output[, sel$sam, sel$mar] <- clean_out$best_hap[, id_hit,]
     }
 
@@ -334,15 +338,8 @@ setMethod("estGeno",
     output <- array(data = 3, dim = c(n_ploidy, length(sel$sam), length(sel$mar)))
 
     if(!no_valid_marker){
-        rep_id <- getReplicates(object = object, parents = TRUE)
-        rep_id_names <- names(rep_id)
-        id_hit <- match(x = rep_id_names, table = clean_out$mapping_id)
-        if(sum(is.na(id_hit)) > 0){
-            na_id_hit <- match(x = id_hit[is.na(id_hit)],
-                               table = id_hit[!is.na(id_hit)])
-            rep_id_names[is.na(id_hit)] <- rep_id_names[!is.na(id_hit)][na_id_hit]
-            id_hit <- match(x = rep_id_names, table = clean_out$mapping_id)
-        }
+        id_hit <- .mapReplicateHits(object = object,
+                                    mapping_id = clean_out$mapping_id)
         output[, sel$sam, sel$mar] <- clean_out$best_geno[, id_hit,]
     }
 
